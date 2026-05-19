@@ -10,33 +10,37 @@ the active release goal is actually complete.
 Status: **NOT COMPLETE**
 
 The repository now has a locally verified Windows installer workflow and
-release-candidate artifacts, but it is not yet safe to publish as a GitHub
-Release because the source archive is still `draft-working-tree`, the worktree
-is dirty, and three required manual gates remain `PENDING`.
+release-candidate artifacts. The current release commit can be validated from a
+clean detached worktree and has a strict git-ref source archive. The active
+goal is still not complete because three required manual gates remain
+`PENDING`.
 
 ## Current Artifact Evidence
 
 - Installer: `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - Installer SHA-256: see
   `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`
-- Draft source archive:
-  `build/windows/installer/DeepLiveCamStudio-2.1.5-source-worktree-4a674d33ef2d.zip`
-- Draft source SHA-256: see
-  `build/windows/installer/DeepLiveCamStudio-2.1.5-source-worktree-4a674d33ef2d.zip.sha256`
+- Git-ref source archive: see the latest
+  `build/windows/installer/DeepLiveCamStudio-2.1.5-source-*.zip` whose
+  manifest records `Archive mode: git-ref`
+- Git-ref source SHA-256 and resolved commit: see the matching `.zip.sha256`
+  and `.manifest.md` sidecars
 - Generated release verdict: `RELEASE_VERIFICATION.md`
 - Final cutover procedure: `RELEASE_CUTOVER_PLAN.md`
 - Current cutover status report: `RELEASE_CUTOVER_STATUS.md`
-- The source packaging script now requires both `RELEASE_COMPLETION_AUDIT.md`
-  `RELEASE_CUTOVER_PLAN.md`, and `RELEASE_CUTOVER_STATUS.md` so the final clean
-  source archive carries the release status and cutover proof trail.
+- Clean release worktree proof: `CLEAN_RELEASE_WORKTREE_VERIFICATION.md`
+- The source packaging script now requires `RELEASE_COMPLETION_AUDIT.md`,
+  `RELEASE_CUTOVER_PLAN.md`, `RELEASE_CUTOVER_STATUS.md`, and
+  `CLEAN_RELEASE_WORKTREE_VERIFICATION.md` so the final clean source archive
+  carries the release status and cutover proof trail.
 
 ## Requirement Matrix
 
 | Requirement | Current status | Evidence | Remaining work |
 | --- | --- | --- | --- |
 | Create Windows x64 installer `.exe` | Locally satisfied | Installer exists and hash sidecar verifies; local installer smoke test passes. | Re-test final clean-tag artifact on clean VM. |
-| Suitable for GitHub Releases | Partial | Installer, source draft archive, sidecars, release checklist, notes template, and workflow exist. | Produce clean Git-ref source archive, complete manual gates, attach final artifacts. |
-| Preserve AGPL-3.0 and source obligations | Partial | `LICENSE`, `COMPLIANCE.md`, `RELEASE_REPORT.md`, `RELEASE_CHECKLIST.md`, and source packaging script exist. The source packager requires release docs, license evidence, build scripts, installer scripts, runtime path/model code, and focused release tests. | Commit/tag exact release source and publish/link corresponding source for the final binary. |
+| Suitable for GitHub Releases | Partial | Installer, git-ref source archive, sidecars, release checklist, notes template, and workflow exist; strict artifact validation passes. | Complete manual gates, attach final artifacts, and publish/link exact source. |
+| Preserve AGPL-3.0 and source obligations | Mostly satisfied / pending publication | `LICENSE`, `COMPLIANCE.md`, `RELEASE_REPORT.md`, `RELEASE_CHECKLIST.md`, clean-worktree source proof, and source packaging script exist. The source packager requires release docs, license evidence, build scripts, installer scripts, runtime path/model code, and focused release tests. | Publish/link corresponding source for the exact final binary release and have legal review confirm the source-offer posture. |
 | Avoid redistributing restricted model files | Locally satisfied | Bundle/source scans report no `.onnx`, `.pth`, `.safetensors`, `models/`, or checkpoint entries. | Re-run scans on final clean-tag release artifact. |
 | First-run or CLI model downloader | Locally satisfied | `modules/model_manager.py`, `--download-models`, checksum data, and model prompt are verified by tests and packaged runtime preflight. | Re-run on final clean VM/release candidate. |
 | User-writable model/config/log paths | Locally satisfied | `modules/paths.py`, packaged runtime preflight, and release docs cover `%LOCALAPPDATA%\DeepLiveCamStudio`. | Confirm on clean VM and record in `CLEAN_VM_VERIFICATION.md`. |
@@ -48,25 +52,26 @@ is dirty, and three required manual gates remain `PENDING`.
 | Install/uninstall support | Locally satisfied | `test_installer.ps1` installs and uninstalls temp installation. | Verify interactive uninstall behavior on clean VM. |
 | Preserve user models on uninstall unless user chooses | Automated/partial | Silent uninstall sentinel preservation is tested. | Verify interactive prompt on clean VM. |
 | Include release docs in installer | Locally satisfied | `RELEASE_VERIFICATION.md` lists required installed files as present; installer wrapper packages docs. | Re-run on final clean-tag artifact. |
-| Dependency license audit | Partial | `LICENSES/PYTHON_DEPENDENCIES.md`, `THIRD_PARTY_NOTICES.md`, `LICENSES/THIRD_PARTY_LICENSES/`, and bundle manifest exist. | Final legal review must approve unusual/unknown metadata and GPL/LGPL implications. |
-| Model license audit | Partial | `LICENSES/MODEL_LICENSE_AUDIT.md` documents separate model licenses and exclusion policy. | Final legal review must confirm downloader/license language for intended distribution. |
+| Dependency license audit | Partial | `LICENSES/PYTHON_DEPENDENCIES.md`, `THIRD_PARTY_NOTICES.md`, `LICENSES/THIRD_PARTY_LICENSES/`, bundle manifest, and `LICENSES/BUNDLED_BINARY_OBLIGATIONS.md` exist. | Final legal review must approve unusual/unknown metadata and GPL/LGPL implications. |
+| Model license audit | Partial | `LICENSES/MODEL_LICENSE_AUDIT.md` documents separate model licenses, current source URLs, refreshed 2026-05-19 review notes, and exclusion policy. | Final legal review must confirm downloader/license language for intended distribution. |
 | CUDA / ONNX Runtime provider handling | Locally satisfied | Environment preflight detects CUDA provider locally; packaged preflight reports providers. | Test final artifact on CUDA and non-NVIDIA/CPU-only machines. |
 | OBS/virtual camera workflow | Partial | `docs/OBS_VIRTUAL_CAMERA.md` and test hooks exist. | Run OBS machine test and mark `OBS_VIRTUAL_CAMERA_VERIFICATION.md` as `PASS` only if all checks pass. |
 | GitHub Actions workflow | Locally satisfied as release-candidate CI | `.github/workflows/windows-release.yml` builds non-strict release candidates and includes a negative publish guard. | Run in GitHub and use strict local/manual gate before publishing. |
 | WebP/AVIF image uploads | Locally satisfied | `tests/test_image_upload_formats.py` passes; packaged payload includes Pillow `_webp` and `_avif` modules. | Re-test if image-loading code changes before tag. |
-| Final report required by user | Partial | `RELEASE_REPORT.md` exists and is included in installer. | Update final report values after clean-tag publish gate. |
+| Final report required by user | Partial | `RELEASE_REPORT.md` exists and is included in installer; exact artifact hashes are recorded in sidecars/manifests and summarized in assistant status reports. | Final response after manual gates should include exact final artifact paths, hashes, obligations, risks, and checks completed. |
 
 ## Blocking Gates
 
 These must be complete before the active goal can be marked done:
 
-- `git status --short` must be clean for the intended release commit.
+- The intended release commit must validate from a clean release worktree.
 - `package_source.ps1 -GitRef <release-tag-or-commit>` must produce a source
   manifest with `Archive mode: git-ref`.
 - `tools/validate_windows_release_artifacts.py --require-git-ref-source` must
   pass.
 - `tools/check_windows_release_cutover.py --strict` must pass on the intended
-  release branch after staging/committing decisions are complete.
+  release branch or clean detached release worktree after staging/committing
+  decisions are complete.
 - `CLEAN_VM_VERIFICATION.md` must be `Status: PASS` with no unchecked items.
 - `OBS_VIRTUAL_CAMERA_VERIFICATION.md` must be `Status: PASS` with no unchecked
   items.
@@ -81,7 +86,9 @@ venv\Scripts\python.exe -m pytest tests\test_validate_windows_release_artifacts.
 venv\Scripts\python.exe tools\check_windows_release_cutover.py --repo-root . --output RELEASE_CUTOVER_STATUS.md
 venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version 2.1.5
 venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version 2.1.5 --require-git-ref-source
+C:\Projects\deep-live-cam\venv\Scripts\python.exe tools\check_windows_release_cutover.py --repo-root . --output $env:TEMP\deep-live-cam-clean-worktree-cutover-544e858-final.md --json-output $env:TEMP\deep-live-cam-clean-worktree-cutover-544e858-final.json --limit 50
 ```
 
-The first two commands pass. The third command currently fails by design
-because the source archive is not a clean Git-ref archive yet.
+The strict artifact validator passes against the current installer/source
+artifact set. The clean detached release worktree cutover check reports
+`Dirty paths: 0` and is blocked only by the three manual gate files.
