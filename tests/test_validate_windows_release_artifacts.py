@@ -55,6 +55,7 @@ def write_release_assets(tmp_path):
         "RELEASE_VERIFICATION.md",
         "RELEASE_CHECKLIST.md",
         "RELEASE_REPORT.md",
+        "MANUAL_RELEASE_GATES.md",
         "COMPLIANCE.md",
         "THIRD_PARTY_NOTICES.md",
     ):
@@ -62,7 +63,7 @@ def write_release_assets(tmp_path):
     upload_lines = "\n".join(f"- `{path.name}`" for path in files)
     write_file(
         assets_dir / "RELEASE_ASSETS.md",
-        f"{upload_lines}\n- `RELEASE_ASSETS.md`\nDo not upload model/checkpoint files unless approved.\n",
+        f"{upload_lines}\n- `MANUAL_RELEASE_GATES.md`\n- `RELEASE_ASSETS.md`\nDo not upload model/checkpoint files unless approved.\n",
     )
     return assets_dir
 

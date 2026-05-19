@@ -113,6 +113,12 @@ foreach ($Path in $FilesToCopy) {
     Copy-Item -LiteralPath $Path -Destination (Join-Path $StagingDir (Split-Path $Path -Leaf)) -Force
 }
 
+$ManualGateSummary = Join-Path $StagingDir "MANUAL_RELEASE_GATES.md"
+& $CheckPython tools\summarize_manual_release_gates.py --repo-root $RepoRoot --output $ManualGateSummary
+if ($LASTEXITCODE -ne 0) {
+    throw "Manual release gate summary generation failed with exit code $LASTEXITCODE."
+}
+
 $InstallerDigest = (Get-FileHash -LiteralPath $Installer -Algorithm SHA256).Hash
 $SourceDigest = (Get-FileHash -LiteralPath $SourceArchive.FullName -Algorithm SHA256).Hash
 $SourceManifestText = Get-Content -LiteralPath $SourceManifest -Raw

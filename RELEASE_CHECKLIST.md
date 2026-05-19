@@ -11,6 +11,7 @@ Use this checklist for every Windows installer release.
 - [ ] Confirm `CLEAN_RELEASE_WORKTREE_VERIFICATION.md` matches the final release commit/tag.
 - [ ] For the standard local release gate, run `powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit>`.
 - [ ] Confirm the standard local release gate produced `build\windows\release-assets\2.1.5\RELEASE_ASSETS.md`.
+- [ ] Confirm `build\windows\release-assets\2.1.5\MANUAL_RELEASE_GATES.md` is present and matches the three manual gate files.
 - [ ] For the final publish gate, run `powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit> -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady`.
 - [ ] For CI release-candidate builds, confirm `.github/workflows/windows-release.yml` completed the same non-strict `run_release_checks.ps1` gate and uploaded `RELEASE_VERIFICATION.md`.
 - [ ] Do not treat GitHub-hosted CI artifacts as publish-approved unless a separate strict publish gate has passed on appropriate release-test machines.

@@ -214,6 +214,7 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         "RELEASE_VERIFICATION.md",
         "RELEASE_CHECKLIST.md",
         "RELEASE_REPORT.md",
+        "MANUAL_RELEASE_GATES.md",
         "COMPLIANCE.md",
         "THIRD_PARTY_NOTICES.md",
     )
@@ -227,6 +228,8 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         for path in [installer, installer_hash, source, source_hash, source_manifest]:
             if f"`{path.name}`" not in asset_manifest_text:
                 fail(f"RELEASE_ASSETS.md does not list: {path.name}", failures)
+        if "`MANUAL_RELEASE_GATES.md`" not in asset_manifest_text:
+            fail("RELEASE_ASSETS.md does not list: MANUAL_RELEASE_GATES.md", failures)
         if "Do not upload model/checkpoint files" not in asset_manifest_text:
             fail("RELEASE_ASSETS.md missing model/checkpoint upload warning", failures)
 

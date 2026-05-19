@@ -67,7 +67,7 @@ powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.p
 The assembled files are written under `build/windows/release-assets/2.1.5/`
 with a generated `RELEASE_ASSETS.md` manifest listing the installer, installer
 hash, git-ref source archive, source hash, source manifest, release notes
-template, and verification documents to upload or quote.
+template, manual gate summary, and verification documents to upload or quote.
 
 Validate the curated upload folder with:
 
@@ -148,7 +148,8 @@ separate from the release commit, but it does not replace the manual gates.
 Use `tools/summarize_manual_release_gates.py` to produce a concise current
 status of the three manual gates, including unchecked items and the latest
 local evidence packets. `--strict` exits non-zero until all three gate files are
-`Status: PASS` and have no unchecked checklist rows.
+`Status: PASS` and have no unchecked checklist rows. `assemble_release_assets.ps1`
+also writes this summary into the upload folder as `MANUAL_RELEASE_GATES.md`.
 
 Automated subsets have been run locally and summarized in the gate files:
 
