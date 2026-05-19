@@ -30,6 +30,8 @@ For video files, `ffmpeg` and `ffprobe` are also needed. Install them with:
 winget install Gyan.FFmpeg
 ```
 
+![PowerShell winget install FFmpeg walkthrough](docs/images/ffmpeg-winget-install.gif)
+
 Then close and reopen Deep Live Cam Studio. OBS Virtual Camera is optional and only needed if you want to send the live output into Discord, Zoom, Teams, OBS, or similar apps.
 
 ## What The Installer Includes
