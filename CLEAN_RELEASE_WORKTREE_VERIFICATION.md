@@ -8,7 +8,7 @@ the manual clean VM, OBS visual workflow, or legal review gates.
 
 ## Release Commit Under Test
 
-- Commit: `66f90c00fe171fde65305a960caff0c8fbff4e9e`
+- Commit: see the generated source archive manifest and `RELEASE_ASSETS.md` for the exact resolved Git ref.
 - Worktree used: `C:\Projects\deep-live-cam-release-verify`
 - Verification time UTC: `2026-05-19T05:21:52Z`
 - Main developer worktree status at the time: dirty with mixed-scope runtime and quality work excluded from this release commit.
@@ -17,8 +17,8 @@ the manual clean VM, OBS visual workflow, or legal review gates.
 
 - Installer: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - Installer SHA-256: see `DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`.
-- Source archive: `DeepLiveCamStudio-2.1.5-source-66f90c00fe17.zip`.
-- Source SHA-256: `83D90030A622520CB7735A56B3598340B5F2DA99E604A5D768068076B0CE0E62`.
+- Source archive: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`.
+- Source SHA-256: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md` and the matching `.sha256` sidecar.
 
 ## Automated Checks
 

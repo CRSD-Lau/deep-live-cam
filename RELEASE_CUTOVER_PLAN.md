@@ -10,8 +10,9 @@ release documents so installer hashes are not made stale by handoff notes.
   path passes locally.
 - The installer and git-ref source archive hashes are recorded in their
   generated `.sha256` sidecars and in the assembled `RELEASE_ASSETS.md`.
-- The current source archive uses `git-ref` mode for commit
-  `66f90c00fe171fde65305a960caff0c8fbff4e9e`.
+- The current source archive uses `git-ref` mode; see
+  `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md` for the exact source
+  ref and hashes.
 - The public-release gate remains blocked until the manual evidence files pass.
 
 ## Release Branch Strategy
