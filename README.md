@@ -21,7 +21,7 @@ That is enough for the installed app and required face-swap model setup.
 
 In 2.1.7, model setup is built into the Studio window. You do not need to search Windows for a separate model downloader shortcut.
 
-![Zoomed view of the Set Up Models button in the app header](docs/images/set-up-models-button.png)
+![Zoomed view of the Set Up Models button in the app header](docs/images/set-up-models-header-highlight.png)
 
 For video files, `ffmpeg` and `ffprobe` are also needed. Install them with:
 
@@ -29,7 +29,7 @@ For video files, `ffmpeg` and `ffprobe` are also needed. Install them with:
 winget install Gyan.FFmpeg
 ```
 
-![PowerShell winget install FFmpeg walkthrough](docs/images/ffmpeg-winget-install.gif)
+![Windows PowerShell winget install FFmpeg walkthrough](docs/images/ffmpeg-winget-install-windows.gif)
 
 Then close and reopen Deep Live Cam Studio. OBS Virtual Camera is optional and only needed if you want to send the live output into Discord, Zoom, Teams, OBS, or similar apps.
 
