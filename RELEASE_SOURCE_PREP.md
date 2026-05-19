@@ -8,9 +8,9 @@ worktree is resolved and the manual gates are completed.
 
 - Installer: `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - Installer SHA-256: see `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`
-- Public-release source archive: `build/windows/installer/DeepLiveCamStudio-2.1.5-source-c104da94c708.zip`
-- Public-release source SHA-256: see `build/windows/installer/DeepLiveCamStudio-2.1.5-source-c104da94c708.zip.sha256`
-- Source ref: `c104da94c70814abf19ad9b8de71ebdfa2a742cd`
+- Public-release source archive: see the latest `build/windows/installer/DeepLiveCamStudio-2.1.5-source-*.zip` whose manifest records `Archive mode: git-ref`
+- Public-release source SHA-256: see the matching `.zip.sha256` sidecar
+- Source ref: see the matching `.manifest.md`
 - Current release verdict: local automation passed, public release not yet ready.
 
 Do not hard-code installer or source archive hashes in this installed document.
@@ -127,9 +127,9 @@ archive can be created from a specific commit while the developer worktree is
 dirty, but public release signoff should still happen from a clean release tag
 or clean release worktree.
 
-`CLEAN_RELEASE_WORKTREE_VERIFICATION.md` records the current clean-worktree
-proof for commit `930e6ea39546bf7e4d90b4feb5b7f24783190940`. Regenerate or
-replace it if a later release commit or tag is used.
+`CLEAN_RELEASE_WORKTREE_VERIFICATION.md` records the clean-worktree proof
+required for the release commit. Regenerate the source archive and strict
+artifact validation if a later release commit or tag is used.
 
 Create a release tag or use the exact release commit:
 

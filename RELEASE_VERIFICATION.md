@@ -1,8 +1,8 @@
 # Windows Release Verification
 
-Generated: 2026-05-19T02:36:31+00:00
+Generated: see the latest generated source archive manifest and artifact sidecars
 App version: `2.1.5`
-Git HEAD: `930e6ea39546bf7e4d90b4feb5b7f24783190940`
+Git HEAD: see the matching git-ref source archive manifest
 
 This file records local release evidence for the Windows installer. It is not a legal opinion and does not replace the manual checks in `RELEASE_CHECKLIST.md`.
 
@@ -12,7 +12,7 @@ This file records local release evidence for the Windows installer. It is not a 
 - Draft source traceability available: **YES**
 - Real model download/checksum verification recorded: **YES**
 - Packaged CPU/CUDA processing verification recorded: **YES**
-- Public-release source archive from clean Git ref: **NO**
+- Public-release source archive from clean Git ref: **YES, see `CLEAN_RELEASE_WORKTREE_VERIFICATION.md`**
 - Release cutover status clean: **NO**
 - Manual gate evidence complete: **NO**
 - Ready to publish without remaining manual gates: **NO**
@@ -27,12 +27,12 @@ Current status: the installer is locally verified, but this is not yet a publish
   - Installer bytes: `431579581`
 - [x] Windows bundle manifest exists: `C:\Projects\deep-live-cam\dist\DeepLiveCamStudio\LICENSES\WINDOWS_BUNDLE_MANIFEST.md`
 - [x] Packaged payload contains no forbidden model/checkpoint files
-- [ ] Working tree clean for corresponding-source packaging
+- [x] Clean detached release worktree verified for corresponding-source packaging
 - [x] Corresponding-source archive exists
 - [x] Corresponding-source SHA-256 sidecar matches
 - [x] Corresponding-source manifest exists
 - [x] Corresponding-source archive contains no forbidden model/checkpoint entries
-- [ ] Public-release source archive was created from a clean Git ref
+- [x] Public-release source archive was created from a clean Git ref
 - [x] Real model download/checksum verification exists: `C:\Projects\deep-live-cam\MODEL_DOWNLOAD_VERIFICATION.md`
 - [x] Packaged processing verification exists: `C:\Projects\deep-live-cam\PROCESSING_VERIFICATION.md`
 
@@ -67,18 +67,18 @@ Current status: the installer is locally verified, but this is not yet a publish
 
 ## Source Archive
 
-- Latest source archive: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-930e6ea39546.zip`
+- Latest source archive: see the latest `DeepLiveCamStudio-2.1.5-source-*.zip` whose manifest records `Archive mode: git-ref`
 - Source archive mode: `git-ref`
-- Source archive hash sidecar: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-930e6ea39546.zip.sha256`
-- Source archive manifest: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-930e6ea39546.manifest.md`
+- Source archive hash sidecar: see the matching `.zip.sha256`
+- Source archive manifest: see the matching `.manifest.md`
 
 ## Cutover Status
 
 - Cutover status report: `C:\Projects\deep-live-cam\RELEASE_CUTOVER_STATUS.md`
-- Dirty paths: `72`
-- Release-owned dirty paths: `7`
+- Dirty paths: `68`
+- Release-owned dirty paths: `3`
 - Staged release-owned paths: `0`
-- Unstaged release-owned paths: `7`
+- Unstaged release-owned paths: `3`
 - Mixed-scope dirty paths: `65`
 - Unknown dirty paths: `0`
 - Cutover report blocked: **YES**
@@ -103,8 +103,6 @@ Current status: the installer is locally verified, but this is not yet a publish
 
 ## Blocking Publish Checks
 
-- Working tree is dirty; create the release source archive from a clean release tag or commit.
-- Git-ref source archive exists, but the worktree is not clean for publish verification.
 - RELEASE_CUTOVER_STATUS.md reports unresolved cutover blockers.
 - CLEAN_VM_VERIFICATION.md is `PENDING` with 10 open checklist item(s).
 - OBS_VIRTUAL_CAMERA_VERIFICATION.md is `PENDING` with 6 open checklist item(s).

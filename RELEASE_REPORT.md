@@ -84,19 +84,12 @@ Get-FileHash build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe -Algo
 
 GitHub Releases should attach or link corresponding source for the exact commit/tag used to build the installer.
 
-Current validated git-ref source archive:
-
-```text
-C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-c104da94c708.zip
-```
-
-Current validated source SHA-256:
-
-```text
-9067898126CAAB6D38269860C9FA8378FF082AF45A86FC7F70442464FA1ED53F
-```
-
-This archive was created from `c104da94c70814abf19ad9b8de71ebdfa2a742cd` and passed `tools\validate_windows_release_artifacts.py --require-git-ref-source`.
+The current validated git-ref source archive is the latest
+`DeepLiveCamStudio-2.1.5-source-*.zip` in `build/windows/installer/` whose
+manifest records `Archive mode: git-ref`. The matching `.zip.sha256` sidecar
+and `.manifest.md` are the authoritative hash and resolved-ref records. Before
+publishing, run `tools\validate_windows_release_artifacts.py
+--require-git-ref-source` against the exact upload directory.
 
 Use:
 
