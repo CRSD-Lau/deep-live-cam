@@ -103,6 +103,7 @@ $FilesToCopy = @(
     (Join-Path $RepoRoot "LICENSE"),
     (Join-Path $RepoRoot "RELEASE_NOTES_TEMPLATE.md"),
     (Join-Path $RepoRoot "RELEASE_PUBLISH_HANDOFF.md"),
+    (Join-Path $RepoRoot "RELEASE_SOURCE_PREP.md"),
     (Join-Path $RepoRoot "RELEASE_VERIFICATION.md"),
     (Join-Path $RepoRoot "RELEASE_CHECKLIST.md"),
     (Join-Path $RepoRoot "RELEASE_COMPLETION_AUDIT.md"),

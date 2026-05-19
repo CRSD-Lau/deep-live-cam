@@ -258,6 +258,7 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         "RELEASE_NOTES.md",
         "RELEASE_NOTES_TEMPLATE.md",
         "RELEASE_PUBLISH_HANDOFF.md",
+        "RELEASE_SOURCE_PREP.md",
         "RELEASE_VERIFICATION.md",
         "RELEASE_CHECKLIST.md",
         "RELEASE_COMPLETION_AUDIT.md",
