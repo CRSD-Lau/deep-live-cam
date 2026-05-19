@@ -85,11 +85,13 @@ if (-not (Test-Path -LiteralPath $SourceManifest)) {
     throw "Source manifest missing: $SourceManifest"
 }
 
-if (Test-Path -LiteralPath $OutputDir) {
-    Get-ChildItem -LiteralPath $OutputDir -Force | Remove-Item -Recurse -Force
-} else {
-    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+$OutputParent = Split-Path -Parent ([System.IO.Path]::GetFullPath($OutputDir))
+if (-not (Test-Path -LiteralPath $OutputParent)) {
+    New-Item -ItemType Directory -Path $OutputParent -Force | Out-Null
 }
+$StagingDir = Join-Path $OutputParent ("." + (Split-Path -Leaf $OutputDir) + ".staging-" + [System.Guid]::NewGuid().ToString("N"))
+$BackupDir = Join-Path $OutputParent ("." + (Split-Path -Leaf $OutputDir) + ".old-" + [System.Guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Path $StagingDir -Force | Out-Null
 
 $FilesToCopy = @(
     $Installer,
@@ -108,7 +110,7 @@ foreach ($Path in $FilesToCopy) {
     if (-not (Test-Path -LiteralPath $Path)) {
         throw "Required release asset input missing: $Path"
     }
-    Copy-Item -LiteralPath $Path -Destination (Join-Path $OutputDir (Split-Path $Path -Leaf)) -Force
+    Copy-Item -LiteralPath $Path -Destination (Join-Path $StagingDir (Split-Path $Path -Leaf)) -Force
 }
 
 $InstallerDigest = (Get-FileHash -LiteralPath $Installer -Algorithm SHA256).Hash
@@ -123,9 +125,9 @@ if ($SourceManifestText -match "Archive mode:\s*``([^``]+)``") {
     $SourceMode = $Matches[1]
 }
 
-$AssetManifest = Join-Path $OutputDir "RELEASE_ASSETS.md"
+$AssetManifest = Join-Path $StagingDir "RELEASE_ASSETS.md"
 $UploadNames = @(
-    Get-ChildItem -LiteralPath $OutputDir -File |
+    Get-ChildItem -LiteralPath $StagingDir -File |
         Where-Object { $_.Name -ne "RELEASE_ASSETS.md" } |
         Sort-Object Name |
         ForEach-Object { "- ``$($_.Name)``" }
@@ -158,8 +160,20 @@ $Lines = @(
 )
 $Lines | Set-Content -LiteralPath $AssetManifest -Encoding utf8
 
+if (Test-Path -LiteralPath $OutputDir) {
+    Move-Item -LiteralPath $OutputDir -Destination $BackupDir
+}
+Move-Item -LiteralPath $StagingDir -Destination $OutputDir
+if (Test-Path -LiteralPath $BackupDir) {
+    try {
+        Remove-Item -LiteralPath $BackupDir -Recurse -Force
+    } catch {
+        Write-Warning "Could not remove previous release asset folder: $BackupDir. It is no longer the active output folder."
+    }
+}
+
 Write-Host "Release assets assembled at: $OutputDir"
-Write-Host "Release asset manifest: $AssetManifest"
+Write-Host "Release asset manifest: $(Join-Path $OutputDir "RELEASE_ASSETS.md")"
 Write-Host "Installer SHA-256: $InstallerDigest"
 Write-Host "Source archive: $($SourceArchive.FullName)"
 Write-Host "Source SHA-256: $SourceDigest"
