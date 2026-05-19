@@ -53,6 +53,11 @@ license posture, PySide6/shiboken6 posture, GPL metadata for
 `pyvirtualcam`/`cv2_enumerate_cameras`, Inno Setup commercial-use position,
 ffmpeg exclusion, and unknown/unusual dependency metadata.
 
+The helper fails closed if the corresponding source archive, `.sha256` sidecar,
+or `.manifest.md` file is missing, mismatched, not generated from a Git ref, or
+does not record the forbidden model/checkpoint scan. Latest generated packet:
+`build/windows/manual-evidence/legal-review/legal-review-2.1.5-20260519-024137.md`.
+
 Automated evidence helper for the reviewer packet:
 
 ```powershell

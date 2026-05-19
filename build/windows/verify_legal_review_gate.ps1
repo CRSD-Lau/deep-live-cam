@@ -23,6 +23,18 @@ if (-not $SourceArchivePath) {
         $SourceArchivePath = $SourceArchives[-1].FullName
     }
 }
+if (-not $SourceArchivePath -or -not (Test-Path $SourceArchivePath)) {
+    throw "Corresponding source archive not found. Run build\windows\package_source.ps1 -AppVersion $AppVersion -GitRef <release-tag-or-commit> before legal review."
+}
+
+$SourceHashPath = "$SourceArchivePath.sha256"
+$SourceManifestPath = [System.IO.Path]::ChangeExtension($SourceArchivePath, ".manifest.md")
+if (-not (Test-Path $SourceHashPath)) {
+    throw "Corresponding source hash sidecar not found: $SourceHashPath"
+}
+if (-not (Test-Path $SourceManifestPath)) {
+    throw "Corresponding source manifest not found: $SourceManifestPath"
+}
 
 New-Item -ItemType Directory -Path $EvidenceDir -Force | Out-Null
 $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
@@ -57,11 +69,18 @@ if ($MissingDocs) {
 }
 
 $InstallerHash = (Get-FileHash -LiteralPath $InstallerPath -Algorithm SHA256).Hash
-$SourceHash = ""
-$SourceManifestPath = ""
-if ($SourceArchivePath -and (Test-Path $SourceArchivePath)) {
-    $SourceHash = (Get-FileHash -LiteralPath $SourceArchivePath -Algorithm SHA256).Hash
-    $SourceManifestPath = [System.IO.Path]::ChangeExtension($SourceArchivePath, ".manifest.md")
+$SourceHash = (Get-FileHash -LiteralPath $SourceArchivePath -Algorithm SHA256).Hash
+$SourceSidecarHash = (Get-Content -LiteralPath $SourceHashPath -Raw).Trim().Split()[0].ToUpperInvariant()
+if ($SourceSidecarHash -ne $SourceHash) {
+    throw "Corresponding source hash sidecar mismatch: $SourceHashPath"
+}
+
+$SourceManifest = Get-Content -LiteralPath $SourceManifestPath -Raw
+if ($SourceManifest -notmatch 'Archive mode: `git-ref`') {
+    throw "Corresponding source manifest is not git-ref mode: $SourceManifestPath"
+}
+if ($SourceManifest -notmatch 'No `\.onnx`, `\.pth`, `\.safetensors`') {
+    throw "Corresponding source manifest does not record forbidden model/checkpoint scan: $SourceManifestPath"
 }
 
 $BundleManifest = Get-Content -LiteralPath (Join-Path $RepoRoot "LICENSES/WINDOWS_BUNDLE_MANIFEST.md") -Raw
@@ -75,11 +94,10 @@ $ModelRiskLines = @($ModelAudit -split "`r?`n" | Where-Object { $_ -match "Exclu
 $ObligationLines = @($Obligations -split "`r?`n" | Where-Object { $_ -match "PySide6|shiboken6|pyvirtualcam|cv2_enumerate_cameras|LGPL|GPL|Inno|ffmpeg" } | Select-Object -First 80)
 $ForbiddenModelStatus = if ($BundleManifest -match "Forbidden model/checkpoint files found:\s*0") { "PASS" } else { "REVIEW-REQUIRED" }
 $PublishReadyStatus = if ($Verification -match "Ready to publish without remaining manual gates:\s+\*\*YES\*\*") { "YES" } else { "NO" }
+$SourceArchiveModeStatus = if ($SourceManifest -match 'Archive mode: `git-ref`') { "git-ref" } else { "review-required" }
+$SourceForbiddenScanStatus = if ($SourceManifest -match 'No `\.onnx`, `\.pth`, `\.safetensors`') { "PASS" } else { "REVIEW-REQUIRED" }
 
 $SummaryTimestamp = (Get-Date).ToUniversalTime().ToString("o")
-$SourceArchiveDisplay = if ($SourceArchivePath) { $SourceArchivePath } else { "not found" }
-$SourceHashDisplay = if ($SourceHash) { $SourceHash } else { "not found" }
-$SourceManifestDisplay = if ($SourceManifestPath) { $SourceManifestPath } else { "not found" }
 
 $Lines = @(
     "# Legal Review Evidence Packet",
@@ -96,9 +114,11 @@ $Lines = @(
     "- Timestamp UTC: ``$SummaryTimestamp``",
     "- Installer: ``$InstallerPath``",
     "- Installer SHA-256: ``$InstallerHash``",
-    "- Source archive: ``$SourceArchiveDisplay``",
-    "- Source archive SHA-256: ``$SourceHashDisplay``",
-    "- Source manifest: ``$SourceManifestDisplay``",
+    "- Source archive: ``$SourceArchivePath``",
+    "- Source archive SHA-256: ``$SourceHash``",
+    "- Source archive mode: ``$SourceArchiveModeStatus``",
+    "- Source forbidden model/checkpoint scan: ``$SourceForbiddenScanStatus``",
+    "- Source manifest: ``$SourceManifestPath``",
     "- Publish-ready according to ``RELEASE_VERIFICATION.md``: ``$PublishReadyStatus``",
     "- Forbidden model/checkpoint scan: ``$ForbiddenModelStatus``",
     "",
