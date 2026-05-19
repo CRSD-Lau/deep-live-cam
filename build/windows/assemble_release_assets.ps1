@@ -130,6 +130,36 @@ foreach ($Path in $FilesToCopy) {
     Copy-Item -LiteralPath $Path -Destination (Join-Path $StagingDir (Split-Path $Path -Leaf)) -Force
 }
 
+function Copy-LatestManualEvidence {
+    param(
+        [string]$Subdirectory,
+        [string]$Pattern,
+        [string]$DestinationName
+    )
+
+    $EvidenceDirectory = Join-Path $PSScriptRoot "manual-evidence\$Subdirectory"
+    if (-not (Test-Path -LiteralPath $EvidenceDirectory)) {
+        Write-Warning "Manual evidence directory not found, skipping optional release evidence packet: $EvidenceDirectory"
+        return
+    }
+
+    $EvidenceFiles = @(
+        Get-ChildItem -LiteralPath $EvidenceDirectory -Filter $Pattern -File |
+            Sort-Object LastWriteTime, Name
+    )
+    if (-not $EvidenceFiles) {
+        Write-Warning "Manual evidence packet not found, skipping optional release evidence packet: $Pattern"
+        return
+    }
+
+    $LatestEvidence = $EvidenceFiles[-1]
+    Copy-Item -LiteralPath $LatestEvidence.FullName -Destination (Join-Path $StagingDir $DestinationName) -Force
+}
+
+Copy-LatestManualEvidence -Subdirectory "clean-vm" -Pattern "clean-vm-$AppVersion-*.md" -DestinationName "CLEAN_VM_AUTOMATED_EVIDENCE.md"
+Copy-LatestManualEvidence -Subdirectory "obs-virtualcam" -Pattern "obs-virtualcam-*.md" -DestinationName "OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md"
+Copy-LatestManualEvidence -Subdirectory "legal-review" -Pattern "legal-review-$AppVersion-*.md" -DestinationName "LEGAL_REVIEW_EVIDENCE_PACKET.md"
+
 $ManualGateSummary = Join-Path $StagingDir "MANUAL_RELEASE_GATES.md"
 & $CheckPython tools\summarize_manual_release_gates.py --repo-root $RepoRoot --output $ManualGateSummary
 if ($LASTEXITCODE -ne 0) {

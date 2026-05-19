@@ -41,6 +41,7 @@ Record command output, screenshots, VM snapshot name, or tester notes here.
 - Installer under test: `build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`.
 - Installer SHA-256 observed by the helper: `34B74A43DCECE31DE52DEF948BC9DADAB99648E6C88334EF35ECDFA07B2197BA`.
 - Generated local evidence packet: `build\windows\manual-evidence\clean-vm\clean-vm-2.1.5-20260519-033521.md`.
+- Release upload copy: `CLEAN_VM_AUTOMATED_EVIDENCE.md`.
 - Covered repeatable subset: silent per-user install, required installed files, forbidden model/checkpoint scan, CLI `--version`, silent uninstall, and user-model sentinel preservation.
 - Still requires manual tester confirmation before `Status: PASS`: fresh Windows VM context, Start menu shortcut, optional desktop shortcut, model-download consent text, missing-model messaging, and interactive uninstall prompt.
 

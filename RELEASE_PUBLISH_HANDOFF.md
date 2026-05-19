@@ -20,6 +20,16 @@ before publishing a GitHub Release.
 Upload every file listed in `RELEASE_ASSETS.md`. Do not upload model or
 checkpoint files unless a separate redistribution approval exists.
 
+When automated manual-gate evidence packets exist locally, the release assembly
+also includes these reviewer/tester convenience copies:
+
+- `CLEAN_VM_AUTOMATED_EVIDENCE.md`
+- `OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md`
+- `LEGAL_REVIEW_EVIDENCE_PACKET.md`
+
+These packets support the manual gates but do not approve publication by
+themselves.
+
 ## Final Gate Commands
 
 Run the automated gate summary first:

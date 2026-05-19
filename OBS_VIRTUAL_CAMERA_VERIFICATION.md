@@ -41,6 +41,7 @@ here.
 - DirectShow devices included `OBS Virtual Camera`.
 - `tools\check_obs_virtualcam.py` sent `150` frames to `OBS Virtual Camera` through the `obs` backend.
 - Generated local evidence packet: `build\windows\manual-evidence\obs-virtualcam\obs-virtualcam-20260519-033521.md`.
+- Release upload copy: `OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md`.
 - Still requires manual tester confirmation before `Status: PASS`: Deep-Live-Cam live preview opens/stops cleanly, a receiving app or OBS rebroadcast visibly shows output, workflow matches `docs/OBS_VIRTUAL_CAMERA.md`, and the exact final release candidate is used.
 
 Automated evidence helper for the repeatable subset:
