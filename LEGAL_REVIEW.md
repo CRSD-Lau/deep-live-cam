@@ -55,8 +55,8 @@ ffmpeg exclusion, and unknown/unusual dependency metadata.
 
 The helper fails closed if the corresponding source archive, `.sha256` sidecar,
 or `.manifest.md` file is missing, mismatched, not generated from a Git ref, or
-does not record the forbidden model/checkpoint scan. Latest generated packet:
-`build/windows/manual-evidence/legal-review/legal-review-2.1.5-20260519-024137.md`.
+does not record the forbidden model/checkpoint scan. The latest generated packet
+is reported by `tools/summarize_manual_release_gates.py`.
 
 Automated evidence helper for the reviewer packet:
 
