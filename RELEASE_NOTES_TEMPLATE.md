@@ -79,12 +79,19 @@ Known legal risks that must not be hidden from release notes:
 
 ## Pre-Publish Checks
 
-This release candidate is not publish-approved until these checks are complete and documented:
+This release candidate is not publish-approved until the remaining manual gates
+are complete and documented.
 
-- Clean Windows VM install without admin rights.
+Completed local evidence is included in the uploaded release documents:
+
 - Packaged runtime preflight.
 - Installer smoke test.
+- Model download/checksum verification.
 - CPU fallback processing.
-- CUDA processing.
+- CUDA processing on the local NVIDIA test machine.
+
+Remaining publish blockers:
+
+- Clean Windows VM install without admin rights.
 - OBS Virtual Camera workflow.
-- Final dependency and model-license review.
+- Authorized legal review for dependency, model-license, and redistribution obligations.
