@@ -1,4 +1,4 @@
-<h1 align="center">Deep-Live-Cam 2.1.5</h1>
+<h1 align="center">Deep-Live-Cam 2.1.6</h1>
 
 <p align="center">
   Real-time face swap and video deepfake with a single click and only a single image.
@@ -412,7 +412,7 @@ This repository includes a Windows packaging flow for GitHub Releases. It builds
 Run the standard local release gate:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit>
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.6 -GitRef <release-tag-or-commit>
 ```
 
 The GitHub Actions workflow in `.github/workflows/windows-release.yml` runs the same release gate and uploads the curated `build/windows/release-assets/<version>/` set, including the installer, installer hash, git-ref corresponding-source archive, source hash, source manifest, release notes, compliance evidence, `RELEASE_ASSETS.md`, and `SHA256SUMS.txt`.
@@ -434,13 +434,13 @@ powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1
 Package the installer:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.5
+powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.6
 ```
 
 Package the corresponding source archive for the exact release tag or commit:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit>
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.6 -GitRef <release-tag-or-commit>
 ```
 
 The source archive script refuses a dirty working tree by default, verifies required AGPL/compliance/build files are present in the selected Git ref, and rejects model/checkpoint entries.
@@ -449,7 +449,7 @@ Before running it for a public release, commit the generated release evidence fi
 For a draft installer built from a dirty local workspace, you can create a traceability-only worktree source archive:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.5 -FromWorkingTree
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.6 -FromWorkingTree
 ```
 
 Do not use a `draft-working-tree` source archive for a public GitHub Release; tag or commit the release and rerun the clean Git ref command above.
@@ -457,7 +457,7 @@ Do not use a `draft-working-tree` source archive for a public GitHub Release; ta
 The installer output is:
 
 ```text
-build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe
+build\windows\installer\DeepLiveCamStudio-2.1.6-x64-setup.exe
 ```
 
 The build also generates `LICENSES\WINDOWS_BUNDLE_MANIFEST.md` from the actual PyInstaller payload and includes it in the installer for release auditing. Bundled LGPL/GPL-family binary obligations are summarized in `LICENSES\BUNDLED_BINARY_OBLIGATIONS.md`, and high-attention package license files are collected under `LICENSES\THIRD_PARTY_LICENSES\`, including TensorFlow, ONNX Runtime, OpenCV, Qt/PySide, pyvirtualcam, and model-safety dependencies. The release gate prunes known dependency sample/test folders from the PyInstaller payload and records that scan in the bundle manifest. Model redistribution notes live in `LICENSES\MODEL_LICENSE_AUDIT.md` and should be rechecked before every public release.
@@ -466,7 +466,7 @@ After the release gate completes, review `RELEASE_VERIFICATION.md` before publis
 The default install path is versioned and per-user:
 
 ```text
-%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.5
+%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.6
 ```
 
 ### Model setup for installed builds
@@ -490,7 +490,7 @@ Use `DLC_MODELS_DIR` to point the app at a different reviewed model folder.
 ### Windows runtime notes
 
 - ffmpeg and ffprobe are required for video processing and audio restore. This installer does not bundle ffmpeg by default. Install ffmpeg separately or place `ffmpeg.exe` and `ffprobe.exe` beside `DeepLiveCamStudio.exe`.
-- CUDA acceleration requires compatible NVIDIA drivers and CUDA/cuDNN runtime libraries for `onnxruntime-gpu`. If CUDA is unavailable, use CPU or DirectML where supported.
+- CUDA acceleration requires compatible NVIDIA drivers. The Windows installer bundles the CUDA 12/cuDNN 9 runtime DLLs needed by `onnxruntime-gpu`; source/venv installs rely on the CUDA-enabled PyTorch wheel or an equivalent local CUDA/cuDNN runtime. If CUDA is unavailable, use CPU or DirectML where supported.
 - OBS Virtual Camera is optional and must be installed/configured through OBS. Start the OBS virtual camera before selecting virtual camera output in the app.
 - Desktop launch logs are written to `%LOCALAPPDATA%\DeepLiveCamStudio\logs`.
 - UI switch state is written to `%LOCALAPPDATA%\DeepLiveCamStudio\switch_states.json`.

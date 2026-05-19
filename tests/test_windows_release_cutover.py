@@ -182,9 +182,9 @@ def test_generated_clean_worktree_source_scratch_does_not_block_cutover(tmp_path
         cutover,
         "run_git",
         lambda args, cwd: (
-            "?? build/windows/clean-worktree-source-check/DeepLiveCamStudio-2.1.5-source-test.zip\n"
-            "?? build/windows/clean-worktree-source-check/DeepLiveCamStudio-2.1.5-source-test.zip.sha256\n"
-            "?? build/windows/clean-worktree-source-check/DeepLiveCamStudio-2.1.5-source-test.manifest.md\n"
+            "?? build/windows/clean-worktree-source-check/DeepLiveCamStudio-2.1.6-source-test.zip\n"
+            "?? build/windows/clean-worktree-source-check/DeepLiveCamStudio-2.1.6-source-test.zip.sha256\n"
+            "?? build/windows/clean-worktree-source-check/DeepLiveCamStudio-2.1.6-source-test.manifest.md\n"
         ),
     )
 

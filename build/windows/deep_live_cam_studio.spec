@@ -16,6 +16,44 @@ def existing_datas(paths):
     return datas
 
 
+def cuda_runtime_binaries():
+    """Bundle CUDA/cuDNN DLLs needed by onnxruntime-gpu on Windows.
+
+    We intentionally keep the Python torch package excluded, but its wheel
+    carries the CUDA runtime DLLs that onnxruntime-gpu needs at inference time.
+    """
+    torch_lib = ROOT / "venv" / "Lib" / "site-packages" / "torch" / "lib"
+    names = (
+        "cublas64_12.dll",
+        "cublasLt64_12.dll",
+        "cudart64_12.dll",
+        "cudnn64_9.dll",
+        "cudnn_adv64_9.dll",
+        "cudnn_cnn64_9.dll",
+        "cudnn_engines_precompiled64_9.dll",
+        "cudnn_engines_runtime_compiled64_9.dll",
+        "cudnn_graph64_9.dll",
+        "cudnn_heuristic64_9.dll",
+        "cudnn_ops64_9.dll",
+        "cufft64_11.dll",
+        "cufftw64_11.dll",
+        "curand64_10.dll",
+        "cusolver64_11.dll",
+        "cusolverMg64_11.dll",
+        "cusparse64_12.dll",
+        "nvrtc-builtins64_128.dll",
+        "nvrtc64_120_0.dll",
+        "nvToolsExt64_1.dll",
+        "zlibwapi.dll",
+    )
+    binaries = []
+    for name in names:
+        path = torch_lib / name
+        if path.exists():
+            binaries.append((str(path), "."))
+    return binaries
+
+
 datas = []
 datas += collect_data_files("insightface")
 datas += collect_data_files("cv2")
@@ -47,7 +85,7 @@ block_cipher = None
 a = Analysis(
     [str(ROOT / "DeepLiveCamStudio.pyw")],
     pathex=[str(ROOT)],
-    binaries=[],
+    binaries=cuda_runtime_binaries(),
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
@@ -74,7 +112,7 @@ a = Analysis(
 
 a.binaries = [
     item for item in a.binaries
-    if "\\torch\\lib\\" not in item[1].lower() and "/torch/lib/" not in item[1].lower()
+    if not str(item[0]).lower().replace("/", "\\").startswith("torch\\lib\\")
 ]
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)

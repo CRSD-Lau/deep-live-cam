@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.1.5",
+    [string]$AppVersion = "2.1.6",
     [string]$GitRef = "HEAD",
     [string]$OutputDir = "",
     [switch]$AllowDirty,

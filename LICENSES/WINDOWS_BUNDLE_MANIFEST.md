@@ -1,16 +1,16 @@
 # Windows Bundle Manifest
 
-Generated: 2026-05-19T07:13:03+00:00
+Generated: 2026-05-19T12:39:32+00:00
 Dist directory: `C:\Projects\deep-live-cam\dist\DeepLiveCamStudio`
 
 This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload. It is audit evidence, not a legal opinion.
 
 ## Summary
 
-- Files scanned: 2268
-- Total payload bytes: 2236916023
+- Files scanned: 2289
+- Total payload bytes: 5177641460
 - Python package metadata directories: 8
-- Native/binary files: 523
+- Native/binary files: 544
 - Forbidden model/checkpoint files found: 0
 - Dev-only sample/test payload paths found: 0
 
@@ -61,8 +61,8 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 
 | Payload Area | File Count | Bytes |
 | --- | ---: | ---: |
-| `DeepLiveCamStudio.exe` | 1 | 45024229 |
-| `DeepLiveCamStudioCLI.exe` | 1 | 45028837 |
+| `DeepLiveCamStudio.exe` | 1 | 45024293 |
+| `DeepLiveCamStudioCLI.exe` | 1 | 45028901 |
 | `_internal/81d243bd2c585b0f4821__mypyc.cp311-win_amd64.pyd` | 1 | 216064 |
 | `_internal/Cython` | 15 | 3310080 |
 | `_internal/PIL` | 7 | 13306368 |
@@ -85,6 +85,23 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 | `_internal/_zoneinfo.pyd` | 1 | 45848 |
 | `_internal/charset_normalizer` | 2 | 21504 |
 | `_internal/contourpy` | 1 | 450560 |
+| `_internal/cublas64_12.dll` | 1 | 113716224 |
+| `_internal/cublasLt64_12.dll` | 1 | 674667520 |
+| `_internal/cudart64_12.dll` | 1 | 573952 |
+| `_internal/cudnn64_9.dll` | 1 | 264304 |
+| `_internal/cudnn_adv64_9.dll` | 1 | 269016688 |
+| `_internal/cudnn_cnn64_9.dll` | 1 | 2984560 |
+| `_internal/cudnn_engines_precompiled64_9.dll` | 1 | 481015408 |
+| `_internal/cudnn_engines_runtime_compiled64_9.dll` | 1 | 27759216 |
+| `_internal/cudnn_graph64_9.dll` | 1 | 2493040 |
+| `_internal/cudnn_heuristic64_9.dll` | 1 | 58874992 |
+| `_internal/cudnn_ops64_9.dll` | 1 | 105604208 |
+| `_internal/cufft64_11.dll` | 1 | 276121600 |
+| `_internal/cufftw64_11.dll` | 1 | 163328 |
+| `_internal/curand64_10.dll` | 1 | 71955968 |
+| `_internal/cusolver64_11.dll` | 1 | 225683456 |
+| `_internal/cusolverMg64_11.dll` | 1 | 157071360 |
+| `_internal/cusparse64_12.dll` | 1 | 379535872 |
 | `_internal/cv2` | 3 | 128798720 |
 | `_internal/google` | 1 | 767885 |
 | `_internal/grpc` | 1 | 10764288 |
@@ -102,6 +119,9 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 | `_internal/msvcp140.dll` | 1 | 557728 |
 | `_internal/numpy` | 13 | 5286400 |
 | `_internal/numpy.libs` | 1 | 38168576 |
+| `_internal/nvToolsExt64_1.dll` | 1 | 48128 |
+| `_internal/nvrtc-builtins64_128.dll` | 1 | 6356480 |
+| `_internal/nvrtc64_120_0.dll` | 1 | 86728192 |
 | `_internal/onnx` | 1 | 3262464 |
 | `_internal/onnxruntime` | 5 | 402087184 |
 | `_internal/optree` | 1 | 622592 |
@@ -128,6 +148,7 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 | `_internal/vcruntime140_1.dll` | 1 | 49792 |
 | `_internal/wrapt` | 1 | 43008 |
 | `_internal/yaml` | 1 | 258560 |
+| `_internal/zlibwapi.dll` | 1 | 89088 |
 
 ## Forbidden Model/Checkpoint Scan
 

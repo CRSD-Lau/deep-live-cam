@@ -13,6 +13,10 @@ os.environ["PATH"] = project_root + os.pathsep + os.environ.get("PATH", "")
 if sys.platform == "win32":
     _site_packages = os.path.join(sys.prefix, "Lib", "site-packages")
     _venv_site_packages = os.path.join(project_root, "venv", "Lib", "site-packages")
+    # In a PyInstaller onedir build, native runtime DLLs live in sys._MEIPASS
+    # (the install's _internal directory). Register it explicitly because
+    # Python 3.8+ no longer uses PATH for extension-module dependency lookup.
+    _dll_dirs = [project_root]
     for _sp in (_site_packages, _venv_site_packages):
         _candidate_dirs = []
         _torch_lib = os.path.join(_sp, "torch", "lib")
@@ -24,7 +28,9 @@ if sys.platform == "win32":
                 _bin_dir = os.path.join(_nvidia_dir, _pkg, "bin")
                 if os.path.isdir(_bin_dir):
                     _candidate_dirs.append(_bin_dir)
-        for _d in _candidate_dirs:
+        _dll_dirs.extend(_candidate_dirs)
+    for _d in _dll_dirs:
+        if os.path.isdir(_d):
             os.environ["PATH"] = _d + os.pathsep + os.environ["PATH"]
             try:
                 os.add_dll_directory(_d)

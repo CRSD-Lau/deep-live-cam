@@ -19,14 +19,14 @@ def make_release_layout(tmp_path, monkeypatch):
     manifest = dist_dir / "LICENSES" / "WINDOWS_BUNDLE_MANIFEST.md"
     write_file(manifest, "Forbidden model/checkpoint files found: 0\n")
 
-    installer = output_dir / "DeepLiveCamStudio-2.1.5-x64-setup.exe"
+    installer = output_dir / "DeepLiveCamStudio-2.1.6-x64-setup.exe"
     installer.parent.mkdir(parents=True, exist_ok=True)
     installer.write_bytes(b"fake installer")
     write_file(installer.with_suffix(installer.suffix + ".sha256"), f"{verification.sha256(installer)}  {installer.name}\n")
 
-    source_archive = output_dir / "DeepLiveCamStudio-2.1.5-source-testref.zip"
+    source_archive = output_dir / "DeepLiveCamStudio-2.1.6-source-testref.zip"
     with zipfile.ZipFile(source_archive, "w") as archive:
-        archive.writestr("DeepLiveCamStudio-2.1.5-source/README.md", "source")
+        archive.writestr("DeepLiveCamStudio-2.1.6-source/README.md", "source")
     write_file(source_archive.with_suffix(".manifest.md"), "Archive mode: `git-ref`\n")
     write_file(source_archive.with_suffix(source_archive.suffix + ".sha256"), f"{verification.sha256(source_archive)}  {source_archive.name}\n")
 
@@ -83,7 +83,7 @@ def test_publish_ready_requires_completed_manual_evidence(tmp_path, monkeypatch)
     write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [ ] obs still pending\n")
     write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
 
-    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.6")
 
     assert not publishable
     assert blockers
@@ -92,7 +92,7 @@ def test_publish_ready_requires_completed_manual_evidence(tmp_path, monkeypatch)
     assert "OBS_VIRTUAL_CAMERA_VERIFICATION.md is `PASS` with 1 open checklist item(s)." in text
 
     write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
-    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.6")
 
     assert publishable
     assert not blockers
@@ -105,9 +105,9 @@ def test_publish_ready_requires_matching_source_hash_sidecar(tmp_path, monkeypat
     write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
     write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
     write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
-    write_file(output_dir / "DeepLiveCamStudio-2.1.5-source-testref.zip.sha256", "BADHASH  source.zip\n")
+    write_file(output_dir / "DeepLiveCamStudio-2.1.6-source-testref.zip.sha256", "BADHASH  source.zip\n")
 
-    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.6")
 
     assert not publishable
     assert blockers
@@ -133,7 +133,7 @@ def test_publish_ready_requires_clean_cutover_status(tmp_path, monkeypatch):
         "- BLOCKED: mixed-scope dirty paths still need an include/exclude decision\n",
     )
 
-    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.6")
 
     assert not publishable
     assert "## Cutover Status" in text
@@ -182,7 +182,7 @@ def test_git_ref_source_allows_known_mixed_scope_dirty_worktree(tmp_path, monkey
         ),
     )
 
-    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.6")
 
     assert publishable
     assert not blockers
@@ -214,7 +214,7 @@ def test_git_ref_source_still_blocks_unknown_dirty_paths(tmp_path, monkeypatch):
         lambda args, cwd: "abc123" if args == ["rev-parse", "HEAD"] else "?? scratch.txt\n",
     )
 
-    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.6")
 
     assert not publishable
     assert "Working tree contains release-owned or unknown dirty paths." in blockers
@@ -223,13 +223,13 @@ def test_git_ref_source_still_blocks_unknown_dirty_paths(tmp_path, monkeypatch):
 
 def test_release_verification_prefers_git_ref_source_archive(tmp_path, monkeypatch):
     repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
-    source_archive = output_dir / "DeepLiveCamStudio-2.1.5-source-testref.zip"
-    draft_archive = output_dir / "DeepLiveCamStudio-2.1.5-source-worktree-testref.zip"
+    source_archive = output_dir / "DeepLiveCamStudio-2.1.6-source-testref.zip"
+    draft_archive = output_dir / "DeepLiveCamStudio-2.1.6-source-worktree-testref.zip"
     draft_archive.write_bytes(source_archive.read_bytes())
     write_file(draft_archive.with_suffix(draft_archive.suffix + ".sha256"), f"{verification.sha256(draft_archive)}  {draft_archive.name}\n")
     write_file(draft_archive.with_suffix(".manifest.md"), "Archive mode: `draft-working-tree`\n")
 
-    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.6")
 
     assert "Latest source archive:" in text
     assert "RELEASE_ASSETS.md" in text

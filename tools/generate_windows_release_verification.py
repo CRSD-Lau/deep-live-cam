@@ -435,7 +435,7 @@ def main() -> int:
     parser.add_argument("--repo-root", default=".", help="Repository root.")
     parser.add_argument("--dist", default="dist/DeepLiveCamStudio", help="Packaged dist directory.")
     parser.add_argument("--output-dir", default="build/windows/installer", help="Installer output directory.")
-    parser.add_argument("--app-version", default="2.1.5", help="Application version.")
+    parser.add_argument("--app-version", default="2.1.6", help="Application version.")
     parser.add_argument("--output", default="RELEASE_VERIFICATION.md", help="Verification summary output path.")
     parser.add_argument(
         "--require-publish-ready",
