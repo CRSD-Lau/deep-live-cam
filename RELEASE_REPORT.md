@@ -149,7 +149,7 @@ powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVe
 
 That mode creates a `draft-working-tree` source archive from current tracked, modified, and untracked workspace files while excluding build outputs, virtual environments, runtime data, and model/checkpoint files. It is useful for local traceability only. Do not publish a `draft-working-tree` source archive as the public AGPL corresponding source for a GitHub Release; commit or tag the release and rerun the clean `-GitRef` source archive command.
 
-The source archive script also verifies that the selected Git ref and resulting archive contain required corresponding-source files, including license/compliance documents, generated dependency evidence, the OBS virtual-camera guide, Windows build and installer scripts, and model-download source, and that the archive does not contain model/checkpoint entries such as `.onnx`, `.pth`, `.safetensors`, `models/`, or `checkpoints/`. It writes a source archive `.manifest.md` with the resolved ref, hash, required-entry checks, and forbidden model/checkpoint scan result. The generated `LICENSES/WINDOWS_BUNDLE_MANIFEST.md` is release evidence from the built payload and is checked in the workspace before source packaging. Commit generated release evidence, including `LICENSES/PYTHON_DEPENDENCIES.md`, `LICENSES/THIRD_PARTY_LICENSES/`, and `LICENSES/WINDOWS_BUNDLE_MANIFEST.md`, before creating the final release tag or source archive.
+The source archive script also verifies that the selected Git ref and resulting archive contain required corresponding-source files, including `Logo.png`, license/compliance documents, generated dependency evidence, the OBS virtual-camera guide, Windows build and installer scripts, and model-download source, and that the archive does not contain model/checkpoint entries such as `.onnx`, `.pth`, `.safetensors`, `models/`, or `checkpoints/`. It writes a source archive `.manifest.md` with the resolved ref, hash, required-entry checks, and forbidden model/checkpoint scan result. The generated `LICENSES/WINDOWS_BUNDLE_MANIFEST.md` is release evidence from the built payload and is checked in the workspace before source packaging. Commit generated release evidence, including `LICENSES/PYTHON_DEPENDENCIES.md`, `LICENSES/THIRD_PARTY_LICENSES/`, and `LICENSES/WINDOWS_BUNDLE_MANIFEST.md`, before creating the final release tag or source archive.
 
 Use `RELEASE_SOURCE_PREP.md` to resolve the current dirty-worktree source gate before tagging. Use `RELEASE_NOTES_TEMPLATE.md` as the release-notes starting point and replace all placeholders with exact release values.
 
@@ -184,6 +184,7 @@ visual OBS workflow, or authorized legal-review signoffs.
 ## Files Changed For Packaging And Compliance
 
 - `DeepLiveCamStudio.pyw`
+- `Logo.png`
 - `.github/workflows/windows-release.yml`
 - `build/windows/build_windows.ps1`
 - `build/windows/assemble_release_assets.ps1`
@@ -196,6 +197,9 @@ visual OBS workflow, or authorized legal-review signoffs.
 - `build/windows/clean_build.ps1`
 - `build/windows/deep_live_cam_studio.spec`
 - `build/windows/installer.iss`
+- `build/windows/assets/Logo.ico`
+- `build/windows/assets/WizardImage.bmp`
+- `build/windows/assets/WizardSmallImage.bmp`
 - `COMPLIANCE.md`
 - `THIRD_PARTY_NOTICES.md`
 - `RELEASE_CHECKLIST.md`
@@ -218,6 +222,7 @@ visual OBS workflow, or authorized legal-review signoffs.
 - `tools/check_cuda_provider.py`
 - `tools/check_obs_virtualcam.py`
 - `tools/generate_python_dependency_licenses.py`
+- `tools/generate_windows_logo_assets.py`
 - `tools/generate_windows_bundle_manifest.py`
 - `tools/generate_windows_release_verification.py`
 - `tools/install_windows_desktop_app.ps1`
@@ -248,6 +253,7 @@ visual OBS workflow, or authorized legal-review signoffs.
 - `modules/utilities.py`
 - model-consuming frame processor modules updated to use the packaged/user model path and shared image loader
 - focused image-format tests under `tests/`
+- logo packaging and release-gate checks for the installer icon, Inno wizard images, installed payload, Qt application/window icon, and corresponding source archive
 
 The repository also contains other unrelated or broader local changes. Confirm the final staged set before tagging.
 
@@ -332,6 +338,7 @@ The downloader presents source URLs, license notes, and SHA-256 checksums before
 - Focused WebP/AVIF image upload tests passed.
 - Packaged CLI `--version` returned exit code `0`.
 - Packaged CLI `--download-models` displays model source/license/checksum notes and cleanly cancels without consent in a non-interactive shell.
+- `Logo.png` is included in the PyInstaller payload, used for the Qt application/window icon, converted into `Logo.ico` for the executable and installer icons, and converted into Inno Setup wizard bitmaps.
 - Real model download verification passed on 2026-05-18 using `DLC_MODELS_DIR` pointed at a temporary folder outside the repository. All five configured model URLs downloaded successfully and matched their SHA-256 checksums. Evidence is recorded in `MODEL_DOWNLOAD_VERIFICATION.md`; the temporary model files were deleted afterward.
 - Packaged CPU image processing, CPU short-video processing, and CUDA image processing with external CUDA/cuDNN runtime DLLs on `PATH` passed on 2026-05-18. Evidence is recorded in `PROCESSING_VERIFICATION.md`; the temporary model/media files were deleted afterward.
 - The first packaged processing run exposed a missing PyInstaller dynamic import for `modules.processors.frame`; `build/windows/deep_live_cam_studio.spec` now collects that submodule tree so packaged frame processors such as `face_swapper` are included.
@@ -365,6 +372,7 @@ The downloader presents source URLs, license notes, and SHA-256 checksums before
 - Install on a clean Windows x64 VM without admin rights. The local smoke script is useful evidence, but it is not a substitute for a fresh VM test.
 - Fill out `CLEAN_VM_VERIFICATION.md` and set `Status: PASS` only after the clean VM test passes.
 - Confirm Start menu shortcut, optional desktop shortcut, launch, and uninstall behavior.
+- Confirm the installed app and installer surfaces use the expected `Logo.png` branding, including the executable/app icon and installer wizard images.
 - Confirm uninstall asks before deleting downloaded models.
 - Re-run model download with user consent and verify checksums on the final release candidate or release VM.
 - Re-run CPU fallback processing on the final release candidate or release VM.
