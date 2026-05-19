@@ -1392,9 +1392,11 @@ class MainWindow(QMainWindow):
             if modules.globals.source_path is None:
                 update_status("Please select a source image first")
                 return
-            update_status("Starting live preview; models will load in the background.")
+            modules.globals.virtual_cam = True
+            update_status("Starting live output; models will load in the background.")
             _open_webcam_preview(camera_index)
         else:
+            modules.globals.virtual_cam = True
             modules.globals.source_target_map = []
             _open_live_mapper_dialog(camera_index, modules.globals.source_target_map)
 
