@@ -76,9 +76,22 @@ def write_release_assets(tmp_path):
         content = MANUAL_GATE_SUMMARY if doc == "MANUAL_RELEASE_GATES.md" else "doc"
         write_file(assets_dir / doc, content)
     upload_lines = "\n".join(f"- `{path.name}`" for path in files)
+    doc_upload_lines = "\n".join(
+        f"- `{doc}`"
+        for doc in (
+            "COMPLIANCE.md",
+            "MANUAL_RELEASE_GATES.md",
+            "RELEASE_ASSETS.md",
+            "RELEASE_CHECKLIST.md",
+            "RELEASE_NOTES_TEMPLATE.md",
+            "RELEASE_REPORT.md",
+            "RELEASE_VERIFICATION.md",
+            "THIRD_PARTY_NOTICES.md",
+        )
+    )
     write_file(
         assets_dir / "RELEASE_ASSETS.md",
-        f"{upload_lines}\n- `MANUAL_RELEASE_GATES.md`\n- `RELEASE_ASSETS.md`\nDo not upload model/checkpoint files unless approved.\n",
+        f"{upload_lines}\n{doc_upload_lines}\nDo not upload model/checkpoint files unless approved.\n",
     )
     return assets_dir
 
@@ -160,6 +173,18 @@ def test_validate_release_artifacts_rejects_stale_extra_source_archive_in_assets
 def test_validate_release_artifacts_rejects_blank_manual_gate_summary(tmp_path, monkeypatch):
     assets_dir = write_release_assets(tmp_path)
     write_file(assets_dir / "MANUAL_RELEASE_GATES.md", "placeholder\n")
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1
+
+
+def test_validate_release_artifacts_rejects_required_doc_missing_from_manifest(tmp_path, monkeypatch):
+    assets_dir = write_release_assets(tmp_path)
+    manifest = assets_dir / "RELEASE_ASSETS.md"
+    manifest.write_text(
+        manifest.read_text(encoding="utf-8").replace("- `COMPLIANCE.md`\n", ""),
+        encoding="utf-8",
+    )
     monkeypatch.chdir(tmp_path)
 
     assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1
