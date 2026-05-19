@@ -10,21 +10,22 @@ the active release goal is actually complete.
 Status: **NOT COMPLETE**
 
 The repository now has a locally verified Windows installer workflow and
-release-candidate artifacts. The current release commit can be validated from a
-clean detached worktree and has a strict git-ref source archive. The active
-goal is still not complete because three required manual gates remain
-`PENDING`.
+release-candidate artifacts. Commit
+`66f90c00fe171fde65305a960caff0c8fbff4e9e` validates from a clean detached
+worktree and has a strict git-ref source archive. The active goal is still not
+complete because three required manual gates remain `PENDING`.
 
 ## Current Artifact Evidence
 
 - Installer: `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - Installer SHA-256: see
   `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`
-- Git-ref source archive: see the latest
-  `build/windows/installer/DeepLiveCamStudio-2.1.5-source-*.zip` whose
-  manifest records `Archive mode: git-ref`
-- Git-ref source SHA-256 and resolved commit: see the matching `.zip.sha256`
-  and `.manifest.md` sidecars
+- Git-ref source archive:
+  `build/windows/installer/DeepLiveCamStudio-2.1.5-source-66f90c00fe17.zip`
+- Git-ref source SHA-256:
+  `83D90030A622520CB7735A56B3598340B5F2DA99E604A5D768068076B0CE0E62`
+- Git-ref source commit:
+  `66f90c00fe171fde65305a960caff0c8fbff4e9e`
 - Generated release verdict: `RELEASE_VERIFICATION.md`
 - Final cutover procedure: `RELEASE_CUTOVER_PLAN.md`
 - Current cutover status report: `RELEASE_CUTOVER_STATUS.md`
@@ -64,19 +65,19 @@ goal is still not complete because three required manual gates remain
 
 These must be complete before the active goal can be marked done:
 
-- The intended release commit must validate from a clean release worktree.
-- `package_source.ps1 -GitRef <release-tag-or-commit>` must produce a source
-  manifest with `Archive mode: git-ref`.
-- `tools/validate_windows_release_artifacts.py --require-git-ref-source` must
-  pass.
-- `build/windows/assemble_release_assets.ps1 -RequireGitRefSource` should
-  produce the final upload folder and `RELEASE_ASSETS.md` manifest.
+- The intended release commit has validated from a clean release worktree:
+  `66f90c00fe171fde65305a960caff0c8fbff4e9e`.
+- `package_source.ps1 -GitRef HEAD` produced a source manifest with
+  `Archive mode: git-ref` from the clean detached worktree.
+- `tools/validate_windows_release_artifacts.py --require-git-ref-source`
+  passed against the current installer/source artifact set.
+- `build/windows/assemble_release_assets.ps1 -RequireGitRefSource` produced
+  the current upload folder and `RELEASE_ASSETS.md` manifest.
 - `tools/validate_windows_release_artifacts.py --release-assets-dir
-  build/windows/release-assets/2.1.5 --require-git-ref-source` should pass
-  before uploading GitHub Release assets.
-- `tools/check_windows_release_cutover.py --strict` must pass on the intended
-  release branch or clean detached release worktree after staging/committing
-  decisions are complete.
+  build/windows/release-assets/2.1.5 --require-git-ref-source` passed before
+  this audit refresh.
+- `tools/check_windows_release_cutover.py --strict --allow-mixed-scope-dirty`
+  fails only because the three manual evidence files are incomplete.
 - `CLEAN_VM_VERIFICATION.md` must be `Status: PASS` with no unchecked items.
 - `OBS_VIRTUAL_CAMERA_VERIFICATION.md` must be `Status: PASS` with no unchecked
   items.
@@ -88,10 +89,13 @@ These must be complete before the active goal can be marked done:
 
 ```powershell
 venv\Scripts\python.exe -m pytest tests\test_validate_windows_release_artifacts.py tests\test_windows_release_verification.py tests\test_image_upload_formats.py tests\test_model_manager.py
-venv\Scripts\python.exe tools\check_windows_release_cutover.py --repo-root . --output RELEASE_CUTOVER_STATUS.md
+venv\Scripts\python.exe tools\check_windows_release_cutover.py --repo-root . --output RELEASE_CUTOVER_STATUS.md --allow-mixed-scope-dirty
 venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version 2.1.5
 venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version 2.1.5 --require-git-ref-source
-C:\Projects\deep-live-cam\venv\Scripts\python.exe tools\check_windows_release_cutover.py --repo-root . --output $env:TEMP\deep-live-cam-clean-worktree-cutover-544e858-final.md --json-output $env:TEMP\deep-live-cam-clean-worktree-cutover-544e858-final.json --limit 50
+git worktree add --detach C:\Projects\deep-live-cam-release-verify HEAD
+C:\Projects\deep-live-cam\venv\Scripts\python.exe tools\check_windows_release_cutover.py --repo-root . --limit 50 --allow-mixed-scope-dirty
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.5 -GitRef HEAD -OutputDir C:\Projects\deep-live-cam\build\windows\clean-worktree-source-check
+C:\Projects\deep-live-cam\venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root C:\Projects\deep-live-cam-release-verify --output-dir C:\Projects\deep-live-cam\build\windows\installer --release-assets-dir C:\Projects\deep-live-cam\build\windows\release-assets\2.1.5 --app-version 2.1.5 --require-git-ref-source
 ```
 
 The strict artifact validator passes against the current installer/source

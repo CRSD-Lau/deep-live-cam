@@ -8,29 +8,29 @@ the manual clean VM, OBS visual workflow, or legal review gates.
 
 ## Release Commit Under Test
 
-- Commit: see the generated source archive manifest for the exact resolved Git ref.
+- Commit: `66f90c00fe171fde65305a960caff0c8fbff4e9e`
 - Worktree used: `C:\Projects\deep-live-cam-release-verify`
-- Verification time UTC: see the generated source archive manifest and release-verification output for the latest run.
+- Verification time UTC: `2026-05-19T05:21:52Z`
 - Main developer worktree status at the time: dirty with mixed-scope runtime and quality work excluded from this release commit.
 
 ## Artifact Set
 
 - Installer: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - Installer SHA-256: see `DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`.
-- Source archive: see the latest `DeepLiveCamStudio-2.1.5-source-*.zip` whose manifest records `Archive mode: git-ref`.
-- Source SHA-256: see the matching `.zip.sha256` sidecar and `.manifest.md`.
+- Source archive: `DeepLiveCamStudio-2.1.5-source-66f90c00fe17.zip`.
+- Source SHA-256: `83D90030A622520CB7735A56B3598340B5F2DA99E604A5D768068076B0CE0E62`.
 
 ## Automated Checks
 
 - [x] Detached release worktree checked out at the release commit.
 - [x] `git status --short --untracked-files=all` returned no paths in the detached release worktree.
 - [x] `tools/check_windows_release_cutover.py` reported `Dirty paths: 0` in the detached release worktree.
-- [x] `build/windows/package_source.ps1 -AppVersion 2.1.5 -GitRef HEAD` created the source archive from the clean detached release worktree without `-AllowDirty`.
+- [x] `build/windows/package_source.ps1 -AppVersion 2.1.5 -GitRef HEAD -OutputDir C:\Projects\deep-live-cam\build\windows\clean-worktree-source-check` created the source archive from the clean detached release worktree without `-AllowDirty`.
 - [x] Source archive manifest records `Archive mode: git-ref`.
 - [x] Source archive manifest records the exact resolved release commit.
 - [x] Source archive validation found no `.onnx`, `.pth`, `.safetensors`, `models/`, `checkpoints/`, or model-cache entries.
-- [x] `tools/validate_windows_release_artifacts.py --require-git-ref-source` passed against the installer and source archive.
-- [x] Focused release tests passed from the detached release worktree: `22 passed`.
+- [x] `tools/validate_windows_release_artifacts.py --require-git-ref-source --release-assets-dir C:\Projects\deep-live-cam\build\windows\release-assets\2.1.5` passed against the installer and source archive.
+- [x] Focused release tests passed from the detached release worktree in a previous run: `22 passed`.
 
 ## Remaining Non-Automated Gates
 

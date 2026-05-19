@@ -8,12 +8,11 @@ release documents so installer hashes are not made stale by handoff notes.
 
 - The Windows installer build, package, smoke-test, and artifact-validation
   path passes locally.
-- The installer and draft source archive hashes are recorded in their generated
-  `.sha256` sidecars and in `RELEASE_VERIFICATION.md`.
-- The source archive currently uses `draft-working-tree` mode because the
-  workspace has uncommitted and untracked files.
-- The public-release gate remains blocked until the exact release source comes
-  from a clean Git ref and the manual evidence files pass.
+- The installer and git-ref source archive hashes are recorded in their
+  generated `.sha256` sidecars and in the assembled `RELEASE_ASSETS.md`.
+- The current source archive uses `git-ref` mode for commit
+  `66f90c00fe171fde65305a960caff0c8fbff4e9e`.
+- The public-release gate remains blocked until the manual evidence files pass.
 
 ## Release Branch Strategy
 
