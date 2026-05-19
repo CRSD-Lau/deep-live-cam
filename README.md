@@ -415,7 +415,7 @@ Run the standard local release gate:
 powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit>
 ```
 
-The GitHub Actions workflow in `.github/workflows/windows-release.yml` runs the same release gate and uploads the installer, installer hash, corresponding-source archive, and source hash.
+The GitHub Actions workflow in `.github/workflows/windows-release.yml` runs the same release gate and uploads the curated `build/windows/release-assets/<version>/` set, including the installer, installer hash, git-ref corresponding-source archive, source hash, source manifest, release notes, compliance evidence, `RELEASE_ASSETS.md`, and `SHA256SUMS.txt`.
 The gate also writes `RELEASE_VERIFICATION.md`, which summarizes the installer hash, payload manifest status, source-archive status, and manual gates that still need human confirmation.
 
 Build the application bundle:
