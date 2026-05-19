@@ -1,8 +1,8 @@
 # Windows Release Verification
 
-Generated: 2026-05-19T03:50:42Z from the assembled release-assets manifest and artifact sidecars
+Generated: see the assembled `RELEASE_ASSETS.md` manifest and artifact sidecars
 App version: `2.1.5`
-Git HEAD: `6b229c7d0b248453d8d50674d0e7ff7d87606471`
+Git HEAD: see the matching git-ref source archive manifest in the release-assets folder
 
 This file records local release evidence for the Windows installer. It is not a legal opinion and does not replace the manual checks in `RELEASE_CHECKLIST.md`.
 
@@ -67,21 +67,19 @@ Current status: the installer and matching Git-ref source archive are locally ve
 
 ## Source Archive
 
-- Latest source archive: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-6b229c7d0b24.zip`
+- Latest source archive: see the `DeepLiveCamStudio-2.1.5-source-*.zip` entry listed in `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
 - Source archive mode: `git-ref`
-- Source archive SHA-256: `8A3FBFE51B5500C8C7DC8C66423FBF0495ECDC2018C198F22AA15B3D818C14A1`
-- Source archive hash sidecar: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-6b229c7d0b24.zip.sha256`
-- Source archive manifest: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-6b229c7d0b24.manifest.md`
-- Source archive bytes: `67807508`
+- Source archive SHA-256: see the matching `.zip.sha256` sidecar and `RELEASE_ASSETS.md`
+- Source archive manifest: see the matching `.manifest.md` listed in `RELEASE_ASSETS.md`
 
 ## Cutover Status
 
 - Cutover status report: `C:\Projects\deep-live-cam\RELEASE_CUTOVER_STATUS.md`
-- Dirty paths: `68`
-- Release-owned dirty paths: `3`
+- Dirty paths: `10`
+- Release-owned dirty paths: `0`
 - Staged release-owned paths: `0`
-- Unstaged release-owned paths: `3`
-- Mixed-scope dirty paths: `65`
+- Unstaged release-owned paths: `0`
+- Mixed-scope dirty paths: `10`
 - Unknown dirty paths: `0`
 - Cutover report blocked: **YES**
 

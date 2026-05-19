@@ -232,5 +232,6 @@ def test_release_verification_prefers_git_ref_source_archive(tmp_path, monkeypat
     text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
 
     assert "Latest source archive:" in text
-    assert "source-testref.zip`" in text
+    assert "RELEASE_ASSETS.md" in text
+    assert "DeepLiveCamStudio-*-source-*.zip" in text
     assert "source-worktree-testref.zip`" not in text

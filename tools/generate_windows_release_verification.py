@@ -360,13 +360,13 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
 
     lines.extend(["", "## Source Archive", ""])
     if latest_source:
-        lines.append(f"- Latest source archive: `{latest_source}`")
+        lines.append("- Latest source archive: see the `DeepLiveCamStudio-*-source-*.zip` entry listed in the assembled `RELEASE_ASSETS.md` manifest.")
         if source_mode:
             lines.append(f"- Source archive mode: `{source_mode}`")
         if latest_source_hash and latest_source_hash.exists():
-            lines.append(f"- Source archive hash sidecar: `{latest_source_hash}`")
+            lines.append("- Source archive hash sidecar: see the matching `.zip.sha256` file listed in `RELEASE_ASSETS.md`.")
         if latest_source_manifest and latest_source_manifest.exists():
-            lines.append(f"- Source archive manifest: `{latest_source_manifest}`")
+            lines.append("- Source archive manifest: see the matching `.manifest.md` file listed in `RELEASE_ASSETS.md`.")
         if source_mode == "draft-working-tree":
             lines.append("- Draft worktree source archives are useful for local traceability, but public GitHub Releases still require a clean tagged source archive.")
     else:
