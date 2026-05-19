@@ -128,6 +128,7 @@ $RequiredEntries = @(
     "tools/generate_windows_release_verification.py",
     "tools/install_windows_desktop_app.ps1",
     "tools/validate_windows_release_artifacts.py",
+    "tools/summarize_manual_release_gates.py",
     "requirements.txt",
     "run.py",
     "modules/core.py",
@@ -147,6 +148,8 @@ $RequiredEntries = @(
     "tests/test_image_upload_formats.py",
     "tests/test_model_manager.py",
     "tests/test_validate_windows_release_artifacts.py",
+    "tests/test_release_report.py",
+    "tests/test_summarize_manual_release_gates.py",
     "tests/test_windows_release_scripts.py",
     "tests/test_windows_release_cutover.py",
     "tests/test_windows_release_verification.py"

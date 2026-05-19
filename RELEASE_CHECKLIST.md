@@ -34,6 +34,7 @@ Use this checklist for every Windows installer release.
 - [ ] Confirm the source archive manifest says `Archive mode: ` followed by `git-ref` for public GitHub Releases. `draft-working-tree` archives are for local traceability only.
 - [ ] Review generated `RELEASE_VERIFICATION.md` and confirm no automated evidence item unexpectedly failed.
 - [ ] Confirm manual gate evidence files remain `PENDING` until their gate is actually complete: `CLEAN_VM_VERIFICATION.md`, `OBS_VIRTUAL_CAMERA_VERIFICATION.md`, and `LEGAL_REVIEW.md`.
+- [ ] Run `python tools\summarize_manual_release_gates.py --strict` and confirm it passes before publishing.
 
 ## Installer smoke test
 

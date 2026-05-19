@@ -145,6 +145,11 @@ to create the git-ref source archive without `-AllowDirty`, and validated by
 the strict artifact checker. That evidence keeps the dirty developer workspace
 separate from the release commit, but it does not replace the manual gates.
 
+Use `tools/summarize_manual_release_gates.py` to produce a concise current
+status of the three manual gates, including unchecked items and the latest
+local evidence packets. `--strict` exits non-zero until all three gate files are
+`Status: PASS` and have no unchecked checklist rows.
+
 Automated subsets have been run locally and summarized in the gate files:
 
 - Clean install smoke helper passed on Windows 11 Pro build `26200`.
@@ -194,6 +199,7 @@ visual OBS workflow, or authorized legal-review signoffs.
 - `tools/generate_windows_release_verification.py`
 - `tools/install_windows_desktop_app.ps1`
 - `tools/prune_windows_dist.py`
+- `tools/summarize_manual_release_gates.py`
 - `tools/validate_windows_release_artifacts.py`
 - `requirements.txt`
 - `run.py`
@@ -207,6 +213,8 @@ visual OBS workflow, or authorized legal-review signoffs.
 - `modules/utilities.py`
 - `tests/test_image_upload_formats.py`
 - `tests/test_model_manager.py`
+- `tests/test_release_report.py`
+- `tests/test_summarize_manual_release_gates.py`
 - `tests/test_validate_windows_release_artifacts.py`
 - `tests/test_windows_release_verification.py`
 - `modules/core.py`
