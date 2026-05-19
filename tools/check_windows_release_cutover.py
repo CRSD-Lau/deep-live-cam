@@ -77,6 +77,10 @@ REQUIRED_RELEASE_PREFIXES = (
     "modules/utilities.py",
 )
 
+GENERATED_SCRATCH_PREFIXES = (
+    "build/windows/clean-worktree-source-check/",
+)
+
 MIXED_SCOPE_PREFIXES = (
     ".superpowers/",
     "docs/ITERATION_LOG.md",
@@ -256,6 +260,10 @@ def is_required_release_path(path: str) -> bool:
     return path in REQUIRED_RELEASE_PATHS or any(path.startswith(prefix) for prefix in REQUIRED_RELEASE_PREFIXES)
 
 
+def is_generated_scratch_path(path: str) -> bool:
+    return any(path.startswith(prefix) for prefix in GENERATED_SCRATCH_PREFIXES)
+
+
 def is_mixed_scope_path(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in MIXED_SCOPE_PREFIXES)
 
@@ -311,7 +319,7 @@ def collect_status(
     entries = [
         entry
         for entry in git_status_entries(repo_root)
-        if entry.path not in ignored_paths
+        if entry.path not in ignored_paths and not is_generated_scratch_path(entry.path)
     ]
     paths = [entry.path for entry in entries]
     release_paths, mixed_paths, unknown_paths = classify(paths)

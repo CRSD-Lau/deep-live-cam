@@ -174,6 +174,26 @@ def test_output_report_path_does_not_block_itself(tmp_path, monkeypatch):
     assert "`RELEASE_CUTOVER_STATUS.md`" not in report
 
 
+def test_generated_clean_worktree_source_scratch_does_not_block_cutover(tmp_path, monkeypatch, capsys):
+    for gate in cutover.MANUAL_GATE_FILES:
+        write_file(tmp_path / gate, "Status: PASS\n- [x] done\n")
+
+    monkeypatch.setattr(
+        cutover,
+        "run_git",
+        lambda args, cwd: (
+            "?? build/windows/clean-worktree-source-check/DeepLiveCamStudio-2.1.5-source-test.zip\n"
+            "?? build/windows/clean-worktree-source-check/DeepLiveCamStudio-2.1.5-source-test.zip.sha256\n"
+            "?? build/windows/clean-worktree-source-check/DeepLiveCamStudio-2.1.5-source-test.manifest.md\n"
+        ),
+    )
+
+    assert cutover.main(["--repo-root", str(tmp_path), "--strict"]) == 0
+    output = capsys.readouterr().out
+    assert "Dirty paths: `0`" in output
+    assert "clean-worktree-source-check" not in output
+
+
 def test_writes_json_report(tmp_path, monkeypatch):
     for gate in cutover.MANUAL_GATE_FILES:
         write_file(tmp_path / gate, "Status: PASS\n- [x] done\n")
