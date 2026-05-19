@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 from tools import summarize_manual_release_gates as gates
@@ -14,7 +15,9 @@ def test_collects_status_open_items_and_latest_evidence(tmp_path):
     write_file(tmp_path / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs\n")
     write_file(tmp_path / "LEGAL_REVIEW.md", "Status: PASS\n- [ ] legal\n")
     write_file(tmp_path / "build/windows/manual-evidence/clean-vm/clean-vm-old.md", "old")
-    write_file(tmp_path / "build/windows/manual-evidence/clean-vm/clean-vm-new.md", "new")
+    new_evidence = tmp_path / "build/windows/manual-evidence/clean-vm/clean-vm-new.md"
+    write_file(new_evidence, "new")
+    os.utime(new_evidence, (2_000_000_000, 2_000_000_000))
 
     summaries = gates.collect(tmp_path)
 
