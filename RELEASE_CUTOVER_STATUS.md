@@ -7,7 +7,7 @@ final clean Git-ref source archive is created.
 Dirty paths: `10`
 Staged release-owned paths: `0`
 Unstaged release-owned paths: `0`
-Mixed-scope dirty paths block verdict: `NO`
+Mixed-scope dirty paths block verdict: `YES`
 
 ## Release-required or release-owned dirty paths: 0
 
@@ -42,6 +42,8 @@ Mixed-scope dirty paths block verdict: `NO`
 
 ## Verdict
 
+- BLOCKED: mixed-scope dirty paths still need an include/exclude decision
 - BLOCKED: CLEAN_VM_VERIFICATION.md is not complete
 - BLOCKED: OBS_VIRTUAL_CAMERA_VERIFICATION.md is not complete
 - BLOCKED: LEGAL_REVIEW.md is not complete
+- BLOCKED: working tree is not clean
