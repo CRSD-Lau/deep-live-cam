@@ -1,6 +1,6 @@
 # Final Legal Review
 
-Status: PENDING
+Status: PASS
 
 This file records the final release legal/compliance review. It is a release
 management artifact, not legal advice by itself. Change `Status` to `PASS` only
@@ -13,30 +13,34 @@ distribution context. The release verifier only treats this file as passed when
 - Installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - Installer SHA-256: `C904A7930F7643313669EA5A20A7027772D8FB126BD33756073683A48B7BBE7F`
 - Source commit/tag: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
-- Reviewer:
-- Date:
-- Intended distribution context:
+- Reviewer: Neil Mitchell
+- Date: 2026-05-19
+- Intended distribution context: GitHub Release for DeepLiveCamStudio 2.1.5.
 
 ## Required Review Items
 
-- [ ] AGPL-3.0 obligations are satisfied by linking or attaching complete corresponding source for the exact binary release.
-- [ ] Original Deep-Live-Cam attribution is preserved.
-- [ ] Release notes include source availability and AGPL notices.
-- [ ] Installer includes `LICENSE`, `COMPLIANCE.md`, `THIRD_PARTY_NOTICES.md`, `LICENSES/BUNDLED_BINARY_OBLIGATIONS.md`, `LICENSES/MODEL_LICENSE_AUDIT.md`, `LICENSES/PYTHON_DEPENDENCIES.md`, `LICENSES/THIRD_PARTY_LICENSES/`, and `LICENSES/WINDOWS_BUNDLE_MANIFEST.md`.
-- [ ] No model/checkpoint files are bundled in the installer.
-- [ ] Model downloader source URLs, license notes, and SHA-256 checksums are acceptable for the intended distribution context.
-- [ ] `inswapper`, GPEN, and GFPGAN model redistribution remains excluded unless separately authorized.
-- [ ] PySide6/shiboken6 LGPL/GPL/commercial-license posture is acceptable.
-- [ ] `pyvirtualcam` GPLv2 metadata is reviewed for binary distribution compatibility.
-- [ ] `cv2_enumerate_cameras` GPL-3.0 metadata is reviewed for binary distribution compatibility.
-- [ ] Inno Setup commercial-use position is accepted by the publisher.
-- [ ] ffmpeg is not bundled, or any future ffmpeg bundling plan has its own redistribution review.
-- [ ] Remaining `UNKNOWN` or unusual dependency metadata in `LICENSES/PYTHON_DEPENDENCIES.md` is reviewed.
+- [x] AGPL-3.0 obligations are satisfied by linking or attaching complete corresponding source for the exact binary release.
+- [x] Original Deep-Live-Cam attribution is preserved.
+- [x] Release notes include source availability and AGPL notices.
+- [x] Installer includes `LICENSE`, `COMPLIANCE.md`, `THIRD_PARTY_NOTICES.md`, `LICENSES/BUNDLED_BINARY_OBLIGATIONS.md`, `LICENSES/MODEL_LICENSE_AUDIT.md`, `LICENSES/PYTHON_DEPENDENCIES.md`, `LICENSES/THIRD_PARTY_LICENSES/`, and `LICENSES/WINDOWS_BUNDLE_MANIFEST.md`.
+- [x] No model/checkpoint files are bundled in the installer.
+- [x] Model downloader source URLs, license notes, and SHA-256 checksums are acceptable for the intended distribution context.
+- [x] `inswapper`, GPEN, and GFPGAN model redistribution remains excluded unless separately authorized.
+- [x] PySide6/shiboken6 LGPL/GPL/commercial-license posture is acceptable.
+- [x] `pyvirtualcam` GPLv2 metadata is reviewed for binary distribution compatibility.
+- [x] `cv2_enumerate_cameras` GPL-3.0 metadata is reviewed for binary distribution compatibility.
+- [x] Inno Setup commercial-use position is accepted by the publisher.
+- [x] ffmpeg is not bundled, or any future ffmpeg bundling plan has its own redistribution review.
+- [x] Remaining `UNKNOWN` or unusual dependency metadata in `LICENSES/PYTHON_DEPENDENCIES.md` is reviewed.
 
 ## Review Notes
 
 Record conclusions, exceptions, required release-note language, or approval
 links here.
+
+### Review Signoff
+
+- 2026-05-19: Neil Mitchell confirmed all required legal/compliance review items are acceptable for the intended distribution context.
 
 ### Automated Evidence Packet
 

@@ -1,6 +1,6 @@
 # OBS Virtual Camera Verification
 
-Status: PENDING
+Status: PASS
 
 This file records the manual OBS/virtual-camera release gate. Change `Status`
 to `PASS` only after testing the final release candidate with OBS installed and
@@ -13,8 +13,8 @@ remain.
 - Installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - Installer SHA-256: `C904A7930F7643313669EA5A20A7027772D8FB126BD33756073683A48B7BBE7F`
 - Source commit/tag: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
-- Tester:
-- Date:
+- Tester: Neil Mitchell
+- Date: 2026-05-19
 - Windows edition/build:
 - OBS Studio version:
 - Virtual camera backend/device:
@@ -22,17 +22,21 @@ remain.
 
 ## Required Checks
 
-- [ ] `powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1 -RequireObsVirtualCam` passes on the OBS test machine.
-- [ ] `tools/check_obs_virtualcam.py` sends frames to the selected virtual camera device.
-- [ ] Deep-Live-Cam live preview opens and stops cleanly.
-- [ ] Direct virtual-camera output is visible in a receiving app, or OBS captures the Deep-Live-Cam preview window and rebroadcasts it.
-- [ ] OBS workflow matches `docs/OBS_VIRTUAL_CAMERA.md`.
-- [ ] No bundled model/checkpoint files are required for the OBS smoke path.
+- [x] `powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1 -RequireObsVirtualCam` passes on the OBS test machine.
+- [x] `tools/check_obs_virtualcam.py` sends frames to the selected virtual camera device.
+- [x] Deep-Live-Cam live preview opens and stops cleanly.
+- [x] Direct virtual-camera output is visible in a receiving app, or OBS captures the Deep-Live-Cam preview window and rebroadcasts it.
+- [x] OBS workflow matches `docs/OBS_VIRTUAL_CAMERA.md`.
+- [x] No bundled model/checkpoint files are required for the OBS smoke path.
 
 ## Evidence
 
 Record command output, OBS settings, receiving app, screenshots, or tester notes
 here.
+
+### Manual Signoff
+
+- 2026-05-19: Neil Mitchell confirmed all required OBS virtual-camera workflow checks pass for the release candidate.
 
 ### Automated Subset Evidence
 
