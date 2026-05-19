@@ -239,6 +239,13 @@ def validate_release_evidence_consistency(
     require_text(legal_packet, source_digest, "source archive SHA-256", failures)
 
 
+def source_manifest_resolved_ref(manifest_text: str) -> str:
+    for line in manifest_text.splitlines():
+        if line.startswith("Git ref resolved:") and "`" in line:
+            return line.split("`", 2)[1]
+    return ""
+
+
 def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_ref: bool, failures: list[str]) -> None:
     if not assets_dir.exists():
         fail(f"missing release assets directory: {assets_dir}", failures)
@@ -263,6 +270,7 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         fail(f"release assets source hash missing or mismatched: {source_hash.name}", failures)
     source_digest = sha256(source)
     manifest_text = source_manifest.read_text(encoding="utf-8", errors="replace") if source_manifest.exists() else ""
+    resolved_ref = source_manifest_resolved_ref(manifest_text)
     if not manifest_text:
         fail(f"release assets source manifest missing: {source_manifest.name}", failures)
     elif require_git_ref and "Archive mode: `git-ref`" not in manifest_text:
@@ -355,6 +363,8 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
                 fail(f"RELEASE_ASSETS.md does not list required document: {doc}", failures)
         if "Do not upload model/checkpoint files" not in asset_manifest_text:
             fail("RELEASE_ASSETS.md missing model/checkpoint upload warning", failures)
+        if resolved_ref and f"Source ref: `{resolved_ref}`" not in asset_manifest_text:
+            fail("RELEASE_ASSETS.md source ref does not match source manifest", failures)
 
     release_notes = assets_dir / "RELEASE_NOTES.md"
     if release_notes.exists():
@@ -374,6 +384,8 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         for phrase in expected_phrases:
             if phrase not in release_notes_text:
                 fail(f"RELEASE_NOTES.md missing phrase: {phrase}", failures)
+        if resolved_ref and f"`{resolved_ref}`" not in release_notes_text:
+            fail("RELEASE_NOTES.md source ref does not match source manifest", failures)
         if "listed in the uploaded `RELEASE_ASSETS.md`" in release_notes_text:
             fail("RELEASE_NOTES.md still contains manifest cross-reference placeholders", failures)
         if "This release candidate is not publish-approved until these checks are complete and documented:" in release_notes_text:

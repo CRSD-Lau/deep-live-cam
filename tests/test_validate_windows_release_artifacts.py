@@ -42,7 +42,7 @@ def write_artifacts(tmp_path, extra_source_entry_name=None, omit_required_entry=
     required_manifest_lines = "\n".join(f"- [x] `{entry}`" for entry in validator.REQUIRED_SOURCE_ENTRIES if entry != omit_required_entry)
     write_file(
         source.with_suffix(".manifest.md"),
-        f"Archive mode: `git-ref`\n{required_manifest_lines}\n- [x] No `.onnx`, `.pth`, `.safetensors`, `models/`, `checkpoints/`, or model-cache entries were found.\n",
+        f"Archive mode: `git-ref`\nGit ref resolved: `testrefresolved`\n{required_manifest_lines}\n- [x] No `.onnx`, `.pth`, `.safetensors`, `models/`, `checkpoints/`, or model-cache entries were found.\n",
     )
     write_file(
         tmp_path / "RELEASE_VERIFICATION.md",
@@ -114,6 +114,7 @@ def write_release_assets(tmp_path):
                 f"`{validator.sha256(installer)}`",
                 f"`{source.name}`",
                 f"`{validator.sha256(source)}`",
+                "`testrefresolved`",
                 "Deep-Live-Cam is licensed under AGPL-3.0",
                 "The installer intentionally does not include model/checkpoint files",
                 "This release candidate is not publish-approved",
@@ -161,7 +162,7 @@ def write_release_assets(tmp_path):
     )
     write_file(
         assets_dir / "RELEASE_ASSETS.md",
-        f"{upload_lines}\n{doc_upload_lines}\nDo not upload model/checkpoint files unless approved.\n",
+        f"Source ref: `testrefresolved`\n{upload_lines}\n{doc_upload_lines}\nDo not upload model/checkpoint files unless approved.\n",
     )
     sums_lines = []
     for path in sorted(assets_dir.iterdir(), key=lambda item: item.name):
@@ -302,6 +303,40 @@ def test_validate_release_artifacts_rejects_stale_legal_evidence_source(tmp_path
                 "- Source archive SHA-256: `OLDHASH`",
             )
         ),
+    )
+    sums_lines = []
+    for path in sorted(assets_dir.iterdir(), key=lambda item: item.name):
+        if path.is_file() and path.name != "SHA256SUMS.txt":
+            sums_lines.append(f"{validator.sha256(path)}  {path.name}")
+    write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1
+
+
+def test_validate_release_artifacts_rejects_stale_release_notes_source_ref(tmp_path, monkeypatch):
+    assets_dir = write_release_assets(tmp_path)
+    release_notes = assets_dir / "RELEASE_NOTES.md"
+    release_notes.write_text(
+        release_notes.read_text(encoding="utf-8").replace("`testrefresolved`", "`oldref`"),
+        encoding="utf-8",
+    )
+    sums_lines = []
+    for path in sorted(assets_dir.iterdir(), key=lambda item: item.name):
+        if path.is_file() and path.name != "SHA256SUMS.txt":
+            sums_lines.append(f"{validator.sha256(path)}  {path.name}")
+    write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1
+
+
+def test_validate_release_artifacts_rejects_stale_release_assets_source_ref(tmp_path, monkeypatch):
+    assets_dir = write_release_assets(tmp_path)
+    asset_manifest = assets_dir / "RELEASE_ASSETS.md"
+    asset_manifest.write_text(
+        asset_manifest.read_text(encoding="utf-8").replace("`testrefresolved`", "`oldref`"),
+        encoding="utf-8",
     )
     sums_lines = []
     for path in sorted(assets_dir.iterdir(), key=lambda item: item.name):
