@@ -437,6 +437,25 @@ Package the installer:
 powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.6
 ```
 
+To sign the installer with an Authenticode code-signing certificate, set the
+certificate password in the environment and pass the `.pfx` path. The SHA-256
+sidecar is generated after signing, so the published hash matches the signed
+installer.
+
+```powershell
+$env:DLC_SIGN_CERT_PASSWORD = "<pfx-password>"
+powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.6 -SignCertPath "C:\path\to\certificate.pfx"
+```
+
+For local-only testing without a paid certificate, you can self-sign and trust
+the installer for the current Windows user. This does not create public
+SmartScreen reputation; other users would need to import/trust the exported
+`.cer` file themselves.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\self_sign_installer.ps1 -AppVersion 2.1.6 -TrustForCurrentUser
+```
+
 Package the corresponding source archive for the exact release tag or commit:
 
 ```powershell

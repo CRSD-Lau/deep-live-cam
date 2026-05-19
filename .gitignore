@@ -33,6 +33,7 @@ build/windows/manual-evidence/
 build/windows/installer/
 build/windows/pyinstaller-work/
 build/windows/release-assets/
+build/windows/signing/
 install.bat
 /.claude
 *.bat

@@ -1,6 +1,10 @@
 param(
     [string]$AppVersion = "2.1.6",
-    [string]$IsccPath = ""
+    [string]$IsccPath = "",
+    [string]$SignCertPath = "",
+    [string]$SignCertPassword = "",
+    [string]$SignToolPath = "",
+    [string]$TimestampUrl = "http://timestamp.digicert.com"
 )
 
 $ErrorActionPreference = "Stop"
@@ -98,6 +102,48 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $Installer = Join-Path $OutputDir "DeepLiveCamStudio-$AppVersion-x64-setup.exe"
+
+if ($SignCertPath) {
+    $ResolvedSignCertPath = (Resolve-Path -LiteralPath $SignCertPath).Path
+    if (-not $SignCertPassword) {
+        $SignCertPassword = $env:DLC_SIGN_CERT_PASSWORD
+    }
+    if (-not $SignCertPassword) {
+        throw "Signing certificate password missing. Pass -SignCertPassword or set DLC_SIGN_CERT_PASSWORD."
+    }
+
+    if (-not $SignToolPath) {
+        $Command = Get-Command signtool.exe -ErrorAction SilentlyContinue
+        if ($Command) {
+            $SignToolPath = $Command.Source
+        } else {
+            $WindowsKitsRoot = "${env:ProgramFiles(x86)}\Windows Kits\10\bin"
+            if (Test-Path -LiteralPath $WindowsKitsRoot) {
+                $SignToolPath = Get-ChildItem -LiteralPath $WindowsKitsRoot -Recurse -Filter signtool.exe -File |
+                    Where-Object { $_.FullName -match "\\x64\\signtool\.exe$" } |
+                    Sort-Object FullName -Descending |
+                    Select-Object -First 1 -ExpandProperty FullName
+            }
+        }
+    }
+
+    if (-not $SignToolPath -or -not (Test-Path -LiteralPath $SignToolPath)) {
+        throw "signtool.exe was not found. Install the Windows SDK or pass -SignToolPath."
+    }
+
+    & $SignToolPath sign /fd SHA256 /tr $TimestampUrl /td SHA256 /f $ResolvedSignCertPath /p $SignCertPassword $Installer
+    if ($LASTEXITCODE -ne 0) {
+        throw "signtool signing failed with exit code $LASTEXITCODE."
+    }
+
+    & $SignToolPath verify /pa /v $Installer
+    if ($LASTEXITCODE -ne 0) {
+        throw "signtool verification failed with exit code $LASTEXITCODE."
+    }
+
+    Write-Host "Installer signed with certificate: $ResolvedSignCertPath"
+}
+
 $HashPath = "$Installer.sha256"
 $Hash = Get-FileHash $Installer -Algorithm SHA256
 "$($Hash.Hash)  $(Split-Path $Installer -Leaf)" | Set-Content -LiteralPath $HashPath -Encoding ascii
