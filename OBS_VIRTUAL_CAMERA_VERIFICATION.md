@@ -11,7 +11,7 @@ remain.
 ## Artifact Under Test
 
 - Installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
-- Installer SHA-256: `34B74A43DCECE31DE52DEF948BC9DADAB99648E6C88334EF35ECDFA07B2197BA`
+- Installer SHA-256: `3B8FED2D4246B100FF7BEB8FE3554FE4F190D6C42D1D4F1BE721F9A88CECFE15`
 - Source commit/tag: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
 - Tester:
 - Date:
@@ -36,11 +36,11 @@ here.
 
 ### Automated Subset Evidence
 
-- 2026-05-19T06:35:21Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_obs_virtualcam_gate.ps1 -CameraName "OBS Virtual Camera"` completed successfully.
+- 2026-05-19T06:50:01Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_obs_virtualcam_gate.ps1 -CameraName "OBS Virtual Camera"` completed successfully.
 - CUDA/ONNX Runtime provider preflight passed with `CUDAExecutionProvider` and `CPUExecutionProvider`; GPU observed: `NVIDIA GeForce RTX 4070`.
 - DirectShow devices included `OBS Virtual Camera`.
 - `tools\check_obs_virtualcam.py` sent `150` frames to `OBS Virtual Camera` through the `obs` backend.
-- Generated local evidence packet: `build\windows\manual-evidence\obs-virtualcam\obs-virtualcam-20260519-033521.md`.
+- Generated local evidence packet: `build\windows\manual-evidence\obs-virtualcam\obs-virtualcam-20260519-035001.md`.
 - Release upload copy: `OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md`.
 - Still requires manual tester confirmation before `Status: PASS`: Deep-Live-Cam live preview opens/stops cleanly, a receiving app or OBS rebroadcast visibly shows output, workflow matches `docs/OBS_VIRTUAL_CAMERA.md`, and the exact final release candidate is used.
 
