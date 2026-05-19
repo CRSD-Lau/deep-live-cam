@@ -79,8 +79,9 @@ Known legal risks that must not be hidden from release notes:
 
 ## Pre-Publish Checks
 
-This release candidate is not publish-approved until the remaining manual gates
-are complete and documented.
+This release candidate is not publish-approved by release notes alone; publish
+approval is recorded in `RELEASE_VERIFICATION.md`, `MANUAL_RELEASE_GATES.md`,
+and the signed gate documents included with the upload.
 
 Completed local evidence is included in the uploaded release documents:
 
@@ -91,6 +92,10 @@ Completed local evidence is included in the uploaded release documents:
 - CUDA processing on the local NVIDIA test machine.
 
 Remaining publish blockers:
+
+- None when `RELEASE_VERIFICATION.md` says `Ready to publish without remaining manual gates: YES`.
+
+Completed manual signoffs include:
 
 - Clean Windows VM install without admin rights.
 - OBS Virtual Camera workflow.

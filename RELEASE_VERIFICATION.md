@@ -13,11 +13,11 @@ This file records local release evidence for the Windows installer. It is not a 
 - Real model download/checksum verification recorded: **YES**
 - Packaged CPU/CUDA processing verification recorded: **YES**
 - Public-release source archive from clean Git ref: **YES**
-- Release cutover status clean: **NO**
-- Manual gate evidence complete: **NO**
-- Ready to publish without remaining manual gates: **NO**
+- Release cutover status clean: **YES**
+- Manual gate evidence complete: **YES**
+- Ready to publish without remaining manual gates: **YES**
 
-Current status: the installer and Git-ref source archive are locally verified, but this is not yet a publishable GitHub Release until the manual checklist gates are completed.
+Current status: the installer, Git-ref source archive, cutover evidence, and manual gate evidence are locally verified for publication.
 
 ## Automated Evidence
 
@@ -84,32 +84,29 @@ Current status: the installer and Git-ref source archive are locally verified, b
 - Mixed-scope dirty paths: `10`
 - Mixed-scope dirty paths block verdict: **NO**
 - Unknown dirty paths: `0`
-- Cutover report blocked: **YES**
+- Cutover report blocked: **NO**
 
 ## Manual Gates Still Required
 
-- [ ] Clean Windows x64 VM install without admin rights
+- [x] Clean Windows x64 VM install without admin rights
 - [x] Real model download with user consent and checksum verification
 - [x] CPU fallback processing with downloaded models
 - [x] CUDA processing with downloaded models on a supported NVIDIA machine
-- [ ] OBS Virtual Camera workflow with OBS installed and virtual camera enabled
-- [ ] Final legal review for model licenses, pyvirtualcam metadata, LGPL/GPL obligations, and Inno Setup commercial-use position
+- [x] OBS Virtual Camera workflow with OBS installed and virtual camera enabled
+- [x] Final legal review for model licenses, pyvirtualcam metadata, LGPL/GPL obligations, and Inno Setup commercial-use position
 
 ## Manual Gate Evidence Files
 
-- [ ] `CLEAN_VM_VERIFICATION.md` for Clean Windows x64 VM install without admin rights: `PENDING`
-  - Open checklist items: `10`
-- [ ] `OBS_VIRTUAL_CAMERA_VERIFICATION.md` for OBS Virtual Camera workflow with OBS installed and virtual camera enabled: `PENDING`
-  - Open checklist items: `6`
-- [ ] `LEGAL_REVIEW.md` for Final legal review for model licenses, pyvirtualcam metadata, LGPL/GPL obligations, and Inno Setup commercial-use position: `PENDING`
-  - Open checklist items: `13`
+- [x] `CLEAN_VM_VERIFICATION.md` for Clean Windows x64 VM install without admin rights: `PASS`
+  - Open checklist items: `0`
+- [x] `OBS_VIRTUAL_CAMERA_VERIFICATION.md` for OBS Virtual Camera workflow with OBS installed and virtual camera enabled: `PASS`
+  - Open checklist items: `0`
+- [x] `LEGAL_REVIEW.md` for Final legal review for model licenses, pyvirtualcam metadata, LGPL/GPL obligations, and Inno Setup commercial-use position: `PASS`
+  - Open checklist items: `0`
 
 ## Blocking Publish Checks
 
-- RELEASE_CUTOVER_STATUS.md reports unresolved cutover blockers.
-- CLEAN_VM_VERIFICATION.md is `PENDING` with 10 open checklist item(s).
-- OBS_VIRTUAL_CAMERA_VERIFICATION.md is `PENDING` with 6 open checklist item(s).
-- LEGAL_REVIEW.md is `PENDING` with 13 open checklist item(s).
+- None. Automated evidence says this release is publish-ready.
 
 ## Notes
 

@@ -234,7 +234,7 @@ $Lines = @(
     "- Do not upload model/checkpoint files unless separate redistribution approval exists.",
     "- Use ``RELEASE_NOTES.md`` for the GitHub Release body; it is generated from the template with the exact installer, source archive, source ref, and hashes.",
     "- Attach or link the exact corresponding source archive listed above for AGPL-3.0 compliance.",
-    "- This asset set is not publish-approved until clean VM, OBS workflow, and legal review gates are complete.",
+    "- Manual gate and publish-readiness status is recorded in ``MANUAL_RELEASE_GATES.md`` and ``RELEASE_VERIFICATION.md``.",
     ""
 )
 $Lines | Set-Content -LiteralPath $AssetManifest -Encoding utf8

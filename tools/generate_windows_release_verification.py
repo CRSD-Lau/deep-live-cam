@@ -305,6 +305,17 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
             else:
                 publish_blockers.append(f"{gate} evidence is missing.")
 
+    if publishable_by_automation:
+        current_status = (
+            "Current status: the installer, Git-ref source archive, cutover evidence, "
+            "and manual gate evidence are locally verified for publication."
+        )
+    else:
+        current_status = (
+            "Current status: the installer and Git-ref source archive are locally verified, "
+            "but this is not yet a publishable GitHub Release until the manual checklist gates are completed."
+        )
+
     lines = [
         "# Windows Release Verification",
         "",
@@ -325,7 +336,7 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
         f"- Manual gate evidence complete: **{yes_no(all_manual_gates_done)}**",
         f"- Ready to publish without remaining manual gates: **{yes_no(publishable_by_automation)}**",
         "",
-        "Current status: the installer and Git-ref source archive are locally verified, but this is not yet a publishable GitHub Release until the manual checklist gates are completed.",
+        current_status,
         "",
         "## Automated Evidence",
         "",
