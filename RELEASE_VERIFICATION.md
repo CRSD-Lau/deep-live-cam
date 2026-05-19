@@ -12,22 +12,22 @@ This file records local release evidence for the Windows installer. It is not a 
 - Draft source traceability available: **YES**
 - Real model download/checksum verification recorded: **YES**
 - Packaged CPU/CUDA processing verification recorded: **YES**
-- Public-release source archive from clean Git ref: **YES, see `CLEAN_RELEASE_WORKTREE_VERIFICATION.md`**
+- Public-release source archive from clean Git ref: **YES**
 - Release cutover status clean: **NO**
 - Manual gate evidence complete: **NO**
 - Ready to publish without remaining manual gates: **NO**
 
-Current status: the installer and matching Git-ref source archive are locally verified, but this is not yet a publishable GitHub Release until the manual checklist gates are completed.
+Current status: the installer and Git-ref source archive are locally verified, but this is not yet a publishable GitHub Release until the manual checklist gates are completed.
 
 ## Automated Evidence
 
 - [x] Installer exists: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - [x] Installer SHA-256 sidecar matches
-  - SHA-256: `C96FA88BB1F8C382D079EC407522B7114C6326ADC7E53547D3CF004C4E2E43A1`
-  - Installer bytes: `431579555`
-- [x] Windows bundle manifest was generated from the PyInstaller payload and included in the installer/source evidence as `LICENSES/WINDOWS_BUNDLE_MANIFEST.md`
+  - SHA-256: see the matching installer `.sha256` sidecar and `RELEASE_ASSETS.md`.
+  - Installer bytes: see `RELEASE_ASSETS.md` and the filesystem artifact selected for upload.
+- [x] Windows bundle manifest exists: `C:\Projects\deep-live-cam\dist\DeepLiveCamStudio\LICENSES\WINDOWS_BUNDLE_MANIFEST.md`
 - [x] Packaged payload contains no forbidden model/checkpoint files
-- [x] Clean detached release checkout built the PyInstaller payload and passed packaged-runtime smoke testing
+- [x] Public-release source archive was created from a Git ref
 - [x] Corresponding-source archive exists
 - [x] Corresponding-source SHA-256 sidecar matches
 - [x] Corresponding-source manifest exists
@@ -67,10 +67,10 @@ Current status: the installer and matching Git-ref source archive are locally ve
 
 ## Source Archive
 
-- Latest source archive: see the `DeepLiveCamStudio-2.1.5-source-*.zip` entry listed in `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
+- Latest source archive: see the `DeepLiveCamStudio-*-source-*.zip` entry listed in the assembled `RELEASE_ASSETS.md` manifest.
 - Source archive mode: `git-ref`
-- Source archive SHA-256: see the matching `.zip.sha256` sidecar and `RELEASE_ASSETS.md`
-- Source archive manifest: see the matching `.manifest.md` listed in `RELEASE_ASSETS.md`
+- Source archive hash sidecar: see the matching `.zip.sha256` file listed in `RELEASE_ASSETS.md`.
+- Source archive manifest: see the matching `.manifest.md` file listed in `RELEASE_ASSETS.md`.
 
 ## Cutover Status
 
@@ -80,6 +80,7 @@ Current status: the installer and matching Git-ref source archive are locally ve
 - Staged release-owned paths: `0`
 - Unstaged release-owned paths: `0`
 - Mixed-scope dirty paths: `10`
+- Mixed-scope dirty paths block verdict: **NO**
 - Unknown dirty paths: `0`
 - Cutover report blocked: **YES**
 
@@ -110,5 +111,5 @@ Current status: the installer and matching Git-ref source archive are locally ve
 
 ## Notes
 
-- A dirty working tree is expected during local development, but a public AGPL binary release should be paired with source from the exact clean release tag or commit.
+- A dirty working tree is expected during local development. A public AGPL binary release should be paired with the exact Git-ref source archive listed in the release assets, and release-owned or unknown dirty paths must not be included accidentally.
 - Model files are intentionally excluded from the installer and should be downloaded only after user consent and checksum verification.

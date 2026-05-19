@@ -196,7 +196,6 @@ def select_source_archive(source_archives: list[Path]) -> Path | None:
 
 
 def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str) -> tuple[str, bool, list[str]]:
-    now = _datetime.datetime.now(_datetime.timezone.utc).replace(microsecond=0).isoformat()
     installer = output_dir / f"DeepLiveCamStudio-{app_version}-x64-setup.exe"
     installer_hash = installer.with_suffix(installer.suffix + ".sha256")
     manifest = dist_dir / "LICENSES" / "WINDOWS_BUNDLE_MANIFEST.md"
@@ -205,7 +204,6 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
     latest_source_hash = Path(str(latest_source) + ".sha256") if latest_source else None
     latest_source_manifest = latest_source.with_suffix(".manifest.md") if latest_source else None
 
-    git_head = run_git(["rev-parse", "HEAD"], repo_root) or "UNKNOWN"
     git_status = run_git(["status", "--porcelain"], repo_root)
     dirty = bool(git_status)
 
@@ -308,9 +306,9 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
     lines = [
         "# Windows Release Verification",
         "",
-        f"Generated: {now}",
+        "Generated: see the assembled `RELEASE_ASSETS.md` manifest and artifact sidecars",
         f"App version: `{app_version}`",
-        f"Git HEAD: `{git_head}`",
+        "Git HEAD: see the matching git-ref source archive manifest in the release-assets folder",
         "",
         "This file records local release evidence for the Windows installer. It is not a legal opinion and does not replace the manual checks in `RELEASE_CHECKLIST.md`.",
         "",
@@ -333,9 +331,9 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
         f"- [{checkbox(installer_hash_ok)}] Installer SHA-256 sidecar matches",
     ]
     if installer_digest:
-        lines.append(f"  - SHA-256: `{installer_digest}`")
+        lines.append("  - SHA-256: see the matching installer `.sha256` sidecar and `RELEASE_ASSETS.md`.")
     if installer_ok:
-        lines.append(f"  - Installer bytes: `{installer.stat().st_size}`")
+        lines.append("  - Installer bytes: see `RELEASE_ASSETS.md` and the filesystem artifact selected for upload.")
 
     lines.extend(
         [
