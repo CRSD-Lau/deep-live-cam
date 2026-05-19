@@ -36,6 +36,8 @@ foreach ($Doc in $RequiredDocs) {
     Copy-Item -LiteralPath $Source -Destination $Destination -Force
 }
 
+Copy-Item -LiteralPath (Join-Path $RepoRoot "Logo.png") -Destination (Join-Path $DistDir "Logo.png") -Force
+
 $LicensePythonCandidates = @(
     (Join-Path $RepoRoot "venv\Scripts\python.exe"),
     (Join-Path $RepoRoot ".venv-build-windows\Scripts\python.exe"),
@@ -48,6 +50,10 @@ if (-not $LicensePython) {
 & $LicensePython tools\collect_third_party_license_files.py --output LICENSES\THIRD_PARTY_LICENSES
 if ($LASTEXITCODE -ne 0) {
     throw "Third-party license file collection failed with exit code $LASTEXITCODE."
+}
+& $LicensePython tools\generate_windows_logo_assets.py --source Logo.png --output-dir build\windows\assets
+if ($LASTEXITCODE -ne 0) {
+    throw "Windows logo asset generation failed with exit code $LASTEXITCODE."
 }
 & $LicensePython tools\prune_windows_dist.py --dist $DistDir
 if ($LASTEXITCODE -ne 0) {

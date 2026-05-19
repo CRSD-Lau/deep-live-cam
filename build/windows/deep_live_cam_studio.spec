@@ -23,6 +23,7 @@ datas += existing_datas(
     [
         ("locales", "locales"),
         ("media", "media"),
+        ("Logo.png", "."),
         ("modules/ui.json", "modules"),
     ]
 )
@@ -89,6 +90,7 @@ gui_exe = EXE(
     strip=False,
     upx=True,
     console=False,
+    icon=str(ROOT / "build" / "windows" / "assets" / "Logo.ico"),
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch="x86_64",
@@ -107,6 +109,7 @@ cli_exe = EXE(
     strip=False,
     upx=True,
     console=True,
+    icon=str(ROOT / "build" / "windows" / "assets" / "Logo.ico"),
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch="x86_64",

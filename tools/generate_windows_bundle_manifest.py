@@ -19,6 +19,7 @@ DEV_ONLY_PATHS = (
 REQUIRED_RELEASE_FILES = (
     "README.md",
     "LICENSE",
+    "Logo.png",
     "THIRD_PARTY_NOTICES.md",
     "COMPLIANCE.md",
     "RELEASE_CHECKLIST.md",

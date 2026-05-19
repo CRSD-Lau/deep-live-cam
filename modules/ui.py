@@ -32,7 +32,7 @@ from PySide6.QtCore import (
     Qt,
     Signal,
 )
-from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtGui import QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -104,7 +104,7 @@ from modules.utilities import (
     read_image,
 )
 from modules.video_capture import VideoCapturer
-from modules.paths import user_data_dir
+from modules.paths import install_root, resource_root, user_data_dir
 from runtime.virtual_cam import VirtualCameraSink
 
 if platform.system() == "Windows":
@@ -135,6 +135,22 @@ POPUP_LIVE_SCROLL_HEIGHT = 700
 
 MAPPER_PREVIEW_SIZE = 100
 SOURCE_TARGET_PREVIEW_SIZE = 220
+APP_LOGO_NAME = "Logo.png"
+
+
+def app_logo_path() -> str:
+    for base in (resource_root(), install_root()):
+        candidate = base / APP_LOGO_NAME
+        if candidate.exists():
+            return str(candidate)
+    return ""
+
+
+def app_icon() -> QIcon:
+    logo = app_logo_path()
+    if logo:
+        return QIcon(logo)
+    return QIcon()
 
 
 # ─── modern dark stylesheet ───────────────────────────────────────────────
@@ -625,6 +641,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(
             f"{modules.metadata.name} {modules.metadata.version} {modules.metadata.edition}"
         )
+        self.setWindowIcon(app_icon())
         self.setMinimumSize(ROOT_WIDTH, ROOT_HEIGHT)
         self.resize(ROOT_WIDTH, ROOT_HEIGHT)
 
@@ -672,6 +689,22 @@ class MainWindow(QMainWindow):
         layout = QHBoxLayout(header)
         layout.setContentsMargins(18, 14, 18, 14)
         layout.setSpacing(14)
+
+        logo_path = app_logo_path()
+        if logo_path:
+            logo = QLabel()
+            logo.setObjectName("logoLabel")
+            logo.setFixedSize(46, 46)
+            logo.setPixmap(
+                QPixmap(logo_path).scaled(
+                    46,
+                    46,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
+            logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(logo)
 
         title_col = QVBoxLayout()
         title_col.setSpacing(2)
@@ -2063,6 +2096,7 @@ def init(
     else:
         _APP = QApplication.instance()
     _APP.setStyleSheet(QSS)
+    _APP.setWindowIcon(app_icon())
 
     _BRIDGE = _UIBridge()
     _MAIN = MainWindow(start, destroy)

@@ -36,6 +36,7 @@ if (-not $SkipDependencyInstall) {
 }
 Invoke-Checked $PythonExe @("-m", "pip", "install", "pyinstaller>=6.10,<7", "pyinstaller-hooks-contrib>=2024.8")
 
+Invoke-Checked $PythonExe @("tools\generate_windows_logo_assets.py", "--source", "Logo.png", "--output-dir", "build\windows\assets")
 Invoke-Checked $PythonExe @("-m", "PyInstaller", "--noconfirm", "--clean", $Spec, "--distpath", (Join-Path $RepoRoot "dist"), "--workpath", (Join-Path $RepoRoot "build\windows\pyinstaller-work"))
 Invoke-Checked $PythonExe @("tools\prune_windows_dist.py", "--dist", $DistDir)
 
@@ -51,6 +52,8 @@ foreach ($Doc in $RequiredDocs) {
     New-Item -ItemType Directory -Path (Split-Path -Parent $Destination) -Force | Out-Null
     Copy-Item -LiteralPath $Source -Destination $Destination -Force
 }
+
+Copy-Item -LiteralPath (Join-Path $RepoRoot "Logo.png") -Destination (Join-Path $DistDir "Logo.png") -Force
 
 $Licenses = Join-Path $RepoRoot "LICENSES"
 if (Test-Path $Licenses) {

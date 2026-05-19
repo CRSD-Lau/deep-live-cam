@@ -25,6 +25,7 @@ if (-not (Test-Path $Gui)) {
 $RequiredFiles = @(
     "README.md",
     "LICENSE",
+    "Logo.png",
     "THIRD_PARTY_NOTICES.md",
     "COMPLIANCE.md",
     "RELEASE_CHECKLIST.md",
