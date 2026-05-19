@@ -11,7 +11,7 @@ distribution context. The release verifier only treats this file as passed when
 ## Artifact Under Review
 
 - Installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
-- Installer SHA-256: `97FFFB8DB2BC151AC30365AF59D220CC3A6551376AD61D7A63093BCEEF23F7E3`
+- Installer SHA-256: `34B74A43DCECE31DE52DEF948BC9DADAB99648E6C88334EF35ECDFA07B2197BA`
 - Source commit/tag: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
 - Reviewer:
 - Date:
@@ -52,6 +52,9 @@ decisions, especially AGPL corresponding-source handling, model downloader
 license posture, PySide6/shiboken6 posture, GPL metadata for
 `pyvirtualcam`/`cv2_enumerate_cameras`, Inno Setup commercial-use position,
 ffmpeg exclusion, and unknown/unusual dependency metadata.
+
+The latest generated packet for this release candidate is:
+`build\windows\manual-evidence\legal-review\legal-review-2.1.5-20260519-033521.md`.
 
 The helper fails closed if the corresponding source archive, `.sha256` sidecar,
 or `.manifest.md` file is missing, mismatched, not generated from a Git ref, or

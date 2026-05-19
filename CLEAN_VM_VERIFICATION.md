@@ -11,7 +11,7 @@ unchecked `- [ ]` checklist rows remain.
 ## Artifact Under Test
 
 - Installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
-- Installer SHA-256: `97FFFB8DB2BC151AC30365AF59D220CC3A6551376AD61D7A63093BCEEF23F7E3`
+- Installer SHA-256: `34B74A43DCECE31DE52DEF948BC9DADAB99648E6C88334EF35ECDFA07B2197BA`
 - Source commit/tag: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
 - Tester:
 - Date:
@@ -37,10 +37,10 @@ Record command output, screenshots, VM snapshot name, or tester notes here.
 
 ### Automated Subset Evidence
 
-- 2026-05-19T05:13:02Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.5` completed with `Installer smoke test passed`.
+- 2026-05-19T06:35:21Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.5` completed with `Installer smoke test passed`.
 - Installer under test: `build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`.
-- Installer SHA-256 observed by the helper: `97FFFB8DB2BC151AC30365AF59D220CC3A6551376AD61D7A63093BCEEF23F7E3`.
-- Generated local evidence packet: `build\windows\manual-evidence\clean-vm\clean-vm-2.1.5-20260519-021219.md`.
+- Installer SHA-256 observed by the helper: `34B74A43DCECE31DE52DEF948BC9DADAB99648E6C88334EF35ECDFA07B2197BA`.
+- Generated local evidence packet: `build\windows\manual-evidence\clean-vm\clean-vm-2.1.5-20260519-033521.md`.
 - Covered repeatable subset: silent per-user install, required installed files, forbidden model/checkpoint scan, CLI `--version`, silent uninstall, and user-model sentinel preservation.
 - Still requires manual tester confirmation before `Status: PASS`: fresh Windows VM context, Start menu shortcut, optional desktop shortcut, model-download consent text, missing-model messaging, and interactive uninstall prompt.
 
