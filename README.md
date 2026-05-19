@@ -1,4 +1,4 @@
-# Deep Live Cam Studio 2.1.6
+# Deep Live Cam Studio 2.1.7
 
 Deep Live Cam Studio is a Windows-focused build of Deep-Live-Cam with a packaged desktop installer, CUDA-enabled runtime support, explicit model download/verification, OBS virtual-camera workflow support, and release compliance tooling.
 
@@ -11,7 +11,7 @@ This repository is the working source for the Windows Studio build published by 
 This is the normal setup path for someone who just wants to run the app:
 
 1. Download the installer:
-   [DeepLiveCamStudio-2.1.6-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.6/DeepLiveCamStudio-2.1.6-x64-setup.exe)
+   [DeepLiveCamStudio-2.1.7-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.7/DeepLiveCamStudio-2.1.7-x64-setup.exe)
 2. Run the installer.
 3. If Windows SmartScreen appears, choose **More info** and then **Run anyway** only if the installer came from the release link above.
 4. Open the Windows Start Menu.
@@ -20,7 +20,7 @@ This is the normal setup path for someone who just wants to run the app:
 
 That is enough for the installed app and required face-swap model setup.
 
-**Download and Verify Models** is a Windows Start Menu shortcut created by the installer. It is not inside the `2.1.6` app window.
+**Download and Verify Models** is a Windows Start Menu shortcut created by the installer. It is not inside the `2.1.7` app window.
 
 ![Windows Start Menu search showing Download and Verify Models](docs/images/windows-start-menu-download-models.svg)
 
@@ -53,16 +53,16 @@ Not included:
 
 If you only want to install Deep Live Cam Studio, do not use the green **Code** button. The source `.zip` files are for developers. Download the Windows installer from the latest GitHub Release:
 
-[Download DeepLiveCamStudio-2.1.6-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.6/DeepLiveCamStudio-2.1.6-x64-setup.exe)
+[Download DeepLiveCamStudio-2.1.7-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.7/DeepLiveCamStudio-2.1.7-x64-setup.exe)
 
 Or open the full release page:
 
-[Deep Live Cam Studio 2.1.6 release](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.6)
+[Deep Live Cam Studio 2.1.7 release](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.7)
 
 On the release page, expand **Assets** and choose:
 
 ```text
-DeepLiveCamStudio-2.1.6-x64-setup.exe
+DeepLiveCamStudio-2.1.7-x64-setup.exe
 ```
 
 Run the installer after it downloads. Windows may show a Microsoft Defender SmartScreen warning because the public installer is not signed by a paid code-signing certificate. Choose **More info** and then **Run anyway** only if you downloaded it from the release link above.
@@ -70,7 +70,7 @@ Run the installer after it downloads. Windows may show a Microsoft Defender Smar
 After installing, launch **Deep Live Cam Studio** from the Start Menu. The app installs here by default:
 
 ```text
-%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.6
+%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.7
 ```
 
 The installer does not include model/checkpoint files. After first install, use the Windows Start Menu shortcut named **Download and Verify Models**. If you prefer the terminal, open one in the installed app folder and run:
@@ -100,26 +100,33 @@ The downloader shows model sources, license notes, and checksums before installi
 
 Current release page:
 
-[Deep Live Cam Studio 2.1.6](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.6)
+[Deep Live Cam Studio 2.1.7](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.7)
+
+What changed in 2.1.7:
+
+- Refined the Studio media controls and removed the unreliable Random face action.
+- Fixed the default window size at 1500x900 so the app opens in the intended layout and can only grow by maximizing.
+- Matched the Source Face and Target Media action buttons to the drop-zone width.
+- Refreshed the runtime dependency pins after a security review.
 
 Direct installer download:
 
-[DeepLiveCamStudio-2.1.6-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.6/DeepLiveCamStudio-2.1.6-x64-setup.exe)
+[DeepLiveCamStudio-2.1.7-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.7/DeepLiveCamStudio-2.1.7-x64-setup.exe)
 
 The release asset name is:
 
 ```text
-DeepLiveCamStudio-2.1.6-x64-setup.exe
+DeepLiveCamStudio-2.1.7-x64-setup.exe
 ```
 
 ## Install And Update
 
-Install the latest release by downloading and running `DeepLiveCamStudio-2.1.6-x64-setup.exe` from the GitHub Release page.
+Install the latest release by downloading and running `DeepLiveCamStudio-2.1.7-x64-setup.exe` from the GitHub Release page.
 
 Default install path:
 
 ```text
-%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.6
+%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.7
 ```
 
 Model storage:
@@ -254,13 +261,13 @@ powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1
 Package the installer:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.6
+powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.7
 ```
 
 The installer output is:
 
 ```text
-build\windows\installer\DeepLiveCamStudio-2.1.6-x64-setup.exe
+build\windows\installer\DeepLiveCamStudio-2.1.7-x64-setup.exe
 ```
 
 ## Signing
@@ -269,13 +276,13 @@ For a real public publisher name, sign with a trusted Authenticode code-signing 
 
 ```powershell
 $env:DLC_SIGN_CERT_PASSWORD = "<pfx-password>"
-powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.6 -SignCertPath "C:\path\to\certificate.pfx"
+powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.7 -SignCertPath "C:\path\to\certificate.pfx"
 ```
 
 For local-only testing without a paid certificate, self-sign and trust the certificate for the current Windows user:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\self_sign_installer.ps1 -AppVersion 2.1.6 -TrustForCurrentUser
+powershell -ExecutionPolicy Bypass -File build\windows\self_sign_installer.ps1 -AppVersion 2.1.7 -TrustForCurrentUser
 ```
 
 Self-signing does not create public SmartScreen reputation. Other users must import and trust the exported `.cer` file themselves.
@@ -285,19 +292,19 @@ Self-signing does not create public SmartScreen reputation. Other users must imp
 Run the standard local release gate:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.6 -GitRef <release-tag-or-commit>
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.7 -GitRef <release-tag-or-commit>
 ```
 
 Package corresponding source for the exact release tag or commit:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.6 -GitRef <release-tag-or-commit>
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.7 -GitRef <release-tag-or-commit>
 ```
 
 Assemble upload assets:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.1.6 -RequireGitRefSource
+powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.1.7 -RequireGitRefSource
 ```
 
 The release asset set includes the installer, installer hash, source archive, source hash, source manifest, release notes, compliance evidence, `RELEASE_ASSETS.md`, and `SHA256SUMS.txt`.

@@ -11,7 +11,7 @@ release documents so installer hashes are not made stale by handoff notes.
 - The installer and git-ref source archive hashes are recorded in their
   generated `.sha256` sidecars and in the assembled `RELEASE_ASSETS.md`.
 - The current source archive uses `git-ref` mode; see
-  `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md` for the exact source
+  `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md` for the exact source
   ref and hashes.
 - The public-release gate remains blocked until the manual evidence files pass.
 
@@ -152,7 +152,7 @@ venv\Scripts\python.exe -m pytest tests\test_validate_windows_release_artifacts.
 4. Rebuild and verify the release candidate:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -UseExistingVenv -DraftWorkingTreeSource
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.7 -UseExistingVenv -DraftWorkingTreeSource
 ```
 
 5. Complete and mark manual evidence files only after real checks pass:
@@ -164,9 +164,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\run_release_ch
 Use the evidence helpers for the repeatable subsets:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.5
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.7
 powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_obs_virtualcam_gate.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.1.5
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.1.7
 ```
 
 6. Commit the release source and evidence.
@@ -179,19 +179,19 @@ git status --short
 8. Tag the exact release commit:
 
 ```powershell
-git tag v2.1.5
+git tag v2.1.7
 ```
 
 9. Generate clean corresponding source from the tag:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.5 -GitRef v2.1.5
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.7 -GitRef v2.1.7
 ```
 
 10. Run the strict publish gate on suitable release-test machines:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -UseExistingVenv -GitRef v2.1.5 -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.7 -UseExistingVenv -GitRef v2.1.7 -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
 ```
 
 The strict publish gate intentionally rejects `-AllowDirtySource`,

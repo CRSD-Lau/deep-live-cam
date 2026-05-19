@@ -15,21 +15,21 @@ the manual clean VM, OBS visual workflow, or legal review gates.
 
 ## Artifact Set
 
-- Installer: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`
-- Installer SHA-256: see `DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`.
-- Source archive: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`.
-- Source SHA-256: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md` and the matching `.sha256` sidecar.
+- Installer: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.7-x64-setup.exe`
+- Installer SHA-256: see `DeepLiveCamStudio-2.1.7-x64-setup.exe.sha256`.
+- Source archive: see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`.
+- Source SHA-256: see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md` and the matching `.sha256` sidecar.
 
 ## Automated Checks
 
 - [x] Detached release worktree checked out at the release commit.
 - [x] `git status --short --untracked-files=all` returned no paths in the detached release worktree.
 - [x] `tools/check_windows_release_cutover.py` reported `Dirty paths: 0` in the detached release worktree.
-- [x] `build/windows/package_source.ps1 -AppVersion 2.1.5 -GitRef HEAD -OutputDir C:\Projects\deep-live-cam\build\windows\clean-worktree-source-check` created the source archive from the clean detached release worktree without `-AllowDirty`.
+- [x] `build/windows/package_source.ps1 -AppVersion 2.1.7 -GitRef HEAD -OutputDir C:\Projects\deep-live-cam\build\windows\clean-worktree-source-check` created the source archive from the clean detached release worktree without `-AllowDirty`.
 - [x] Source archive manifest records `Archive mode: git-ref`.
 - [x] Source archive manifest records the exact resolved release commit.
 - [x] Source archive validation found no `.onnx`, `.pth`, `.safetensors`, `models/`, `checkpoints/`, or model-cache entries.
-- [x] `tools/validate_windows_release_artifacts.py --require-git-ref-source --release-assets-dir C:\Projects\deep-live-cam\build\windows\release-assets\2.1.5` passed against the installer and source archive.
+- [x] `tools/validate_windows_release_artifacts.py --require-git-ref-source --release-assets-dir C:\Projects\deep-live-cam\build\windows\release-assets\2.1.7` passed against the installer and source archive.
 - [x] Focused release tests passed from the detached release worktree using the main workspace Python: `25 passed`.
 
 ## Remaining Non-Automated Gates

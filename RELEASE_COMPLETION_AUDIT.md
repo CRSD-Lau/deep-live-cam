@@ -11,17 +11,17 @@ Status: **NOT COMPLETE**
 
 The repository now has a locally verified Windows installer workflow and
 release-candidate artifacts. The current release asset set points at a strict
-git-ref source archive; see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
+git-ref source archive; see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`
 for the exact source ref and hashes. The active goal is still not complete
 because three required manual gates remain `PENDING`.
 
 ## Current Artifact Evidence
 
-- Installer: `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe`
+- Installer: `build/windows/installer/DeepLiveCamStudio-2.1.7-x64-setup.exe`
 - Installer SHA-256: see
-  `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`
+  `build/windows/installer/DeepLiveCamStudio-2.1.7-x64-setup.exe.sha256`
 - Git-ref source archive, SHA-256, and commit: see
-  `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md` and the matching
+  `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md` and the matching
   source archive `.manifest.md`
 - Generated release verdict: `RELEASE_VERIFICATION.md`
 - Final cutover procedure: `RELEASE_CUTOVER_PLAN.md`
@@ -71,7 +71,7 @@ These must be complete before the active goal can be marked done:
 - `build/windows/assemble_release_assets.ps1 -RequireGitRefSource` produced
   the current upload folder and `RELEASE_ASSETS.md` manifest.
 - `tools/validate_windows_release_artifacts.py --release-assets-dir
-  build/windows/release-assets/2.1.5 --require-git-ref-source` passed before
+  build/windows/release-assets/2.1.7 --require-git-ref-source` passed before
   this audit refresh.
 - `tools/check_windows_release_cutover.py --strict --allow-mixed-scope-dirty`
   fails only because the three manual evidence files are incomplete.
@@ -87,12 +87,12 @@ These must be complete before the active goal can be marked done:
 ```powershell
 venv\Scripts\python.exe -m pytest tests\test_validate_windows_release_artifacts.py tests\test_windows_release_verification.py tests\test_image_upload_formats.py tests\test_model_manager.py
 venv\Scripts\python.exe tools\check_windows_release_cutover.py --repo-root . --output RELEASE_CUTOVER_STATUS.md --allow-mixed-scope-dirty
-venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version 2.1.5
-venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version 2.1.5 --require-git-ref-source
+venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version 2.1.7
+venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version 2.1.7 --require-git-ref-source
 git worktree add --detach C:\Projects\deep-live-cam-release-verify HEAD
 C:\Projects\deep-live-cam\venv\Scripts\python.exe tools\check_windows_release_cutover.py --repo-root . --limit 50 --allow-mixed-scope-dirty
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.5 -GitRef HEAD -OutputDir C:\Projects\deep-live-cam\build\windows\clean-worktree-source-check
-C:\Projects\deep-live-cam\venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root C:\Projects\deep-live-cam-release-verify --output-dir C:\Projects\deep-live-cam\build\windows\installer --release-assets-dir C:\Projects\deep-live-cam\build\windows\release-assets\2.1.5 --app-version 2.1.5 --require-git-ref-source
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.7 -GitRef HEAD -OutputDir C:\Projects\deep-live-cam\build\windows\clean-worktree-source-check
+C:\Projects\deep-live-cam\venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root C:\Projects\deep-live-cam-release-verify --output-dir C:\Projects\deep-live-cam\build\windows\installer --release-assets-dir C:\Projects\deep-live-cam\build\windows\release-assets\2.1.7 --app-version 2.1.7 --require-git-ref-source
 ```
 
 The strict artifact validator passes against the current installer/source

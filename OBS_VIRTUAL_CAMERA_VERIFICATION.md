@@ -10,9 +10,9 @@ remain.
 
 ## Artifact Under Test
 
-- Installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
+- Installer: `DeepLiveCamStudio-2.1.7-x64-setup.exe`
 - Installer SHA-256: `C904A7930F7643313669EA5A20A7027772D8FB126BD33756073683A48B7BBE7F`
-- Source commit/tag: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
+- Source commit/tag: see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`
 - Tester: Neil Mitchell
 - Date: 2026-05-19
 - Windows edition/build:

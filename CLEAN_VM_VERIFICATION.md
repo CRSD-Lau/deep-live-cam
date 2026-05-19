@@ -10,9 +10,9 @@ unchecked `- [ ]` checklist rows remain.
 
 ## Artifact Under Test
 
-- Installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
+- Installer: `DeepLiveCamStudio-2.1.7-x64-setup.exe`
 - Installer SHA-256: `C904A7930F7643313669EA5A20A7027772D8FB126BD33756073683A48B7BBE7F`
-- Source commit/tag: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
+- Source commit/tag: see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`
 - Tester: Neil Mitchell
 - Date: 2026-05-19
 - Windows edition/build:
@@ -41,10 +41,10 @@ Record command output, screenshots, VM snapshot name, or tester notes here.
 
 ### Automated Subset Evidence
 
-- 2026-05-19T07:21:29Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.5` completed with `Installer smoke test passed`.
-- Installer under test: `build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`.
+- 2026-05-19T07:21:29Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.7` completed with `Installer smoke test passed`.
+- Installer under test: `build\windows\installer\DeepLiveCamStudio-2.1.7-x64-setup.exe`.
 - Installer SHA-256 observed by the helper: `C904A7930F7643313669EA5A20A7027772D8FB126BD33756073683A48B7BBE7F`.
-- Generated local evidence packet: `build\windows\manual-evidence\clean-vm\clean-vm-2.1.5-20260519-042129.md`.
+- Generated local evidence packet: `build\windows\manual-evidence\clean-vm\clean-vm-2.1.7-20260519-042129.md`.
 - Release upload copy: `CLEAN_VM_AUTOMATED_EVIDENCE.md`.
 - Covered repeatable subset: silent per-user install, required installed files, forbidden model/checkpoint scan, CLI `--version`, silent uninstall, and user-model sentinel preservation.
 - Still requires manual tester confirmation before `Status: PASS`: fresh Windows VM context, Start menu shortcut, optional desktop shortcut, model-download consent text, missing-model messaging, and interactive uninstall prompt.
@@ -52,7 +52,7 @@ Record command output, screenshots, VM snapshot name, or tester notes here.
 Automated evidence helper for the repeatable subset:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.5
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.7
 ```
 
 Attach or summarize the generated `build\windows\manual-evidence\clean-vm\*.md`

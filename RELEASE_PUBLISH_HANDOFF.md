@@ -2,20 +2,20 @@
 
 Status: NOT PUBLISH-APPROVED
 
-This handoff is for the Windows `2.1.5` release candidate. It points release
+This handoff is for the Windows `2.1.7` release candidate. It points release
 testers and reviewers at the exact artifacts, commands, and gate files needed
 before publishing a GitHub Release.
 
 ## Current Artifacts
 
-- Upload folder: `build/windows/release-assets/2.1.5/`
-- Upload manifest: `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
-- Installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
+- Upload folder: `build/windows/release-assets/2.1.7/`
+- Upload manifest: `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`
+- Installer: `DeepLiveCamStudio-2.1.7-x64-setup.exe`
 - Installer SHA-256: see `RELEASE_ASSETS.md` and
-  `DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`
+  `DeepLiveCamStudio-2.1.7-x64-setup.exe.sha256`
 - Corresponding source archive: see `RELEASE_ASSETS.md`
 - Source archive SHA-256: see `RELEASE_ASSETS.md` and the matching
-  `DeepLiveCamStudio-2.1.5-source-*.zip.sha256`
+  `DeepLiveCamStudio-2.1.7-source-*.zip.sha256`
 
 Upload every file listed in `RELEASE_ASSETS.md`. Do not upload model or
 checkpoint files unless a separate redistribution approval exists.
@@ -45,7 +45,7 @@ It must pass before publication. If it fails, complete the gates below.
 On a fresh Windows x64 VM:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.5
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.7
 ```
 
 Then complete the interactive checks in `CLEAN_VM_VERIFICATION.md`. Change that
@@ -68,7 +68,7 @@ after every checklist item is checked.
 Generate the reviewer packet:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.1.5
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.1.7
 ```
 
 An authorized reviewer must complete `LEGAL_REVIEW.md`, including AGPL
@@ -83,19 +83,19 @@ checked.
 After the three manual files are `Status: PASS` with no unchecked items, run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit> -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.7 -GitRef <release-tag-or-commit> -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
 ```
 
 Then validate the upload folder:
 
 ```powershell
-venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --release-assets-dir build\windows\release-assets\2.1.5 --app-version 2.1.5 --require-git-ref-source
+venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --release-assets-dir build\windows\release-assets\2.1.7 --app-version 2.1.7 --require-git-ref-source
 ```
 
 Only publish if both commands pass.
 
 ## Release Notes
 
-Use `build/windows/release-assets/2.1.5/RELEASE_NOTES.md` as the GitHub Release
+Use `build/windows/release-assets/2.1.7/RELEASE_NOTES.md` as the GitHub Release
 body. It includes the installer hash, source archive, source hash, AGPL source
 availability notice, model exclusion notice, and remaining legal-risk notes.

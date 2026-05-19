@@ -1,7 +1,7 @@
 # Windows Release Verification
 
 Generated: see the assembled `RELEASE_ASSETS.md` manifest and artifact sidecars
-App version: `2.1.5`
+App version: `2.1.7`
 Git HEAD: see the matching git-ref source archive manifest in the release-assets folder
 
 This file records local release evidence for the Windows installer. It is not a legal opinion and does not replace the manual checks in `RELEASE_CHECKLIST.md`.
@@ -21,7 +21,7 @@ Current status: the installer, Git-ref source archive, cutover evidence, and man
 
 ## Automated Evidence
 
-- [x] Installer exists: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`
+- [x] Installer exists: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.7-x64-setup.exe`
 - [x] Installer SHA-256 sidecar matches
   - SHA-256: see the matching installer `.sha256` sidecar and `RELEASE_ASSETS.md`.
   - Installer bytes: see `RELEASE_ASSETS.md` and the filesystem artifact selected for upload.

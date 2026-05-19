@@ -6,9 +6,9 @@ worktree is resolved and the manual gates are completed.
 
 ## Current Local Artifact State
 
-- Installer: `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe`
-- Installer SHA-256: see `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`
-- Public-release source archive: see the latest `build/windows/installer/DeepLiveCamStudio-2.1.5-source-*.zip` whose manifest records `Archive mode: git-ref`
+- Installer: `build/windows/installer/DeepLiveCamStudio-2.1.7-x64-setup.exe`
+- Installer SHA-256: see `build/windows/installer/DeepLiveCamStudio-2.1.7-x64-setup.exe.sha256`
+- Public-release source archive: see the latest `build/windows/installer/DeepLiveCamStudio-2.1.7-source-*.zip` whose manifest records `Archive mode: git-ref`
 - Public-release source SHA-256: see the matching `.zip.sha256` sidecar
 - Source ref: see the matching `.manifest.md`
 - Current release verdict: local automation passed, public release not yet ready.
@@ -23,7 +23,7 @@ Release should use the git-ref archive above or a later clean tag archive. To
 remove stale local source archives while keeping the current upload packet, run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\clean_build.ps1 -PruneStaleInstallerArtifacts -AppVersion 2.1.5
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\clean_build.ps1 -PruneStaleInstallerArtifacts -AppVersion 2.1.7
 ```
 
 ## Release-Relevant Files To Review Before Commit
@@ -138,21 +138,21 @@ artifact validation if a later release commit or tag is used.
 Create a release tag or use the exact release commit:
 
 ```powershell
-git tag v2.1.5
+git tag v2.1.7
 ```
 
 Build and verify from that clean state:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -UseExistingVenv -GitRef v2.1.5 -RequireFfmpeg -RequireCuda
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -UseExistingVenv -GitRef v2.1.7 -RequireFfmpeg -RequireCuda
 ```
 
 If the installer is already built and only the clean source archive needs to be
 created:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.5 -GitRef v2.1.5
-venv\Scripts\python.exe tools\generate_windows_release_verification.py --repo-root . --dist dist\DeepLiveCamStudio --output-dir build\windows\installer --app-version 2.1.5 --output RELEASE_VERIFICATION.md
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.7 -GitRef v2.1.7
+venv\Scripts\python.exe tools\generate_windows_release_verification.py --repo-root . --dist dist\DeepLiveCamStudio --output-dir build\windows\installer --app-version 2.1.7 --output RELEASE_VERIFICATION.md
 ```
 
 Do not pass `-FromWorkingTree` for a public GitHub Release.

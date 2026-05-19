@@ -25,17 +25,17 @@ MANUAL_GATE_SUMMARY = """# Manual Windows Release Gate Summary
 
 def write_artifacts(tmp_path, extra_source_entry_name=None, omit_required_entry=None):
     output_dir = tmp_path / "build" / "windows" / "installer"
-    installer = output_dir / "DeepLiveCamStudio-2.1.6-x64-setup.exe"
+    installer = output_dir / "DeepLiveCamStudio-2.1.7-x64-setup.exe"
     installer.parent.mkdir(parents=True, exist_ok=True)
     installer.write_bytes(b"installer")
     write_file(installer.with_suffix(installer.suffix + ".sha256"), f"{validator.sha256(installer)}  {installer.name}\n")
 
-    source = output_dir / "DeepLiveCamStudio-2.1.6-source-testref.zip"
+    source = output_dir / "DeepLiveCamStudio-2.1.7-source-testref.zip"
     with zipfile.ZipFile(source, "w") as archive:
         for entry in validator.REQUIRED_SOURCE_ENTRIES:
             if entry == omit_required_entry:
                 continue
-            archive.writestr(f"DeepLiveCamStudio-2.1.6-source/{entry}", "source")
+            archive.writestr(f"DeepLiveCamStudio-2.1.7-source/{entry}", "source")
         if extra_source_entry_name:
             archive.writestr(extra_source_entry_name, "source")
     write_file(source.with_suffix(source.suffix + ".sha256"), f"{validator.sha256(source)}  {source.name}\n")
@@ -53,7 +53,7 @@ def write_artifacts(tmp_path, extra_source_entry_name=None, omit_required_entry=
 
 def write_release_assets(tmp_path):
     installer, source = write_artifacts(tmp_path)
-    assets_dir = tmp_path / "build" / "windows" / "release-assets" / "2.1.6"
+    assets_dir = tmp_path / "build" / "windows" / "release-assets" / "2.1.7"
     assets_dir.mkdir(parents=True)
     files = [
         installer,
@@ -196,7 +196,7 @@ def test_validate_release_artifacts_accepts_complete_artifact_set(tmp_path, monk
 
 
 def test_validate_release_artifacts_rejects_forbidden_source_entries(tmp_path, monkeypatch):
-    write_artifacts(tmp_path, extra_source_entry_name="DeepLiveCamStudio-2.1.6-source/models/model.onnx")
+    write_artifacts(tmp_path, extra_source_entry_name="DeepLiveCamStudio-2.1.7-source/models/model.onnx")
     monkeypatch.chdir(tmp_path)
 
     assert validator.main([]) == 1
@@ -212,8 +212,8 @@ def test_validate_release_artifacts_rejects_missing_required_source_entries(tmp_
 def test_validate_release_artifacts_prefers_git_ref_source_when_required(tmp_path, monkeypatch):
     write_artifacts(tmp_path)
     output_dir = tmp_path / "build" / "windows" / "installer"
-    git_ref_source = output_dir / "DeepLiveCamStudio-2.1.6-source-testref.zip"
-    draft_source = output_dir / "DeepLiveCamStudio-2.1.6-source-worktree-testref.zip"
+    git_ref_source = output_dir / "DeepLiveCamStudio-2.1.7-source-testref.zip"
+    draft_source = output_dir / "DeepLiveCamStudio-2.1.7-source-worktree-testref.zip"
     draft_source.write_bytes(git_ref_source.read_bytes())
     write_file(draft_source.with_suffix(draft_source.suffix + ".sha256"), f"{validator.sha256(draft_source)}  {draft_source.name}\n")
     write_file(
@@ -231,19 +231,19 @@ def test_validate_release_artifacts_accepts_curated_release_assets(tmp_path, mon
     write_release_assets(tmp_path)
     monkeypatch.chdir(tmp_path)
 
-    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.6"]) == 0
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7"]) == 0
 
 
 def test_validate_release_artifacts_rejects_stale_extra_source_archive_in_assets(tmp_path, monkeypatch):
     assets_dir = write_release_assets(tmp_path)
-    source = assets_dir / "DeepLiveCamStudio-2.1.6-source-testref.zip"
-    stale_source = assets_dir / "DeepLiveCamStudio-2.1.6-source-stale.zip"
+    source = assets_dir / "DeepLiveCamStudio-2.1.7-source-testref.zip"
+    stale_source = assets_dir / "DeepLiveCamStudio-2.1.7-source-stale.zip"
     stale_source.write_bytes(source.read_bytes())
     write_file(stale_source.with_suffix(stale_source.suffix + ".sha256"), f"{validator.sha256(stale_source)}  {stale_source.name}\n")
     write_file(stale_source.with_suffix(".manifest.md"), source.with_suffix(".manifest.md").read_text(encoding="utf-8"))
     monkeypatch.chdir(tmp_path)
 
-    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.6"]) == 1
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7"]) == 1
 
 
 def test_validate_release_artifacts_rejects_blank_manual_gate_summary(tmp_path, monkeypatch):
@@ -251,7 +251,7 @@ def test_validate_release_artifacts_rejects_blank_manual_gate_summary(tmp_path, 
     write_file(assets_dir / "MANUAL_RELEASE_GATES.md", "placeholder\n")
     monkeypatch.chdir(tmp_path)
 
-    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.6"]) == 1
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7"]) == 1
 
 
 def test_validate_release_artifacts_rejects_required_doc_missing_from_manifest(tmp_path, monkeypatch):
@@ -263,7 +263,7 @@ def test_validate_release_artifacts_rejects_required_doc_missing_from_manifest(t
     )
     monkeypatch.chdir(tmp_path)
 
-    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.6"]) == 1
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7"]) == 1
 
 
 def test_validate_release_artifacts_rejects_bad_sha256sums(tmp_path, monkeypatch):
@@ -275,7 +275,7 @@ def test_validate_release_artifacts_rejects_bad_sha256sums(tmp_path, monkeypatch
     )
     monkeypatch.chdir(tmp_path)
 
-    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.6"]) == 1
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7"]) == 1
 
 
 def test_validate_release_artifacts_rejects_stale_clean_vm_evidence_hash(tmp_path, monkeypatch):
@@ -288,18 +288,18 @@ def test_validate_release_artifacts_rejects_stale_clean_vm_evidence_hash(tmp_pat
     write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
     monkeypatch.chdir(tmp_path)
 
-    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.6"]) == 1
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7"]) == 1
 
 
 def test_validate_release_artifacts_rejects_stale_legal_evidence_source(tmp_path, monkeypatch):
     assets_dir = write_release_assets(tmp_path)
-    installer = assets_dir / "DeepLiveCamStudio-2.1.6-x64-setup.exe"
+    installer = assets_dir / "DeepLiveCamStudio-2.1.7-x64-setup.exe"
     write_file(
         assets_dir / "LEGAL_REVIEW_EVIDENCE_PACKET.md",
         "\n".join(
             (
                 f"- Installer SHA-256: `{validator.sha256(installer)}`",
-                "- Source archive: `DeepLiveCamStudio-2.1.6-source-old.zip`",
+                "- Source archive: `DeepLiveCamStudio-2.1.7-source-old.zip`",
                 "- Source archive SHA-256: `OLDHASH`",
             )
         ),
@@ -311,7 +311,7 @@ def test_validate_release_artifacts_rejects_stale_legal_evidence_source(tmp_path
     write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
     monkeypatch.chdir(tmp_path)
 
-    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.6"]) == 1
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7"]) == 1
 
 
 def test_validate_release_artifacts_rejects_stale_release_notes_source_ref(tmp_path, monkeypatch):
@@ -328,7 +328,7 @@ def test_validate_release_artifacts_rejects_stale_release_notes_source_ref(tmp_p
     write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
     monkeypatch.chdir(tmp_path)
 
-    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.6"]) == 1
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7"]) == 1
 
 
 def test_validate_release_artifacts_rejects_stale_release_assets_source_ref(tmp_path, monkeypatch):
@@ -345,4 +345,4 @@ def test_validate_release_artifacts_rejects_stale_release_assets_source_ref(tmp_
     write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
     monkeypatch.chdir(tmp_path)
 
-    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.6"]) == 1
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7"]) == 1
