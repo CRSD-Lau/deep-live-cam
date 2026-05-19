@@ -51,6 +51,7 @@ REQUIRED_SOURCE_ENTRIES = (
     ".github/workflows/windows-release.yml",
     "DeepLiveCamStudio.pyw",
     "build/windows/build_windows.ps1",
+    "build/windows/assemble_release_assets.ps1",
     "build/windows/clean_build.ps1",
     "build/windows/package_installer.ps1",
     "build/windows/package_source.ps1",

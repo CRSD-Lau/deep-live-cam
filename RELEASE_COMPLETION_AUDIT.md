@@ -69,6 +69,8 @@ These must be complete before the active goal can be marked done:
   manifest with `Archive mode: git-ref`.
 - `tools/validate_windows_release_artifacts.py --require-git-ref-source` must
   pass.
+- `build/windows/assemble_release_assets.ps1 -RequireGitRefSource` should
+  produce the final upload folder and `RELEASE_ASSETS.md` manifest.
 - `tools/check_windows_release_cutover.py --strict` must pass on the intended
   release branch or clean detached release worktree after staging/committing
   decisions are complete.

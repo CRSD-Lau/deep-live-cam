@@ -54,6 +54,17 @@ To validate the uploadable artifact directory directly, run:
 python tools\validate_windows_release_artifacts.py --app-version 2.1.5 --require-git-ref-source
 ```
 
+To assemble the exact GitHub Release upload set into a dedicated folder, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.1.5 -RequireGitRefSource
+```
+
+The assembled files are written under `build/windows/release-assets/2.1.5/`
+with a generated `RELEASE_ASSETS.md` manifest listing the installer, installer
+hash, git-ref source archive, source hash, source manifest, release notes
+template, and verification documents to upload or quote.
+
 If using the existing local development virtual environment, pass:
 
 ```powershell
@@ -138,6 +149,7 @@ visual OBS workflow, or authorized legal-review signoffs.
 - `DeepLiveCamStudio.pyw`
 - `.github/workflows/windows-release.yml`
 - `build/windows/build_windows.ps1`
+- `build/windows/assemble_release_assets.ps1`
 - `build/windows/package_installer.ps1`
 - `build/windows/test_packaged_runtime.ps1`
 - `build/windows/test_environment.ps1`

@@ -28,6 +28,7 @@ Use this checklist for every Windows installer release.
 - [ ] Verify corresponding source archive `.manifest.md` exists under `build\windows\installer`.
 - [ ] Confirm `package_source.ps1` reported source archive content verification passed.
 - [ ] Run `python tools\validate_windows_release_artifacts.py --app-version 2.1.5 --require-git-ref-source` before publishing.
+- [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.1.5 -RequireGitRefSource`.
 - [ ] Confirm the source archive manifest says `Archive mode: ` followed by `git-ref` for public GitHub Releases. `draft-working-tree` archives are for local traceability only.
 - [ ] Review generated `RELEASE_VERIFICATION.md` and confirm no automated evidence item unexpectedly failed.
 - [ ] Confirm manual gate evidence files remain `PENDING` until their gate is actually complete: `CLEAN_VM_VERIFICATION.md`, `OBS_VIRTUAL_CAMERA_VERIFICATION.md`, and `LEGAL_REVIEW.md`.
@@ -99,6 +100,7 @@ Use this checklist for every Windows installer release.
 - [ ] Attach or link source archive for the exact release.
 - [ ] Attach source archive `.sha256`.
 - [ ] Attach source archive `.manifest.md`.
+- [ ] Attach or review `RELEASE_ASSETS.md` from `build\windows\release-assets\2.1.5`.
 - [ ] Attach or quote `RELEASE_VERIFICATION.md`.
 - [ ] Use `RELEASE_NOTES_TEMPLATE.md` and replace placeholders with exact version, commit, hashes, and source URL.
 - [ ] Include AGPL-3.0 source availability notice in release notes.

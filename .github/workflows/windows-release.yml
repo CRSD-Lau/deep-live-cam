@@ -65,15 +65,13 @@ jobs:
         shell: pwsh
         run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version "${{ inputs.app_version }}"
 
+      - name: Assemble GitHub Release asset set
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion "${{ inputs.app_version }}"
+
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup
           path: |
-            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup.exe
-            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup.exe.sha256
-            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.zip
-            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.zip.sha256
-            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.manifest.md
-            RELEASE_VERIFICATION.md
-            RELEASE_CUTOVER_STATUS.md
+            build/windows/release-assets/${{ inputs.app_version }}/*
