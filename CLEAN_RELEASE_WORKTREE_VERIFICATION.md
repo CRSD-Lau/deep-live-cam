@@ -8,9 +8,9 @@ the manual clean VM, OBS visual workflow, or legal review gates.
 
 ## Release Commit Under Test
 
-- Commit: see the generated source archive manifest and `RELEASE_ASSETS.md` for the exact resolved Git ref.
+- Commit: `ee44e48b3781ee6a2362ed431b18b46c7db44204`
 - Worktree used: `C:\Projects\deep-live-cam-release-verify`
-- Verification time UTC: `2026-05-19T05:21:52Z`
+- Verification time UTC: `2026-05-19T07:25:46Z`
 - Main developer worktree status at the time: dirty with mixed-scope runtime and quality work excluded from this release commit.
 
 ## Artifact Set
@@ -30,7 +30,7 @@ the manual clean VM, OBS visual workflow, or legal review gates.
 - [x] Source archive manifest records the exact resolved release commit.
 - [x] Source archive validation found no `.onnx`, `.pth`, `.safetensors`, `models/`, `checkpoints/`, or model-cache entries.
 - [x] `tools/validate_windows_release_artifacts.py --require-git-ref-source --release-assets-dir C:\Projects\deep-live-cam\build\windows\release-assets\2.1.5` passed against the installer and source archive.
-- [x] Focused release tests passed from the detached release worktree in a previous run: `22 passed`.
+- [x] Focused release tests passed from the detached release worktree using the main workspace Python: `25 passed`.
 
 ## Remaining Non-Automated Gates
 
