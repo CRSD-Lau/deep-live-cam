@@ -82,6 +82,7 @@ Compliance and release documents:
 - `RELEASE_COMPLETION_AUDIT.md`
 - `RELEASE_CUTOVER_PLAN.md`
 - `RELEASE_CUTOVER_STATUS.md`
+- `CLEAN_RELEASE_WORKTREE_VERIFICATION.md`
 - `RELEASE_REPORT.md`
 - `RELEASE_NOTES_TEMPLATE.md`
 - `RELEASE_VERIFICATION.md`
@@ -125,6 +126,10 @@ The output must be empty before final publish verification. A git-ref source
 archive can be created from a specific commit while the developer worktree is
 dirty, but public release signoff should still happen from a clean release tag
 or clean release worktree.
+
+`CLEAN_RELEASE_WORKTREE_VERIFICATION.md` records the current clean-worktree
+proof for commit `930e6ea39546bf7e4d90b4feb5b7f24783190940`. Regenerate or
+replace it if a later release commit or tag is used.
 
 Create a release tag or use the exact release commit:
 

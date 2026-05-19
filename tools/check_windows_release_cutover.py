@@ -15,6 +15,7 @@ REQUIRED_RELEASE_PATHS = {
     ".github/workflows/windows-release.yml",
     ".gitignore",
     "CLEAN_VM_VERIFICATION.md",
+    "CLEAN_RELEASE_WORKTREE_VERIFICATION.md",
     "COMPLIANCE.md",
     "DeepLiveCamStudio.pyw",
     "LEGAL_REVIEW.md",

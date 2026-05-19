@@ -8,6 +8,7 @@ Use this checklist for every Windows installer release.
 - [ ] Confirm no model/checkpoint files are staged or included in `dist\DeepLiveCamStudio`.
 - [ ] Commit generated release evidence before source packaging, including `LICENSES/PYTHON_DEPENDENCIES.md`, `LICENSES/WINDOWS_BUNDLE_MANIFEST.md`, and `LICENSES/THIRD_PARTY_LICENSES/`.
 - [ ] Review `RELEASE_SOURCE_PREP.md` and resolve mixed-scope dirty worktree changes before tagging.
+- [ ] Confirm `CLEAN_RELEASE_WORKTREE_VERIFICATION.md` matches the final release commit/tag.
 - [ ] For the standard local release gate, run `powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit>`.
 - [ ] For the final publish gate, run `powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit> -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady`.
 - [ ] For CI release-candidate builds, confirm `.github/workflows/windows-release.yml` completed the same non-strict `run_release_checks.ps1` gate and uploaded `RELEASE_VERIFICATION.md`.

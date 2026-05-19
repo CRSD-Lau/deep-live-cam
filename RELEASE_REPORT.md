@@ -125,6 +125,12 @@ Do not change a status to `PASS` until the matching manual gate has actually
 been completed. The verifier also requires that no unchecked `- [ ]` checklist
 rows remain in a manual evidence file before it marks that gate complete.
 
+`CLEAN_RELEASE_WORKTREE_VERIFICATION.md` records the separate automated proof
+that the release commit can be checked out in a clean detached worktree, used
+to create the git-ref source archive without `-AllowDirty`, and validated by
+the strict artifact checker. That evidence keeps the dirty developer workspace
+separate from the release commit, but it does not replace the manual gates.
+
 Automated subsets have been run locally and summarized in the gate files:
 
 - Clean install smoke helper passed on Windows 11 Pro build `26200`.
