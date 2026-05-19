@@ -11,8 +11,8 @@ distribution context. The release verifier only treats this file as passed when
 ## Artifact Under Review
 
 - Installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
-- Installer SHA-256: copy from `DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`
-- Source commit/tag: fill before publishing
+- Installer SHA-256: `97FFFB8DB2BC151AC30365AF59D220CC3A6551376AD61D7A63093BCEEF23F7E3`
+- Source commit/tag: see `build/windows/release-assets/2.1.5/RELEASE_ASSETS.md`
 - Reviewer:
 - Date:
 - Intended distribution context:
