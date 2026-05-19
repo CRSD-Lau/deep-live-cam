@@ -4,6 +4,8 @@ Deep Live Cam Studio is a Windows-focused build of Deep-Live-Cam with a packaged
 
 This repository is the working source for the Windows Studio build published by CRSD-Lau. It is based on the upstream [hacksider/Deep-Live-Cam](https://github.com/hacksider/Deep-Live-Cam) project, with the Windows packaging and release work documented below.
 
+![Deep Live Cam Studio main window](docs/images/deep-live-cam-studio-main.png)
+
 ## What We Added
 
 - Windows x64 per-user installer built with PyInstaller and Inno Setup.
