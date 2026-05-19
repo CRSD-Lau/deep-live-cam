@@ -102,6 +102,10 @@ $FilesToCopy = @(
     (Join-Path $RepoRoot "RELEASE_NOTES_TEMPLATE.md"),
     (Join-Path $RepoRoot "RELEASE_VERIFICATION.md"),
     (Join-Path $RepoRoot "RELEASE_CHECKLIST.md"),
+    (Join-Path $RepoRoot "RELEASE_COMPLETION_AUDIT.md"),
+    (Join-Path $RepoRoot "RELEASE_CUTOVER_PLAN.md"),
+    (Join-Path $RepoRoot "RELEASE_CUTOVER_STATUS.md"),
+    (Join-Path $RepoRoot "CLEAN_RELEASE_WORKTREE_VERIFICATION.md"),
     (Join-Path $RepoRoot "RELEASE_REPORT.md"),
     (Join-Path $RepoRoot "COMPLIANCE.md"),
     (Join-Path $RepoRoot "THIRD_PARTY_NOTICES.md")
