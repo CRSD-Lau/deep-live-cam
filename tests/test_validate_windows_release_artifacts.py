@@ -112,6 +112,7 @@ def write_release_assets(tmp_path):
             "COMPLIANCE.md",
             "MANUAL_RELEASE_GATES.md",
             "RELEASE_ASSETS.md",
+            "SHA256SUMS.txt",
             "RELEASE_CHECKLIST.md",
             "RELEASE_COMPLETION_AUDIT.md",
             "RELEASE_CUTOVER_PLAN.md",
@@ -139,6 +140,11 @@ def write_release_assets(tmp_path):
         assets_dir / "RELEASE_ASSETS.md",
         f"{upload_lines}\n{doc_upload_lines}\nDo not upload model/checkpoint files unless approved.\n",
     )
+    sums_lines = []
+    for path in sorted(assets_dir.iterdir(), key=lambda item: item.name):
+        if path.is_file() and path.name != "SHA256SUMS.txt":
+            sums_lines.append(f"{validator.sha256(path)}  {path.name}")
+    write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
     return assets_dir
 
 
@@ -230,6 +236,18 @@ def test_validate_release_artifacts_rejects_required_doc_missing_from_manifest(t
     manifest.write_text(
         manifest.read_text(encoding="utf-8").replace("- `COMPLIANCE.md`\n", ""),
         encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1
+
+
+def test_validate_release_artifacts_rejects_bad_sha256sums(tmp_path, monkeypatch):
+    assets_dir = write_release_assets(tmp_path)
+    sums = assets_dir / "SHA256SUMS.txt"
+    sums.write_text(
+        sums.read_text(encoding="ascii").replace("RELEASE_ASSETS.md", "MISSING.md"),
+        encoding="ascii",
     )
     monkeypatch.chdir(tmp_path)
 

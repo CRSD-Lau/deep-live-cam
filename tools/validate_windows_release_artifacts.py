@@ -119,6 +119,47 @@ def read_sidecar_digest(path: Path) -> str:
     return path.read_text(encoding="ascii", errors="replace").strip().split()[0].upper()
 
 
+def validate_sha256sums(assets_dir: Path, failures: list[str]) -> None:
+    sums_path = assets_dir / "SHA256SUMS.txt"
+    if not sums_path.exists():
+        fail("release assets missing required document: SHA256SUMS.txt", failures)
+        return
+
+    lines = [
+        line.strip()
+        for line in sums_path.read_text(encoding="ascii", errors="replace").splitlines()
+        if line.strip()
+    ]
+    expected_files = sorted(
+        path.name
+        for path in assets_dir.iterdir()
+        if path.is_file() and path.name != "SHA256SUMS.txt"
+    )
+    seen_files: list[str] = []
+    for line in lines:
+        parts = line.split(maxsplit=1)
+        if len(parts) != 2:
+            fail(f"SHA256SUMS.txt contains malformed line: {line}", failures)
+            continue
+        digest, name = parts
+        name = name.strip()
+        path = assets_dir / name
+        seen_files.append(name)
+        if not path.exists() or not path.is_file():
+            fail(f"SHA256SUMS.txt lists missing file: {name}", failures)
+            continue
+        if digest.upper() != sha256(path):
+            fail(f"SHA256SUMS.txt digest mismatch for: {name}", failures)
+
+    if sorted(seen_files) != expected_files:
+        missing = sorted(set(expected_files) - set(seen_files))
+        extra = sorted(set(seen_files) - set(expected_files))
+        for name in missing:
+            fail(f"SHA256SUMS.txt missing file: {name}", failures)
+        for name in extra:
+            fail(f"SHA256SUMS.txt lists unexpected file: {name}", failures)
+
+
 def source_archive_has_forbidden_entries(path: Path) -> list[str]:
     forbidden: list[str] = []
     with zipfile.ZipFile(path) as archive:
@@ -212,6 +253,7 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
 
     required_docs = (
         "RELEASE_ASSETS.md",
+        "SHA256SUMS.txt",
         "RELEASE_NOTES.md",
         "RELEASE_NOTES_TEMPLATE.md",
         "RELEASE_VERIFICATION.md",
@@ -239,6 +281,7 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
     for doc in required_docs:
         if not (assets_dir / doc).exists():
             fail(f"release assets missing required document: {doc}", failures)
+    validate_sha256sums(assets_dir, failures)
 
     manual_gate_summary = assets_dir / "MANUAL_RELEASE_GATES.md"
     if manual_gate_summary.exists():

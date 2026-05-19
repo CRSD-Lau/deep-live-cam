@@ -171,6 +171,18 @@ $ReleaseNotesText = $ReleaseNotesText.Replace(
 )
 $ReleaseNotesText | Set-Content -LiteralPath $ReleaseNotes -Encoding utf8
 
+$Sha256Sums = Join-Path $StagingDir "SHA256SUMS.txt"
+$ShaLines = @(
+    Get-ChildItem -LiteralPath $StagingDir -File |
+        Where-Object { $_.Name -ne "SHA256SUMS.txt" } |
+        Sort-Object Name |
+        ForEach-Object {
+            $Digest = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+            "$Digest  $($_.Name)"
+        }
+)
+$ShaLines | Set-Content -LiteralPath $Sha256Sums -Encoding ascii
+
 $AssetManifest = Join-Path $StagingDir "RELEASE_ASSETS.md"
 $UploadNames = @(
     Get-ChildItem -LiteralPath $StagingDir -File |
