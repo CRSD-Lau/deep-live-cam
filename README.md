@@ -6,6 +6,42 @@ This repository is the working source for the Windows Studio build published by 
 
 ![Deep Live Cam Studio main window](docs/images/deep-live-cam-studio-main.png)
 
+## Quick Start For Windows Users
+
+This is the normal setup path for someone who just wants to run the app:
+
+1. Download the installer:
+   [DeepLiveCamStudio-2.1.6-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.6/DeepLiveCamStudio-2.1.6-x64-setup.exe)
+2. Run the installer.
+3. If Windows SmartScreen appears, choose **More info** and then **Run anyway** only if the installer came from the release link above.
+4. Open the Start Menu and run **Download and Verify Models**.
+5. Open **Deep Live Cam Studio** from the Start Menu.
+
+That is enough for the installed app and required face-swap model setup.
+
+For video files, `ffmpeg` and `ffprobe` are also needed. Install them with:
+
+```powershell
+winget install Gyan.FFmpeg
+```
+
+Then close and reopen Deep Live Cam Studio. OBS Virtual Camera is optional and only needed if you want to send the live output into Discord, Zoom, Teams, OBS, or similar apps.
+
+## What The Installer Includes
+
+Included:
+
+- Deep Live Cam Studio desktop app.
+- Start Menu shortcuts for the app and model downloader.
+- Packaged Python runtime and app dependencies.
+- CUDA 12/cuDNN 9 runtime DLLs for NVIDIA GPU acceleration.
+
+Not included:
+
+- Face-swap model/checkpoint files. Use **Download and Verify Models** after install.
+- `ffmpeg` and `ffprobe`, which are needed for video-file processing and audio restore.
+- OBS Virtual Camera, which is optional.
+
 ## Download The App
 
 If you only want to install Deep Live Cam Studio, do not use the green **Code** button. The source `.zip` files are for developers. Download the Windows installer from the latest GitHub Release:
