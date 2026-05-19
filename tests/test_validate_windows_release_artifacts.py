@@ -9,6 +9,20 @@ def write_file(path, content="ok"):
     path.write_text(content, encoding="utf-8")
 
 
+MANUAL_GATE_SUMMARY = """# Manual Windows Release Gate Summary
+
+## Status
+
+- BLOCKED: `CLEAN_VM_VERIFICATION.md` status=`PENDING` open_items=`10`
+- BLOCKED: `OBS_VIRTUAL_CAMERA_VERIFICATION.md` status=`PENDING` open_items=`6`
+- BLOCKED: `LEGAL_REVIEW.md` status=`PENDING` open_items=`13`
+
+## Open Items
+
+- still pending
+"""
+
+
 def write_artifacts(tmp_path, extra_source_entry_name=None, omit_required_entry=None):
     output_dir = tmp_path / "build" / "windows" / "installer"
     installer = output_dir / "DeepLiveCamStudio-2.1.5-x64-setup.exe"
@@ -59,7 +73,8 @@ def write_release_assets(tmp_path):
         "COMPLIANCE.md",
         "THIRD_PARTY_NOTICES.md",
     ):
-        write_file(assets_dir / doc, "doc")
+        content = MANUAL_GATE_SUMMARY if doc == "MANUAL_RELEASE_GATES.md" else "doc"
+        write_file(assets_dir / doc, content)
     upload_lines = "\n".join(f"- `{path.name}`" for path in files)
     write_file(
         assets_dir / "RELEASE_ASSETS.md",
@@ -137,6 +152,14 @@ def test_validate_release_artifacts_rejects_stale_extra_source_archive_in_assets
     stale_source.write_bytes(source.read_bytes())
     write_file(stale_source.with_suffix(stale_source.suffix + ".sha256"), f"{validator.sha256(stale_source)}  {stale_source.name}\n")
     write_file(stale_source.with_suffix(".manifest.md"), source.with_suffix(".manifest.md").read_text(encoding="utf-8"))
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1
+
+
+def test_validate_release_artifacts_rejects_blank_manual_gate_summary(tmp_path, monkeypatch):
+    assets_dir = write_release_assets(tmp_path)
+    write_file(assets_dir / "MANUAL_RELEASE_GATES.md", "placeholder\n")
     monkeypatch.chdir(tmp_path)
 
     assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1

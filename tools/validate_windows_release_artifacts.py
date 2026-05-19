@@ -222,6 +222,20 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         if not (assets_dir / doc).exists():
             fail(f"release assets missing required document: {doc}", failures)
 
+    manual_gate_summary = assets_dir / "MANUAL_RELEASE_GATES.md"
+    if manual_gate_summary.exists():
+        manual_gate_text = manual_gate_summary.read_text(encoding="utf-8", errors="replace")
+        required_gate_phrases = (
+            "# Manual Windows Release Gate Summary",
+            "`CLEAN_VM_VERIFICATION.md`",
+            "`OBS_VIRTUAL_CAMERA_VERIFICATION.md`",
+            "`LEGAL_REVIEW.md`",
+            "## Open Items",
+        )
+        for phrase in required_gate_phrases:
+            if phrase not in manual_gate_text:
+                fail(f"MANUAL_RELEASE_GATES.md missing phrase: {phrase}", failures)
+
     asset_manifest = assets_dir / "RELEASE_ASSETS.md"
     if asset_manifest.exists():
         asset_manifest_text = asset_manifest.read_text(encoding="utf-8", errors="replace")
