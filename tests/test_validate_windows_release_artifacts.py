@@ -102,6 +102,9 @@ def write_release_assets(tmp_path):
                 "Deep-Live-Cam is licensed under AGPL-3.0",
                 "The installer intentionally does not include model/checkpoint files",
                 "This release candidate is not publish-approved",
+                "Completed local evidence is included in the uploaded release documents:",
+                "Remaining publish blockers:",
+                "Authorized legal review for dependency, model-license, and redistribution obligations.",
             )
         ),
     )

@@ -320,12 +320,17 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
             "Deep-Live-Cam is licensed under AGPL-3.0",
             "The installer intentionally does not include model/checkpoint files",
             "This release candidate is not publish-approved",
+            "Completed local evidence is included in the uploaded release documents:",
+            "Remaining publish blockers:",
+            "Authorized legal review for dependency, model-license, and redistribution obligations.",
         )
         for phrase in expected_phrases:
             if phrase not in release_notes_text:
                 fail(f"RELEASE_NOTES.md missing phrase: {phrase}", failures)
         if "listed in the uploaded `RELEASE_ASSETS.md`" in release_notes_text:
             fail("RELEASE_NOTES.md still contains manifest cross-reference placeholders", failures)
+        if "This release candidate is not publish-approved until these checks are complete and documented:" in release_notes_text:
+            fail("RELEASE_NOTES.md uses stale pre-publish wording that does not separate completed evidence from remaining blockers", failures)
 
 
 def main(argv: list[str] | None = None) -> int:
