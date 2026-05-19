@@ -136,7 +136,7 @@ POPUP_LIVE_SCROLL_HEIGHT = 700
 MAPPER_PREVIEW_SIZE = 100
 SOURCE_TARGET_PREVIEW_SIZE = 240
 MEDIA_SLOT_HEIGHT = 390
-MEDIA_ACTION_WIDTH = 160
+MEDIA_ACTION_WIDTH = SOURCE_TARGET_PREVIEW_SIZE
 APP_LOGO_NAME = "Logo.png"
 
 
@@ -627,7 +627,7 @@ def _media_slot(
     layout.addWidget(preview, alignment=Qt.AlignmentFlag.AlignCenter)
 
     if isinstance(controls, QPushButton):
-        layout.addWidget(controls, alignment=Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(controls, alignment=Qt.AlignmentFlag.AlignCenter)
     else:
         layout.addLayout(controls)
 
@@ -831,7 +831,7 @@ class MainWindow(QMainWindow):
         )
         self.btn_select_source.clicked.connect(self._on_select_source)
         src_row.addWidget(self.btn_select_source)
-        src_row.addStretch(1)
+        src_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         src_slot = _media_slot(
             _("Source face"),
             _("Identity image used for the swap"),
