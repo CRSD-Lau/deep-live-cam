@@ -85,7 +85,11 @@ if (-not (Test-Path -LiteralPath $SourceManifest)) {
     throw "Source manifest missing: $SourceManifest"
 }
 
-New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+if (Test-Path -LiteralPath $OutputDir) {
+    Get-ChildItem -LiteralPath $OutputDir -Force | Remove-Item -Recurse -Force
+} else {
+    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+}
 
 $FilesToCopy = @(
     $Installer,
