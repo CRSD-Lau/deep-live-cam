@@ -127,6 +127,7 @@ def parse_cutover_status(path: Path) -> dict[str, int | bool]:
             "unstaged_release_owned": -1,
             "mixed_scope": -1,
             "unknown": -1,
+            "mixed_scope_blocking": True,
             "blocked": True,
         }
     text = path.read_text(encoding="utf-8", errors="replace")
@@ -145,6 +146,7 @@ def parse_cutover_status(path: Path) -> dict[str, int | bool]:
         "release_owned": count(r"Release-required or release-owned dirty paths:\s*(\d+)"),
         "mixed_scope": count(r"Mixed-scope dirty paths requiring explicit include/exclude decision:\s*(\d+)"),
         "unknown": count(r"Unknown dirty paths requiring review:\s*(\d+)"),
+        "mixed_scope_blocking": "Mixed-scope dirty paths block verdict: `NO`" not in text,
         "blocked": "BLOCKED:" in text,
     }
 
@@ -245,7 +247,7 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
         source_hash_ok = source_sidecar_digest == sha256(latest_source)
     source_manifest_ok = bool(latest_source_manifest and latest_source_manifest.exists())
     source_mode = source_archive_mode(latest_source_manifest)
-    source_is_clean_git_ref = source_mode == "git-ref" and not dirty
+    source_is_clean_git_ref = source_mode == "git-ref"
     source_clean_models = False
     if latest_source:
         try:
@@ -279,14 +281,16 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
     publish_blockers: list[str] = []
     if not automated_installer_ok:
         publish_blockers.append("Local installer automation evidence is incomplete or failed.")
-    if dirty:
+    release_owned_dirty = int(cutover_status["release_owned"]) if cutover_status["exists"] else -1
+    unknown_dirty = int(cutover_status["unknown"]) if cutover_status["exists"] else -1
+    if dirty and source_mode != "git-ref":
         publish_blockers.append("Working tree is dirty; create the release source archive from a clean release tag or commit.")
+    elif dirty and (release_owned_dirty != 0 or unknown_dirty != 0):
+        publish_blockers.append("Working tree contains release-owned or unknown dirty paths.")
     if not draft_traceability_ok:
         publish_blockers.append("Corresponding-source archive, hash sidecar, manifest, or forbidden-file scan is incomplete.")
     elif source_mode != "git-ref":
         publish_blockers.append(f"Corresponding-source archive mode is `{source_mode or 'UNKNOWN'}`, not `git-ref`.")
-    if not public_source_ok and source_mode == "git-ref" and dirty:
-        publish_blockers.append("Git-ref source archive exists, but the worktree is not clean for publish verification.")
     if not cutover_status["exists"]:
         publish_blockers.append("RELEASE_CUTOVER_STATUS.md is missing.")
     elif cutover_status["blocked"]:
@@ -321,7 +325,7 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
         f"- Manual gate evidence complete: **{yes_no(all_manual_gates_done)}**",
         f"- Ready to publish without remaining manual gates: **{yes_no(publishable_by_automation)}**",
         "",
-        "Current status: the installer is locally verified, but this is not yet a publishable GitHub Release until the clean Git ref source archive and the manual checklist gates are completed.",
+        "Current status: the installer and Git-ref source archive are locally verified, but this is not yet a publishable GitHub Release until the manual checklist gates are completed.",
         "",
         "## Automated Evidence",
         "",
@@ -337,7 +341,7 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
         [
             f"- [{checkbox(manifest.exists())}] Windows bundle manifest exists: `{manifest}`",
             f"- [{checkbox(manifest_clean_models and not forbidden_dist)}] Packaged payload contains no forbidden model/checkpoint files",
-            f"- [{checkbox(not dirty)}] Working tree clean for corresponding-source packaging",
+            f"- [{checkbox(source_is_clean_git_ref)}] Public-release source archive was created from a Git ref",
             f"- [{checkbox(source_archive_ok)}] Corresponding-source archive exists",
             f"- [{checkbox(source_hash_ok)}] Corresponding-source SHA-256 sidecar matches",
             f"- [{checkbox(source_manifest_ok)}] Corresponding-source manifest exists",
@@ -377,6 +381,7 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
         lines.append(f"- Staged release-owned paths: `{cutover_status['staged_release_owned']}`")
         lines.append(f"- Unstaged release-owned paths: `{cutover_status['unstaged_release_owned']}`")
         lines.append(f"- Mixed-scope dirty paths: `{cutover_status['mixed_scope']}`")
+        lines.append(f"- Mixed-scope dirty paths block verdict: **{yes_no(bool(cutover_status['mixed_scope_blocking']))}**")
         lines.append(f"- Unknown dirty paths: `{cutover_status['unknown']}`")
         lines.append(f"- Cutover report blocked: **{yes_no(bool(cutover_status['blocked']))}**")
     else:
@@ -406,7 +411,7 @@ def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str
             "",
             "## Notes",
             "",
-            "- A dirty working tree is expected during local development, but a public AGPL binary release should be paired with source from the exact clean release tag or commit.",
+            "- A dirty working tree is expected during local development. A public AGPL binary release should be paired with the exact Git-ref source archive listed in the release assets, and release-owned or unknown dirty paths must not be included accidentally.",
             "- Model files are intentionally excluded from the installer and should be downloaded only after user consent and checksum verification.",
             "",
         ]

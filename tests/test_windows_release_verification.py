@@ -142,6 +142,85 @@ def test_publish_ready_requires_clean_cutover_status(tmp_path, monkeypatch):
     assert "RELEASE_CUTOVER_STATUS.md reports unresolved cutover blockers." in blockers
 
 
+def test_git_ref_source_allows_known_mixed_scope_dirty_worktree(tmp_path, monkeypatch):
+    repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
+
+    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
+    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
+    write_file(
+        repo_root / verification.CUTOVER_STATUS,
+        "\n".join(
+            [
+                "# Windows Release Cutover Status",
+                "",
+                "Dirty paths: `1`",
+                "Staged release-owned paths: `0`",
+                "Unstaged release-owned paths: `0`",
+                "Mixed-scope dirty paths block verdict: `NO`",
+                "",
+                "## Release-required or release-owned dirty paths: 0",
+                "",
+                "## Mixed-scope dirty paths requiring explicit include/exclude decision: 1",
+                "",
+                "## Unknown dirty paths requiring review: 0",
+                "",
+                "## Verdict",
+                "",
+                "- READY: release-owned paths, unknown paths, and manual cutover evidence are clean",
+                "- NOTE: mixed-scope dirty paths were reported but did not block this Git-ref release cutover",
+            ]
+        ),
+    )
+    monkeypatch.setattr(
+        verification,
+        "run_git",
+        lambda args, cwd: (
+            "abc123"
+            if args == ["rev-parse", "HEAD"]
+            else "?? modules/compositing/blend.py\n"
+        ),
+    )
+
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+
+    assert publishable
+    assert not blockers
+    assert "Public-release source archive from clean Git ref: **YES**" in text
+    assert "Mixed-scope dirty paths block verdict: **NO**" in text
+
+
+def test_git_ref_source_still_blocks_unknown_dirty_paths(tmp_path, monkeypatch):
+    repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
+
+    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
+    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
+    write_file(
+        repo_root / verification.CUTOVER_STATUS,
+        "Dirty paths: `1`\n\n"
+        "Staged release-owned paths: `0`\n"
+        "Unstaged release-owned paths: `0`\n"
+        "Mixed-scope dirty paths block verdict: `NO`\n\n"
+        "## Release-required or release-owned dirty paths: 0\n\n"
+        "## Mixed-scope dirty paths requiring explicit include/exclude decision: 0\n\n"
+        "## Unknown dirty paths requiring review: 1\n\n"
+        "## Verdict\n\n"
+        "- BLOCKED: unknown dirty paths still need review\n",
+    )
+    monkeypatch.setattr(
+        verification,
+        "run_git",
+        lambda args, cwd: "abc123" if args == ["rev-parse", "HEAD"] else "?? scratch.txt\n",
+    )
+
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+
+    assert not publishable
+    assert "Working tree contains release-owned or unknown dirty paths." in blockers
+    assert "Release cutover status clean: **NO**" in text
+
+
 def test_release_verification_prefers_git_ref_source_archive(tmp_path, monkeypatch):
     repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
     source_archive = output_dir / "DeepLiveCamStudio-2.1.5-source-testref.zip"
