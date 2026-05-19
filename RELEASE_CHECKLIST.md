@@ -11,6 +11,7 @@ Use this checklist for every Windows installer release.
 - [ ] Confirm `CLEAN_RELEASE_WORKTREE_VERIFICATION.md` matches the final release commit/tag.
 - [ ] For the standard local release gate, run `powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit>`.
 - [ ] Confirm the standard local release gate produced `build\windows\release-assets\2.1.5\RELEASE_ASSETS.md`.
+- [ ] Confirm `build\windows\release-assets\2.1.5\SHA256SUMS.txt` is present and validates every upload file except itself.
 - [ ] Confirm `build\windows\release-assets\2.1.5\MANUAL_RELEASE_GATES.md` is present and matches the three manual gate files.
 - [ ] For the final publish gate, run `powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit> -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady`.
 - [ ] For CI release-candidate builds, confirm `.github/workflows/windows-release.yml` completed the same non-strict `run_release_checks.ps1` gate and uploaded `RELEASE_VERIFICATION.md`.
@@ -105,6 +106,7 @@ Use this checklist for every Windows installer release.
 - [ ] Attach source archive `.sha256`.
 - [ ] Attach source archive `.manifest.md`.
 - [ ] Attach or review `RELEASE_ASSETS.md` from `build\windows\release-assets\2.1.5`.
+- [ ] Attach `SHA256SUMS.txt` from `build\windows\release-assets\2.1.5`.
 - [ ] Attach or quote `RELEASE_VERIFICATION.md`.
 - [ ] Use `RELEASE_NOTES_TEMPLATE.md` and replace placeholders with exact version, commit, hashes, and source URL.
 - [ ] Include AGPL-3.0 source availability notice in release notes.

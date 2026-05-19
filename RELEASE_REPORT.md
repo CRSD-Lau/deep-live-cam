@@ -27,10 +27,11 @@ Current assembled GitHub Release asset folder:
 C:\Projects\deep-live-cam\build\windows\release-assets\2.1.5
 ```
 
-The exact uploadable artifact names, source ref, sizes, and SHA-256 hashes are
-recorded in the generated `RELEASE_ASSETS.md` manifest in that folder. Keep
-hashes in generated release assets rather than in files bundled into the
-installer; changing a bundled document changes the installer hash.
+The exact uploadable artifact names, source ref, and primary SHA-256 hashes are
+recorded in the generated `RELEASE_ASSETS.md` manifest in that folder. The
+generated `SHA256SUMS.txt` records a SHA-256 digest for every upload file except
+itself. Keep hashes in generated release assets rather than in files bundled
+into the installer; changing a bundled document changes the installer hash.
 
 Current automated status:
 
@@ -91,7 +92,8 @@ powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.p
 The assembled files are written under `build/windows/release-assets/2.1.5/`
 with a generated `RELEASE_ASSETS.md` manifest listing the installer, installer
 hash, git-ref source archive, source hash, source manifest, release notes
-template, manual gate summary, and verification documents to upload or quote.
+template, manual gate summary, verification documents, and `SHA256SUMS.txt` to
+upload or quote.
 
 Validate the curated upload folder with:
 
@@ -345,7 +347,7 @@ The downloader presents source URLs, license notes, and SHA-256 checksums before
 - `tools/generate_windows_release_verification.py` writes `RELEASE_VERIFICATION.md` at the end of the release gate so release evidence is available as a durable artifact instead of only console output.
 - `tools/validate_windows_release_artifacts.py` verifies the uploadable release artifact set, including installer/source hash sidecars, source manifest, forbidden source model/checkpoint entries, and required release-verification sections.
 - Latest local release-candidate pass rebuilt from a clean checkout, smoke-tested the packaged runtime, built the installer, smoke-tested the installer, created a git-ref source archive, and validated the uploadable artifact set.
-- `RELEASE_ASSETS.md`, the generated `.sha256` sidecars, and the source archive manifest are the authoritative hash records for the latest local artifact set.
+- `RELEASE_ASSETS.md`, `SHA256SUMS.txt`, the generated `.sha256` sidecars, and the source archive manifest are the authoritative hash records for the latest local artifact set.
 - Bundle scan found no `.onnx`, `.pth`, or `.safetensors` files.
 - Bundle scan confirmed `_internal\torch` is absent.
 - `LICENSE`, `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, `RELEASE_CHECKLIST.md`, and `LICENSES/PYTHON_DEPENDENCIES.md` are staged into the installer payload.
