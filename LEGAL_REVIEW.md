@@ -53,10 +53,9 @@ license posture, PySide6/shiboken6 posture, GPL metadata for
 `pyvirtualcam`/`cv2_enumerate_cameras`, Inno Setup commercial-use position,
 ffmpeg exclusion, and unknown/unusual dependency metadata.
 
-The latest generated packet for this release candidate is:
-`build\windows\manual-evidence\legal-review\legal-review-2.1.5-20260519-033521.md`.
-The release upload folder also includes a copy named
-`LEGAL_REVIEW_EVIDENCE_PACKET.md`.
+The latest generated local packet is reported by
+`tools/summarize_manual_release_gates.py`. The release upload folder also
+includes a copy named `LEGAL_REVIEW_EVIDENCE_PACKET.md`.
 
 The helper fails closed if the corresponding source archive, `.sha256` sidecar,
 or `.manifest.md` file is missing, mismatched, not generated from a Git ref, or
