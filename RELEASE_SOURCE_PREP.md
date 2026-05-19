@@ -1,24 +1,25 @@
 # Release Source Preparation
 
 This repository currently has a locally verified Windows installer, but the
-public GitHub Release gate is still blocked until the corresponding source is
-created from a clean Git ref.
+public GitHub Release gate is still blocked until the mixed-scope dirty
+worktree is resolved and the manual gates are completed.
 
 ## Current Local Artifact State
 
 - Installer: `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - Installer SHA-256: see `build/windows/installer/DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`
-- Draft source archive: `build/windows/installer/DeepLiveCamStudio-2.1.5-source-worktree-4a674d33ef2d.zip`
-- Draft source SHA-256: see `build/windows/installer/DeepLiveCamStudio-2.1.5-source-worktree-4a674d33ef2d.zip.sha256`
+- Public-release source archive: `build/windows/installer/DeepLiveCamStudio-2.1.5-source-c104da94c708.zip`
+- Public-release source SHA-256: see `build/windows/installer/DeepLiveCamStudio-2.1.5-source-c104da94c708.zip.sha256`
+- Source ref: `c104da94c70814abf19ad9b8de71ebdfa2a742cd`
 - Current release verdict: local automation passed, public release not yet ready.
 
 Do not hard-code installer or source archive hashes in this installed document.
 The installer and source archive sidecars, plus `RELEASE_VERIFICATION.md`, are
 the authoritative hash records for the current artifact set.
 
-The draft source archive is useful evidence for local testing, but it is not
-sufficient for an AGPL binary release because it was created from a dirty
-working tree.
+Older draft source archives may still exist in `build/windows/installer/` from
+local testing. They are useful traceability evidence, but the public GitHub
+Release should use the git-ref archive above or a later clean tag archive.
 
 ## Release-Relevant Files To Review Before Commit
 
@@ -97,10 +98,7 @@ are confirmed.
 
 Examples currently visible in `git status` include:
 
-- `modules/processors/frame/face_swapper.py`
 - `modules/processors/frame/face_masking.py`
-- `modules/processors/frame/core.py`
-- `modules/processors/frame/_onnx_enhancer.py`
 - `modules/face_analyser.py`
 - `modules/compositing/`
 - `modules/tracking/`
@@ -123,7 +121,10 @@ After the intended release files are reviewed and committed:
 git status --short
 ```
 
-The output must be empty before creating a public corresponding-source archive.
+The output must be empty before final publish verification. A git-ref source
+archive can be created from a specific commit while the developer worktree is
+dirty, but public release signoff should still happen from a clean release tag
+or clean release worktree.
 
 Create a release tag or use the exact release commit:
 

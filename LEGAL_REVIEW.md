@@ -38,6 +38,15 @@ distribution context. The release verifier only treats this file as passed when
 Record conclusions, exceptions, required release-note language, or approval
 links here.
 
+### Automated Evidence Packet
+
+- 2026-05-19T02:28:07Z: `build\windows\verify_legal_review_gate.ps1 -AppVersion 2.1.5 -SourceArchivePath build\windows\installer\DeepLiveCamStudio-2.1.5-source-c104da94c708.zip` completed successfully.
+- Generated local evidence packet: `build\windows\manual-evidence\legal-review\legal-review-2.1.5-20260518-232807.md`.
+- Installer SHA-256 in the packet: `ECD1840E2C8761C38BAE4E05488CB716D00B0A95B3A32471F5306F19DF86ACF7`.
+- Source archive SHA-256 in the packet: `9067898126CAAB6D38269860C9FA8378FF082AF45A86FC7F70442464FA1ED53F`.
+- The packet found the required compliance docs and a clean forbidden model/checkpoint scan, but it intentionally remains `Status: REVIEW-REQUIRED`.
+- Still requires authorized reviewer decisions before `Status: PASS`, especially AGPL corresponding-source handling, model downloader license posture, PySide6/shiboken6 posture, GPL metadata for `pyvirtualcam`/`cv2_enumerate_cameras`, Inno Setup commercial-use position, ffmpeg exclusion, and unknown/unusual dependency metadata.
+
 Automated evidence helper for the reviewer packet:
 
 ```powershell

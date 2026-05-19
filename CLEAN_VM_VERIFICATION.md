@@ -35,6 +35,15 @@ unchecked `- [ ]` checklist rows remain.
 
 Record command output, screenshots, VM snapshot name, or tester notes here.
 
+### Automated Subset Evidence
+
+- 2026-05-19T02:28:07Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.5` completed with `Installer smoke test passed`.
+- Installer under test: `build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`.
+- Installer SHA-256 observed by the helper: `ECD1840E2C8761C38BAE4E05488CB716D00B0A95B3A32471F5306F19DF86ACF7`.
+- Generated local evidence packet: `build\windows\manual-evidence\clean-vm\clean-vm-2.1.5-20260518-232807.md`.
+- Covered repeatable subset: silent per-user install, required installed files, forbidden model/checkpoint scan, CLI `--version`, silent uninstall, and user-model sentinel preservation.
+- Still requires manual tester confirmation before `Status: PASS`: fresh Windows VM context, Start menu shortcut, optional desktop shortcut, model-download consent text, missing-model messaging, and interactive uninstall prompt.
+
 Automated evidence helper for the repeatable subset:
 
 ```powershell

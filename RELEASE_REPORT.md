@@ -84,6 +84,20 @@ Get-FileHash build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe -Algo
 
 GitHub Releases should attach or link corresponding source for the exact commit/tag used to build the installer.
 
+Current validated git-ref source archive:
+
+```text
+C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-c104da94c708.zip
+```
+
+Current validated source SHA-256:
+
+```text
+9067898126CAAB6D38269860C9FA8378FF082AF45A86FC7F70442464FA1ED53F
+```
+
+This archive was created from `c104da94c70814abf19ad9b8de71ebdfa2a742cd` and passed `tools\validate_windows_release_artifacts.py --require-git-ref-source`.
+
 Use:
 
 ```powershell
@@ -110,6 +124,15 @@ simple `Status: PENDING/PASS/FAIL` line that `RELEASE_VERIFICATION.md` reads.
 Do not change a status to `PASS` until the matching manual gate has actually
 been completed. The verifier also requires that no unchecked `- [ ]` checklist
 rows remain in a manual evidence file before it marks that gate complete.
+
+Automated subsets have been run locally and summarized in the gate files:
+
+- Clean install smoke helper passed on Windows 11 Pro build `26200`.
+- OBS virtual-camera helper sent frames to `OBS Virtual Camera` and verified CUDA/ONNX Runtime provider detection.
+- Legal review packet generation completed for the current installer/source pair.
+
+These are useful release evidence, but they do not replace the clean VM,
+visual OBS workflow, or authorized legal-review signoffs.
 
 ## Files Changed For Packaging And Compliance
 

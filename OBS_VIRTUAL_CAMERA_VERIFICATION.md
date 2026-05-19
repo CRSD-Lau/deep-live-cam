@@ -34,6 +34,15 @@ remain.
 Record command output, OBS settings, receiving app, screenshots, or tester notes
 here.
 
+### Automated Subset Evidence
+
+- 2026-05-19T02:29:00Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_obs_virtualcam_gate.ps1 -Seconds 3` completed successfully.
+- CUDA/ONNX Runtime provider preflight passed with `CUDAExecutionProvider` and `CPUExecutionProvider`; GPU observed: `NVIDIA GeForce RTX 4070`.
+- DirectShow devices included `OBS Virtual Camera`.
+- `tools\check_obs_virtualcam.py` sent `91` frames to `OBS Virtual Camera` through the `obs` backend.
+- Generated local evidence packet: `build\windows\manual-evidence\obs-virtualcam\obs-virtualcam-20260518-232900.md`.
+- Still requires manual tester confirmation before `Status: PASS`: Deep-Live-Cam live preview opens/stops cleanly, a receiving app or OBS rebroadcast visibly shows output, workflow matches `docs/OBS_VIRTUAL_CAMERA.md`, and the exact final release candidate is used.
+
 Automated evidence helper for the repeatable subset:
 
 ```powershell

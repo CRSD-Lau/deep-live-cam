@@ -1,8 +1,8 @@
 # Windows Release Verification
 
-Generated: 2026-05-19T02:26:08+00:00
+Generated: 2026-05-19T02:30:58+00:00
 App version: `2.1.5`
-Git HEAD: `29f6e4aff30873400955dac752288e6be8036d42`
+Git HEAD: `c104da94c70814abf19ad9b8de71ebdfa2a742cd`
 
 This file records local release evidence for the Windows installer. It is not a legal opinion and does not replace the manual checks in `RELEASE_CHECKLIST.md`.
 
@@ -67,18 +67,18 @@ Current status: the installer is locally verified, but this is not yet a publish
 
 ## Source Archive
 
-- Latest source archive: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-29f6e4aff308.zip`
+- Latest source archive: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-c104da94c708.zip`
 - Source archive mode: `git-ref`
-- Source archive hash sidecar: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-29f6e4aff308.zip.sha256`
-- Source archive manifest: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-29f6e4aff308.manifest.md`
+- Source archive hash sidecar: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-c104da94c708.zip.sha256`
+- Source archive manifest: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-c104da94c708.manifest.md`
 
 ## Cutover Status
 
 - Cutover status report: `C:\Projects\deep-live-cam\RELEASE_CUTOVER_STATUS.md`
-- Dirty paths: `65`
-- Release-owned dirty paths: `0`
+- Dirty paths: `71`
+- Release-owned dirty paths: `6`
 - Staged release-owned paths: `0`
-- Unstaged release-owned paths: `0`
+- Unstaged release-owned paths: `6`
 - Mixed-scope dirty paths: `65`
 - Unknown dirty paths: `0`
 - Cutover report blocked: **YES**
