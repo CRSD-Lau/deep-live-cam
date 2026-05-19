@@ -115,7 +115,11 @@ $FilesToCopy = @(
     (Join-Path $RepoRoot "MODEL_DOWNLOAD_VERIFICATION.md"),
     (Join-Path $RepoRoot "PROCESSING_VERIFICATION.md"),
     (Join-Path $RepoRoot "COMPLIANCE.md"),
-    (Join-Path $RepoRoot "THIRD_PARTY_NOTICES.md")
+    (Join-Path $RepoRoot "THIRD_PARTY_NOTICES.md"),
+    (Join-Path $RepoRoot "LICENSES\BUNDLED_BINARY_OBLIGATIONS.md"),
+    (Join-Path $RepoRoot "LICENSES\MODEL_LICENSE_AUDIT.md"),
+    (Join-Path $RepoRoot "LICENSES\PYTHON_DEPENDENCIES.md"),
+    (Join-Path $RepoRoot "LICENSES\WINDOWS_BUNDLE_MANIFEST.md")
 )
 foreach ($Path in $FilesToCopy) {
     if (-not (Test-Path -LiteralPath $Path)) {

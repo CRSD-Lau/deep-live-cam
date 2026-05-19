@@ -231,6 +231,10 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         "MANUAL_RELEASE_GATES.md",
         "COMPLIANCE.md",
         "THIRD_PARTY_NOTICES.md",
+        "BUNDLED_BINARY_OBLIGATIONS.md",
+        "MODEL_LICENSE_AUDIT.md",
+        "PYTHON_DEPENDENCIES.md",
+        "WINDOWS_BUNDLE_MANIFEST.md",
     )
     for doc in required_docs:
         if not (assets_dir / doc).exists():

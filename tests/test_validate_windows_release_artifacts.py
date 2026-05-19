@@ -84,6 +84,10 @@ def write_release_assets(tmp_path):
         "MANUAL_RELEASE_GATES.md",
         "COMPLIANCE.md",
         "THIRD_PARTY_NOTICES.md",
+        "BUNDLED_BINARY_OBLIGATIONS.md",
+        "MODEL_LICENSE_AUDIT.md",
+        "PYTHON_DEPENDENCIES.md",
+        "WINDOWS_BUNDLE_MANIFEST.md",
     ):
         content = MANUAL_GATE_SUMMARY if doc == "MANUAL_RELEASE_GATES.md" else "doc"
         write_file(assets_dir / doc, content)
@@ -125,6 +129,10 @@ def write_release_assets(tmp_path):
             "PROCESSING_VERIFICATION.md",
             "RELEASE_VERIFICATION.md",
             "THIRD_PARTY_NOTICES.md",
+            "BUNDLED_BINARY_OBLIGATIONS.md",
+            "MODEL_LICENSE_AUDIT.md",
+            "PYTHON_DEPENDENCIES.md",
+            "WINDOWS_BUNDLE_MANIFEST.md",
         )
     )
     write_file(
