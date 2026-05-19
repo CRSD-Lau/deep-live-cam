@@ -72,6 +72,58 @@ def test_strict_mode_fails_until_tree_and_gates_are_clean(tmp_path, monkeypatch,
     assert "mixed-scope dirty paths" in output
 
 
+def test_strict_mode_can_ignore_known_mixed_scope_dirty_paths_for_git_ref_release(tmp_path, monkeypatch, capsys):
+    for gate in cutover.MANUAL_GATE_FILES:
+        write_file(tmp_path / gate, "Status: PASS\n- [x] done\n")
+
+    monkeypatch.setattr(
+        cutover,
+        "run_git",
+        lambda args, cwd: "?? modules/compositing/blend.py\n",
+    )
+
+    assert (
+        cutover.main(
+            [
+                "--repo-root",
+                str(tmp_path),
+                "--strict",
+                "--allow-mixed-scope-dirty",
+            ]
+        )
+        == 0
+    )
+    output = capsys.readouterr().out
+    assert "Mixed-scope dirty paths block verdict: `NO`" in output
+    assert "NOTE: mixed-scope dirty paths were reported" in output
+
+
+def test_mixed_scope_override_still_blocks_release_owned_paths(tmp_path, monkeypatch, capsys):
+    for gate in cutover.MANUAL_GATE_FILES:
+        write_file(tmp_path / gate, "Status: PASS\n- [x] done\n")
+
+    monkeypatch.setattr(
+        cutover,
+        "run_git",
+        lambda args, cwd: " M modules/model_manager.py\n?? modules/compositing/blend.py\n",
+    )
+
+    assert (
+        cutover.main(
+            [
+                "--repo-root",
+                str(tmp_path),
+                "--strict",
+                "--allow-mixed-scope-dirty",
+            ]
+        )
+        == 1
+    )
+    output = capsys.readouterr().out
+    assert "release-owned dirty paths must be committed" in output
+    assert "modules/model_manager.py" in output
+
+
 def test_writes_markdown_report(tmp_path, monkeypatch):
     for gate in cutover.MANUAL_GATE_FILES:
         write_file(tmp_path / gate, "Status: PASS\n- [x] done\n")

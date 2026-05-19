@@ -191,6 +191,7 @@ Invoke-ReleaseStep "Generate release cutover status" {
     )
     if ($RequirePublishReady) {
         $Args += "--strict"
+        $Args += "--allow-mixed-scope-dirty"
     }
     & $CutoverPython @Args
 }

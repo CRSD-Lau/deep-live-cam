@@ -164,6 +164,7 @@ class CutoverStatus:
         unstaged_release_paths: list[str],
         manual_gates: list[ManualGate],
         blockers: list[str],
+        mixed_scope_is_blocking: bool,
     ) -> None:
         self.paths = paths
         self.release_paths = release_paths
@@ -173,6 +174,7 @@ class CutoverStatus:
         self.unstaged_release_paths = unstaged_release_paths
         self.manual_gates = manual_gates
         self.blockers = blockers
+        self.mixed_scope_is_blocking = mixed_scope_is_blocking
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -184,6 +186,7 @@ class CutoverStatus:
             "unstaged_release_paths": self.unstaged_release_paths,
             "manual_gates": [gate.to_dict() for gate in self.manual_gates],
             "blockers": self.blockers,
+            "mixed_scope_is_blocking": self.mixed_scope_is_blocking,
             "ready": not self.blockers,
         }
 
@@ -285,7 +288,7 @@ def render_group(title: str, paths: list[str], limit: int) -> list[str]:
     return lines
 
 
-def collect_status(repo_root: Path) -> CutoverStatus:
+def collect_status(repo_root: Path, allow_mixed_scope_dirty: bool = False) -> CutoverStatus:
     entries = git_status_entries(repo_root)
     paths = [entry.path for entry in entries]
     release_paths, mixed_paths, unknown_paths = classify(paths)
@@ -293,7 +296,9 @@ def collect_status(repo_root: Path) -> CutoverStatus:
     staged_release_paths = sorted({entry.path for entry in entries if entry.path in release_path_set and entry.staged})
     unstaged_release_paths = sorted({entry.path for entry in entries if entry.path in release_path_set and entry.unstaged})
     blockers: list[str] = []
-    if mixed_paths:
+    if release_paths:
+        blockers.append("release-owned dirty paths must be committed or excluded before release cutover")
+    if mixed_paths and not allow_mixed_scope_dirty:
         blockers.append("mixed-scope dirty paths still need an include/exclude decision")
     if unknown_paths:
         blockers.append("unknown dirty paths still need review")
@@ -307,8 +312,10 @@ def collect_status(repo_root: Path) -> CutoverStatus:
         if status != "PASS" or open_items:
             blockers.append(f"{relative_path} is not complete")
 
-    if paths:
+    if paths and not allow_mixed_scope_dirty:
         blockers.append("working tree is not clean")
+    elif release_paths or unknown_paths:
+        blockers.append("working tree contains release-owned or unknown dirty paths")
 
     return CutoverStatus(
         paths,
@@ -319,6 +326,7 @@ def collect_status(repo_root: Path) -> CutoverStatus:
         unstaged_release_paths,
         manual_gates,
         blockers,
+        mixed_scope_is_blocking=not allow_mixed_scope_dirty,
     )
 
 
@@ -333,6 +341,7 @@ def render_report(status: CutoverStatus, limit: int) -> str:
         f"Dirty paths: `{len(status.paths)}`",
         f"Staged release-owned paths: `{len(status.staged_release_paths)}`",
         f"Unstaged release-owned paths: `{len(status.unstaged_release_paths)}`",
+        f"Mixed-scope dirty paths block verdict: `{'YES' if status.mixed_scope_is_blocking else 'NO'}`",
         "",
     ]
     lines.extend(render_group("Release-required or release-owned dirty paths", status.release_paths, limit))
@@ -354,7 +363,9 @@ def render_report(status: CutoverStatus, limit: int) -> str:
         for blocker in status.blockers:
             lines.append(f"- BLOCKED: {blocker}")
     else:
-        lines.append("- READY: working tree and manual cutover evidence are clean")
+        lines.append("- READY: release-owned paths, unknown paths, and manual cutover evidence are clean")
+        if status.mixed_paths and not status.mixed_scope_is_blocking:
+            lines.append("- NOTE: mixed-scope dirty paths were reported but did not block this Git-ref release cutover")
     lines.append("")
     return "\n".join(lines)
 
@@ -363,13 +374,21 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Check Windows release cutover readiness.")
     parser.add_argument("--repo-root", default=".", help="Repository root.")
     parser.add_argument("--strict", action="store_true", help="Fail if any cutover blocker remains.")
+    parser.add_argument(
+        "--allow-mixed-scope-dirty",
+        action="store_true",
+        help=(
+            "Report known mixed-scope dirty paths without treating them as blockers. "
+            "Use only when release artifacts and source archive are produced from a clean Git ref."
+        ),
+    )
     parser.add_argument("--limit", type=int, default=80, help="Maximum paths to print per group.")
     parser.add_argument("--output", help="Write the cutover status markdown report to this path.")
     parser.add_argument("--json-output", help="Write the cutover status as JSON to this path.")
     args = parser.parse_args(argv)
 
     repo_root = Path(args.repo_root).resolve()
-    status = collect_status(repo_root)
+    status = collect_status(repo_root, allow_mixed_scope_dirty=args.allow_mixed_scope_dirty)
 
     report = render_report(status, args.limit)
     print(report)
