@@ -136,6 +136,7 @@ POPUP_LIVE_SCROLL_HEIGHT = 700
 MAPPER_PREVIEW_SIZE = 100
 SOURCE_TARGET_PREVIEW_SIZE = 240
 MEDIA_SLOT_HEIGHT = 390
+MEDIA_ACTION_WIDTH = 160
 APP_LOGO_NAME = "Logo.png"
 
 
@@ -626,7 +627,7 @@ def _media_slot(
     layout.addWidget(preview, alignment=Qt.AlignmentFlag.AlignCenter)
 
     if isinstance(controls, QPushButton):
-        layout.addWidget(controls)
+        layout.addWidget(controls, alignment=Qt.AlignmentFlag.AlignLeft)
     else:
         layout.addLayout(controls)
 
@@ -824,7 +825,7 @@ class MainWindow(QMainWindow):
         src_row = QHBoxLayout()
         src_row.setSpacing(8)
         self.btn_select_source = QPushButton(_("Select Face"))
-        self.btn_select_source.setMinimumWidth(132)
+        self.btn_select_source.setFixedWidth(MEDIA_ACTION_WIDTH)
         self.btn_select_source.setToolTip(
             _("Choose the source face image to swap onto the target")
         )
@@ -857,6 +858,7 @@ class MainWindow(QMainWindow):
         self.btn_select_target.setToolTip(
             _("Choose the target image or video to apply face swap to")
         )
+        self.btn_select_target.setFixedWidth(MEDIA_ACTION_WIDTH)
         self.btn_select_target.clicked.connect(self._on_select_target)
         tgt_slot = _media_slot(
             _("Target media"),
