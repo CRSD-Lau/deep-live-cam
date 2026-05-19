@@ -1,8 +1,8 @@
 # Windows Release Verification
 
-Generated: 2026-05-19T02:19:40+00:00
+Generated: 2026-05-19T02:26:08+00:00
 App version: `2.1.5`
-Git HEAD: `4a674d33ef2d9f277fadf6677206105c5ddf00c7`
+Git HEAD: `29f6e4aff30873400955dac752288e6be8036d42`
 
 This file records local release evidence for the Windows installer. It is not a legal opinion and does not replace the manual checks in `RELEASE_CHECKLIST.md`.
 
@@ -67,18 +67,17 @@ Current status: the installer is locally verified, but this is not yet a publish
 
 ## Source Archive
 
-- Latest source archive: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-worktree-4a674d33ef2d.zip`
-- Source archive mode: `draft-working-tree`
-- Source archive hash sidecar: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-worktree-4a674d33ef2d.zip.sha256`
-- Source archive manifest: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-worktree-4a674d33ef2d.manifest.md`
-- Draft worktree source archives are useful for local traceability, but public GitHub Releases still require a clean tagged source archive.
+- Latest source archive: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-29f6e4aff308.zip`
+- Source archive mode: `git-ref`
+- Source archive hash sidecar: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-29f6e4aff308.zip.sha256`
+- Source archive manifest: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-29f6e4aff308.manifest.md`
 
 ## Cutover Status
 
 - Cutover status report: `C:\Projects\deep-live-cam\RELEASE_CUTOVER_STATUS.md`
-- Dirty paths: `165`
-- Release-owned dirty paths: `100`
-- Staged release-owned paths: `100`
+- Dirty paths: `65`
+- Release-owned dirty paths: `0`
+- Staged release-owned paths: `0`
 - Unstaged release-owned paths: `0`
 - Mixed-scope dirty paths: `65`
 - Unknown dirty paths: `0`
@@ -105,7 +104,7 @@ Current status: the installer is locally verified, but this is not yet a publish
 ## Blocking Publish Checks
 
 - Working tree is dirty; create the release source archive from a clean release tag or commit.
-- Corresponding-source archive mode is `draft-working-tree`, not `git-ref`.
+- Git-ref source archive exists, but the worktree is not clean for publish verification.
 - RELEASE_CUTOVER_STATUS.md reports unresolved cutover blockers.
 - CLEAN_VM_VERIFICATION.md is `PENDING` with 10 open checklist item(s).
 - OBS_VIRTUAL_CAMERA_VERIFICATION.md is `PENDING` with 6 open checklist item(s).

@@ -174,13 +174,32 @@ def source_archive_mode(manifest: Path | None) -> str:
     return ""
 
 
+def source_manifest_text(source_archive: Path) -> str:
+    manifest = source_archive.with_suffix(".manifest.md")
+    if not manifest.exists():
+        return ""
+    return manifest.read_text(encoding="utf-8", errors="replace")
+
+
+def select_source_archive(source_archives: list[Path]) -> Path | None:
+    if not source_archives:
+        return None
+    git_ref_archives = [
+        source
+        for source in source_archives
+        if "Archive mode: `git-ref`" in source_manifest_text(source)
+    ]
+    candidates = git_ref_archives or source_archives
+    return sorted(candidates, key=lambda path: (path.stat().st_mtime, path.name))[-1]
+
+
 def generate(repo_root: Path, dist_dir: Path, output_dir: Path, app_version: str) -> tuple[str, bool, list[str]]:
     now = _datetime.datetime.now(_datetime.timezone.utc).replace(microsecond=0).isoformat()
     installer = output_dir / f"DeepLiveCamStudio-{app_version}-x64-setup.exe"
     installer_hash = installer.with_suffix(installer.suffix + ".sha256")
     manifest = dist_dir / "LICENSES" / "WINDOWS_BUNDLE_MANIFEST.md"
     source_archives = find_source_archives(output_dir, app_version)
-    latest_source = source_archives[-1] if source_archives else None
+    latest_source = select_source_archive(source_archives)
     latest_source_hash = Path(str(latest_source) + ".sha256") if latest_source else None
     latest_source_manifest = latest_source.with_suffix(".manifest.md") if latest_source else None
 

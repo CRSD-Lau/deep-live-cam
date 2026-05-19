@@ -71,3 +71,21 @@ def test_validate_release_artifacts_rejects_missing_required_source_entries(tmp_
     monkeypatch.chdir(tmp_path)
 
     assert validator.main([]) == 1
+
+
+def test_validate_release_artifacts_prefers_git_ref_source_when_required(tmp_path, monkeypatch):
+    write_artifacts(tmp_path)
+    output_dir = tmp_path / "build" / "windows" / "installer"
+    git_ref_source = output_dir / "DeepLiveCamStudio-2.1.5-source-testref.zip"
+    draft_source = output_dir / "DeepLiveCamStudio-2.1.5-source-worktree-testref.zip"
+    draft_source.write_bytes(git_ref_source.read_bytes())
+    write_file(draft_source.with_suffix(draft_source.suffix + ".sha256"), f"{validator.sha256(draft_source)}  {draft_source.name}\n")
+    write_file(
+        draft_source.with_suffix(".manifest.md"),
+        git_ref_source.with_suffix(".manifest.md").read_text(encoding="utf-8").replace(
+            "Archive mode: `git-ref`", "Archive mode: `draft-working-tree`"
+        ),
+    )
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source"]) == 0

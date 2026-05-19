@@ -140,3 +140,18 @@ def test_publish_ready_requires_clean_cutover_status(tmp_path, monkeypatch):
     assert "Staged release-owned paths: `1`" in text
     assert "Mixed-scope dirty paths: `1`" in text
     assert "RELEASE_CUTOVER_STATUS.md reports unresolved cutover blockers." in blockers
+
+
+def test_release_verification_prefers_git_ref_source_archive(tmp_path, monkeypatch):
+    repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
+    source_archive = output_dir / "DeepLiveCamStudio-2.1.5-source-testref.zip"
+    draft_archive = output_dir / "DeepLiveCamStudio-2.1.5-source-worktree-testref.zip"
+    draft_archive.write_bytes(source_archive.read_bytes())
+    write_file(draft_archive.with_suffix(draft_archive.suffix + ".sha256"), f"{verification.sha256(draft_archive)}  {draft_archive.name}\n")
+    write_file(draft_archive.with_suffix(".manifest.md"), "Archive mode: `draft-working-tree`\n")
+
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.5")
+
+    assert "Latest source archive:" in text
+    assert "source-testref.zip`" in text
+    assert "source-worktree-testref.zip`" not in text

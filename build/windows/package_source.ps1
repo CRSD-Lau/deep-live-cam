@@ -62,6 +62,8 @@ if ($FromWorkingTree) {
 $Archive = Join-Path $OutputDir "DeepLiveCamStudio-$AppVersion-source-$ArchiveLabel.zip"
 $SourceManifest = Join-Path $OutputDir "DeepLiveCamStudio-$AppVersion-source-$ArchiveLabel.manifest.md"
 $ArchivePrefix = "DeepLiveCamStudio-$AppVersion-source/"
+$ForbiddenSourceSuffixes = @(".onnx", ".pth", ".safetensors")
+$ForbiddenSourceDirectoryNames = @("models", "checkpoints", "model-cache", "model_cache")
 
 $RequiredEntries = @(
     "LICENSE",
@@ -199,9 +201,6 @@ if ($FromWorkingTree) {
         "build/windows/manual-evidence",
         "build/windows/pyinstaller-work"
     )
-    $ForbiddenSourceSuffixes = @(".onnx", ".pth", ".safetensors")
-    $ForbiddenSourceDirectoryNames = @("models", "checkpoints", "model-cache", "model_cache")
-
     $SourceFiles = @(
         Get-ChildItem -LiteralPath $RepoRoot -Recurse -File -Force |
             Where-Object {
@@ -233,9 +232,57 @@ if ($FromWorkingTree) {
         $ZipWrite.Dispose()
     }
 } else {
-    git archive --format zip --output $Archive --prefix $ArchivePrefix $ResolvedRef
-    if ($LASTEXITCODE -ne 0) {
-        throw "git archive failed with exit code $LASTEXITCODE."
+    $TempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "DeepLiveCamSource-$([System.Guid]::NewGuid().ToString("N"))"
+    $TempExtract = Join-Path $TempRoot "extract"
+    $TempRawArchive = Join-Path $TempRoot "source-raw.zip"
+    New-Item -ItemType Directory -Path $TempExtract -Force | Out-Null
+    try {
+        git archive --format zip --output $TempRawArchive --prefix $ArchivePrefix $ResolvedRef
+        if ($LASTEXITCODE -ne 0) {
+            throw "git archive failed with exit code $LASTEXITCODE."
+        }
+
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($TempRawArchive, $TempExtract)
+
+        $ForbiddenDirectories = @(
+            Get-ChildItem -LiteralPath $TempExtract -Recurse -Directory -Force |
+                Where-Object {
+                    $Relative = Get-ArchiveRelativePath -BasePath $TempExtract -ChildPath $_.FullName
+                    $Parts = @($Relative -split "/")
+                    @($Parts | Where-Object { $ForbiddenSourceDirectoryNames -contains $_ }).Count -gt 0
+                } |
+                Sort-Object -Property FullName -Descending
+        )
+        foreach ($ForbiddenDirectory in $ForbiddenDirectories) {
+            Remove-Item -LiteralPath $ForbiddenDirectory.FullName -Recurse -Force
+        }
+
+        $ForbiddenFiles = @(
+            Get-ChildItem -LiteralPath $TempExtract -Recurse -File -Force |
+                Where-Object { $ForbiddenSourceSuffixes -contains $_.Extension.ToLowerInvariant() }
+        )
+        foreach ($ForbiddenFile in $ForbiddenFiles) {
+            Remove-Item -LiteralPath $ForbiddenFile.FullName -Force
+        }
+
+        if (Test-Path $Archive) {
+            Remove-Item -LiteralPath $Archive -Force
+        }
+        $ZipWrite = [System.IO.Compression.ZipFile]::Open($Archive, [System.IO.Compression.ZipArchiveMode]::Create)
+        try {
+            foreach ($SourceFile in @(Get-ChildItem -LiteralPath $TempExtract -Recurse -File -Force)) {
+                $Relative = Get-ArchiveRelativePath -BasePath $TempExtract -ChildPath $SourceFile.FullName
+                [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($ZipWrite, $SourceFile.FullName, $Relative, [System.IO.Compression.CompressionLevel]::Optimal) | Out-Null
+            }
+        }
+        finally {
+            $ZipWrite.Dispose()
+        }
+    }
+    finally {
+        if (Test-Path $TempRoot) {
+            Remove-Item -LiteralPath $TempRoot -Recurse -Force
+        }
     }
 }
 

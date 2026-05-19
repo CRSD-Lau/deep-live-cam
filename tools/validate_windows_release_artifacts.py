@@ -130,6 +130,26 @@ def source_archive_missing_required_entries(path: Path, app_version: str) -> lis
     return [entry for entry in REQUIRED_SOURCE_ENTRIES if f"{prefix}{entry}" not in names]
 
 
+def source_manifest_text(path: Path) -> str:
+    manifest = path.with_suffix(".manifest.md")
+    if not manifest.exists():
+        return ""
+    return manifest.read_text(encoding="utf-8", errors="replace")
+
+
+def select_source_archive(source_archives: list[Path], require_git_ref: bool) -> Path:
+    candidates = source_archives
+    if require_git_ref:
+        git_ref_candidates = [
+            source
+            for source in source_archives
+            if "Archive mode: `git-ref`" in source_manifest_text(source)
+        ]
+        if git_ref_candidates:
+            candidates = git_ref_candidates
+    return sorted(candidates, key=lambda path: (path.stat().st_mtime, path.name))[-1]
+
+
 def fail(message: str, failures: list[str]) -> None:
     print(f"[release-artifacts] FAIL: {message}")
     failures.append(message)
@@ -165,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:
         fail("missing corresponding-source archive", failures)
         latest_source = None
     else:
-        latest_source = source_archives[-1]
+        latest_source = select_source_archive(source_archives, args.require_git_ref_source)
         source_hash = Path(str(latest_source) + ".sha256")
         source_manifest = latest_source.with_suffix(".manifest.md")
         if read_sidecar_digest(source_hash) != sha256(latest_source):
