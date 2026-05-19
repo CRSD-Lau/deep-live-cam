@@ -21,6 +21,7 @@ $DistDir = Join-Path $RepoRoot "dist\DeepLiveCamStudio"
 $Installer = Join-Path $PSScriptRoot "installer\DeepLiveCamStudio-$AppVersion-x64-setup.exe"
 $InstallerHash = "$Installer.sha256"
 $ReleaseAssetsDir = Join-Path $PSScriptRoot "release-assets\$AppVersion"
+$ExpectGitRefSource = (-not $SkipSourceArchive) -and (-not $DraftWorkingTreeSource)
 
 if ($RequirePublishReady) {
     if ($AllowDirtySource) {
@@ -253,7 +254,7 @@ Invoke-ReleaseStep "Validate release artifact set" {
         "--output-dir", (Join-Path $PSScriptRoot "installer"),
         "--app-version", $AppVersion
     )
-    if ($RequirePublishReady) {
+    if ($ExpectGitRefSource) {
         $Args += "--require-git-ref-source"
     }
     & $ArtifactPython @Args
@@ -265,7 +266,7 @@ Invoke-ReleaseStep "Assemble GitHub Release asset set" {
         "-File", (Join-Path $PSScriptRoot "assemble_release_assets.ps1"),
         "-AppVersion", $AppVersion
     )
-    if ($RequirePublishReady) {
+    if ($ExpectGitRefSource) {
         $Args += "-RequireGitRefSource"
     }
     & powershell @Args
@@ -288,7 +289,7 @@ Invoke-ReleaseStep "Validate GitHub Release asset set" {
         "--release-assets-dir", $ReleaseAssetsDir,
         "--app-version", $AppVersion
     )
-    if ($RequirePublishReady) {
+    if ($ExpectGitRefSource) {
         $Args += "--require-git-ref-source"
     }
     & $ArtifactPython @Args

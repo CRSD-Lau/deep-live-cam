@@ -63,7 +63,7 @@ jobs:
 
       - name: Validate uploaded artifact set
         shell: pwsh
-        run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version "${{ inputs.app_version }}"
+        run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version "${{ inputs.app_version }}" --require-git-ref-source
 
       - name: Assemble GitHub Release asset set
         shell: pwsh
