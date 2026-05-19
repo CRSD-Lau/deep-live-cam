@@ -1,21 +1,25 @@
-# Deep Live Cam Studio {VERSION} Windows Release
+# Deep Live Cam Studio 2.1.5 Windows Release
 
 This release packages a modified build of Deep-Live-Cam for Windows x64.
 
 ## Downloads
 
-- Windows installer: `DeepLiveCamStudio-{VERSION}-x64-setup.exe`
-- Installer SHA-256: see `DeepLiveCamStudio-{VERSION}-x64-setup.exe.sha256`
-- Corresponding source archive: attach the source archive for the exact commit used to build this installer, or link the exact Git tag/commit.
+- Windows installer: `DeepLiveCamStudio-2.1.5-x64-setup.exe`
+- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.1.5-x64-setup.exe.sha256`
+- Corresponding source archive: listed in the uploaded `RELEASE_ASSETS.md`
+- Source archive SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and source `.zip.sha256` sidecar
+- Source ref: listed in the uploaded `RELEASE_ASSETS.md` and source `.manifest.md`
 
 ## Source And License
 
 Deep-Live-Cam is licensed under AGPL-3.0. This binary release is distributed with corresponding source availability requirements.
 
-Before publishing, replace this paragraph with the exact source tag/commit URL and attach or link the source archive produced by:
+Attach the source archive listed above to the GitHub Release, or link the exact release tag/commit in the publishing repository. The public release must make the complete corresponding source available for the exact binary installer.
+
+The source archive must be produced from the release Git ref with:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion {VERSION} -GitRef <release-tag-or-commit>
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.5 -GitRef HEAD
 ```
 
 This release preserves attribution to the original project:
@@ -74,6 +78,8 @@ Known legal risks that must not be hidden from release notes:
 - Dependency metadata can be incomplete and should be legally reviewed before public distribution.
 
 ## Pre-Publish Checks
+
+This release candidate is not publish-approved until these checks are complete and documented:
 
 - Clean Windows VM install without admin rights.
 - Packaged runtime preflight.

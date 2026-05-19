@@ -159,7 +159,7 @@ $Lines = @(
     "## Notes",
     "",
     "- Do not upload model/checkpoint files unless separate redistribution approval exists.",
-    "- Replace placeholders in ``RELEASE_NOTES_TEMPLATE.md`` before publishing.",
+    "- Confirm ``RELEASE_NOTES_TEMPLATE.md`` references the exact installer, source archive, source ref, and hashes before publishing.",
     "- Attach or link the exact corresponding source archive listed above for AGPL-3.0 compliance.",
     "- This asset set is not publish-approved until clean VM, OBS workflow, and legal review gates are complete.",
     ""

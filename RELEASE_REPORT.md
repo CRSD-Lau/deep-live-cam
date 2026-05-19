@@ -35,7 +35,7 @@ installer; changing a bundled document changes the installer hash.
 Current automated status:
 
 - Focused packaging/runtime/compliance tests passed locally: `302 passed`.
-- Clean checkout PyInstaller build for `6b229c7d0b248453d8d50674d0e7ff7d87606471` passed.
+- Clean checkout PyInstaller build for `cc4451c150da09d634c4aac2f1a4c017cdead634` passed.
 - Packaged runtime smoke test passed from the clean checkout.
 - Inno Setup installer build passed.
 - Installer smoke test passed: silent install, installed CLI `--version`, and uninstall.
@@ -334,7 +334,7 @@ The downloader presents source URLs, license notes, and SHA-256 checksums before
 - Packaged CPU image processing, CPU short-video processing, and CUDA image processing with external CUDA/cuDNN runtime DLLs on `PATH` passed on 2026-05-18. Evidence is recorded in `PROCESSING_VERIFICATION.md`; the temporary model/media files were deleted afterward.
 - The first packaged processing run exposed a missing PyInstaller dynamic import for `modules.processors.frame`; `build/windows/deep_live_cam_studio.spec` now collects that submodule tree so packaged frame processors such as `face_swapper` are included.
 - `build/windows/test_packaged_runtime.ps1` verifies required release docs, no bundled model/checkpoint files, `_internal\torch` absence, WebP/AVIF codec files, `--version`, and `--download-models` cancellation behavior for the packaged `dist` bundle.
-- Current packaged runtime preflight passed against a clean-checkout `dist\DeepLiveCamStudio` built from `6b229c7d0b248453d8d50674d0e7ff7d87606471`.
+- Current packaged runtime preflight passed against a clean-checkout `dist\DeepLiveCamStudio` built from `cc4451c150da09d634c4aac2f1a4c017cdead634`.
 - `build/windows/test_environment.ps1` consolidates ffmpeg/ffprobe, CUDA provider, and OBS/virtual-camera preflight checks. Strict target-machine gates are available with `-RequireFfmpeg`, `-RequireCuda`, and `-RequireObsVirtualCam`.
 - Local environment preflight passed: ffmpeg and ffprobe were found on PATH, CUDAExecutionProvider loaded for an ONNX probe session on an NVIDIA GeForce RTX 4070, and OBS active-output testing was skipped because `-RequireObsVirtualCam` was not requested.
 - `build/windows/package_source.ps1` now validates that the selected Git ref contains required AGPL release files before archive creation, then validates archive contents for forbidden model/checkpoint entries before writing the source hash sidecar and source archive manifest.
