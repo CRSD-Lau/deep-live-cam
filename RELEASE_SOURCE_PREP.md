@@ -19,7 +19,12 @@ the authoritative hash records for the current artifact set.
 
 Older draft source archives may still exist in `build/windows/installer/` from
 local testing. They are useful traceability evidence, but the public GitHub
-Release should use the git-ref archive above or a later clean tag archive.
+Release should use the git-ref archive above or a later clean tag archive. To
+remove stale local source archives while keeping the current upload packet, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\clean_build.ps1 -PruneStaleInstallerArtifacts -AppVersion 2.1.5
+```
 
 ## Release-Relevant Files To Review Before Commit
 
@@ -92,27 +97,26 @@ Compliance and release documents:
 
 ## Mixed-Scope Files Requiring Human Review
 
-The current worktree also contains large modified or untracked application
-modules that may be unrelated to the Windows installer and licensing goal. Do
-not include them in a public release commit until their intent and test coverage
-are confirmed.
+The current worktree also contains untracked local planning/scratch files that
+are not part of the Windows installer and licensing release packet:
 
-Examples currently visible in `git status` include:
+- `.superpowers/`
+- `docs/ITERATION_LOG.md`
+- `docs/superpowers/`
 
-- `modules/processors/frame/face_masking.py`
-- `modules/face_analyser.py`
-- `modules/compositing/`
-- `modules/tracking/`
-- `modules/expression_*`
-- `modules/visual_qa*`
-- `modules/benchmark_report.py`
-- `modules/pipeline_metrics.py`
-- matching tests for those broader runtime features
+These files are intentionally excluded from the current public release source
+archive because the archive is created from the committed Git ref listed in
+`RELEASE_ASSETS.md`, not from the dirty working tree. If any of those files are
+intended to ship, review and commit them separately before creating the final
+release tag. If they are not intended to ship, leave them out of the release
+commit or move them aside before final publish signoff.
 
-If these changes are intended for the same release, review and commit them as a
-separate feature/runtime commit before creating the release tag. If they are
-not intended for this release, move them aside before the packaging commit so
-the corresponding-source archive matches only the released installer.
+When the only dirty paths are reviewed mixed-scope scratch files and the source
+archive was created from a committed Git ref, refresh the cutover report with:
+
+```powershell
+venv\Scripts\python.exe tools\check_windows_release_cutover.py --repo-root . --allow-mixed-scope-dirty --output RELEASE_CUTOVER_STATUS.md
+```
 
 ## Clean Release Procedure
 
