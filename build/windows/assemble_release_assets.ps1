@@ -120,6 +120,13 @@ if ($SourceManifestText -match "Archive mode:\s*``([^``]+)``") {
 }
 
 $AssetManifest = Join-Path $OutputDir "RELEASE_ASSETS.md"
+$UploadNames = @(
+    Get-ChildItem -LiteralPath $OutputDir -File |
+        Where-Object { $_.Name -ne "RELEASE_ASSETS.md" } |
+        Sort-Object Name |
+        ForEach-Object { "- ``$($_.Name)``" }
+)
+$UploadNames += "- ``RELEASE_ASSETS.md``"
 $Lines = @(
     "# Windows GitHub Release Assets",
     "",
@@ -130,13 +137,7 @@ $Lines = @(
     "",
     "## Upload These Files",
     "",
-    "- ``$(Split-Path $Installer -Leaf)``",
-    "- ``$(Split-Path $InstallerHash -Leaf)``",
-    "- ``$($SourceArchive.Name)``",
-    "- ``$(Split-Path $SourceHash -Leaf)``",
-    "- ``$(Split-Path $SourceManifest -Leaf)``",
-    "- ``RELEASE_NOTES_TEMPLATE.md``",
-    "- ``RELEASE_VERIFICATION.md``",
+    $UploadNames,
     "",
     "## Hashes",
     "",

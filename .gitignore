@@ -32,6 +32,7 @@ build/deep_live_cam_studio/
 build/windows/manual-evidence/
 build/windows/installer/
 build/windows/pyinstaller-work/
+build/windows/release-assets/
 install.bat
 /.claude
 *.bat
