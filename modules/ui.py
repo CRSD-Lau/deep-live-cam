@@ -14,7 +14,6 @@ import os
 import platform
 import queue
 import sys
-import tempfile
 import threading
 import time
 import traceback
@@ -23,7 +22,6 @@ from typing import Callable, List, Optional, Tuple
 
 import cv2
 import numpy as np
-import requests
 from PIL import Image, ImageOps
 from PySide6.QtCore import (
     QObject,
@@ -35,6 +33,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
+    QBoxLayout,
     QCheckBox,
     QComboBox,
     QDialog,
@@ -118,6 +117,9 @@ import json
 
 ROOT_HEIGHT = 760
 ROOT_WIDTH = 1120
+ROOT_MIN_HEIGHT = 560
+ROOT_MIN_WIDTH = 760
+COMPACT_LAYOUT_WIDTH = 1000
 
 PREVIEW_MAX_HEIGHT = 700
 PREVIEW_MAX_WIDTH = 1200
@@ -135,7 +137,7 @@ POPUP_LIVE_SCROLL_WIDTH = 870
 POPUP_LIVE_SCROLL_HEIGHT = 700
 
 MAPPER_PREVIEW_SIZE = 100
-SOURCE_TARGET_PREVIEW_SIZE = 220
+SOURCE_TARGET_PREVIEW_SIZE = 200
 APP_LOGO_NAME = "Logo.png"
 
 
@@ -195,14 +197,17 @@ QGroupBox {
     background-color: #22211e;
     border: 1px solid #39352f;
     border-radius: 8px;
-    margin-top: 16px;
-    padding: 16px 14px 14px 14px;
+    margin-top: 20px;
+    padding: 20px 16px 16px 16px;
     font-weight: 600;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
-    padding: 0 8px;
+    left: 10px;
+    padding: 2px 10px;
+    background-color: #171715;
+    border-radius: 5px;
     color: #d9b06d;
 }
 
@@ -281,14 +286,23 @@ QSlider::sub-page:horizontal {
 }
 
 QLabel#mediaTitle {
-    color: #b9b0a3;
-    font-size: 9pt;
+    color: #efe1c3;
+    font-size: 9.5pt;
     font-weight: 700;
 }
-QLabel#imageDrop {
-    background-color: #1b1b19;
-    border: 1px dashed #5b5347;
+QLabel#mediaHint {
+    color: #8f8577;
+    font-size: 8.5pt;
+}
+QFrame#mediaSlot {
+    background-color: #1c1b18;
+    border: 1px solid #38342e;
     border-radius: 8px;
+}
+QLabel#imageDrop {
+    background-color: #151512;
+    border: 1px dashed #5b5347;
+    border-radius: 6px;
     color: #8f8577;
     font-weight: 600;
 }
@@ -577,8 +591,47 @@ def _make_image_drop(text: str, size: Tuple[int, int]) -> QLabel:
     label.setObjectName("imageDrop")
     label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     label.setFixedSize(size[0], size[1])
+    label.setWordWrap(True)
     label.setText(text)
     return label
+
+
+def _media_slot(
+    title: str,
+    hint: str,
+    preview: QLabel,
+    controls: QHBoxLayout | QPushButton,
+) -> QFrame:
+    slot = QFrame()
+    slot.setObjectName("mediaSlot")
+    slot.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+
+    layout = QVBoxLayout(slot)
+    layout.setContentsMargins(14, 14, 14, 16)
+    layout.setSpacing(10)
+    layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+    title_row = QVBoxLayout()
+    title_row.setSpacing(2)
+    title_label = QLabel(title)
+    title_label.setObjectName("mediaTitle")
+    title_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+    hint_label = QLabel(hint)
+    hint_label.setObjectName("mediaHint")
+    hint_label.setWordWrap(True)
+    hint_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+    title_row.addWidget(title_label)
+    title_row.addWidget(hint_label)
+
+    layout.addLayout(title_row)
+    layout.addWidget(preview, alignment=Qt.AlignmentFlag.AlignCenter)
+
+    if isinstance(controls, QPushButton):
+        layout.addWidget(controls)
+    else:
+        layout.addLayout(controls)
+
+    return slot
 
 
 def _quality_badge_text() -> str:
@@ -644,19 +697,26 @@ class MainWindow(QMainWindow):
             f"{modules.metadata.name} {modules.metadata.version} {modules.metadata.edition}"
         )
         self.setWindowIcon(app_icon())
-        self.setMinimumSize(ROOT_WIDTH, ROOT_HEIGHT)
+        self.setMinimumSize(ROOT_MIN_WIDTH, ROOT_MIN_HEIGHT)
         self.resize(ROOT_WIDTH, ROOT_HEIGHT)
         self._model_download_running = False
 
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setCentralWidget(scroll)
+
         root = QWidget()
-        self.setCentralWidget(root)
+        root.setMinimumSize(ROOT_MIN_WIDTH - 36, ROOT_MIN_HEIGHT - 70)
+        scroll.setWidget(root)
         layout = QVBoxLayout(root)
         layout.setContentsMargins(18, 16, 18, 14)
         layout.setSpacing(14)
         layout.addWidget(self._build_header())
 
-        body = QHBoxLayout()
-        body.setSpacing(14)
+        self._body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self._body_layout.setSpacing(14)
 
         session_col = QVBoxLayout()
         session_col.setSpacing(12)
@@ -670,9 +730,9 @@ class MainWindow(QMainWindow):
         controls_col.addWidget(self._build_camera_card())
         controls_col.addStretch(1)
 
-        body.addLayout(session_col, 3)
-        body.addLayout(controls_col, 2)
-        layout.addLayout(body, 1)
+        self._body_layout.addLayout(session_col, 3)
+        self._body_layout.addLayout(controls_col, 2)
+        layout.addLayout(self._body_layout, 1)
 
         self._status_label = QLabel("Ready")
         self._status_label.setObjectName("statusLabel")
@@ -687,11 +747,44 @@ class MainWindow(QMainWindow):
         self.statusBar().addPermanentWidget(footer)
         if _BRIDGE is not None:
             _BRIDGE.modelDownloadFinished.connect(self._on_model_download_finished)
+        self._sync_responsive_layout()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._sync_responsive_layout()
+
+    def _sync_responsive_layout(self) -> None:
+        compact = self.width() < COMPACT_LAYOUT_WIDTH
+        if hasattr(self, "_body_layout"):
+            direction = (
+                QBoxLayout.Direction.TopToBottom
+                if compact
+                else QBoxLayout.Direction.LeftToRight
+            )
+            if self._body_layout.direction() != direction:
+                self._body_layout.setDirection(direction)
+        if hasattr(self, "_media_row"):
+            direction = (
+                QBoxLayout.Direction.TopToBottom
+                if compact
+                else QBoxLayout.Direction.LeftToRight
+            )
+            if self._media_row.direction() != direction:
+                self._media_row.setDirection(direction)
+        if hasattr(self, "_header_layout"):
+            direction = (
+                QBoxLayout.Direction.TopToBottom
+                if compact
+                else QBoxLayout.Direction.LeftToRight
+            )
+            if self._header_layout.direction() != direction:
+                self._header_layout.setDirection(direction)
 
     def _build_header(self) -> QFrame:
         header = QFrame()
         header.setObjectName("studioHeader")
-        layout = QHBoxLayout(header)
+        self._header_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, header)
+        layout = self._header_layout
         layout.setContentsMargins(18, 14, 18, 14)
         layout.setSpacing(14)
 
@@ -746,74 +839,67 @@ class MainWindow(QMainWindow):
     def _build_media_card(self) -> QGroupBox:
         card = QGroupBox(_("Media"))
         layout = QVBoxLayout(card)
-        layout.setContentsMargins(14, 18, 14, 14)
+        layout.setContentsMargins(16, 22, 16, 16)
+        layout.setSpacing(14)
         layout.addLayout(self._build_image_row())
         return card
 
-    def _build_image_row(self) -> QHBoxLayout:
-        row = QHBoxLayout()
+    def _build_image_row(self) -> QBoxLayout:
+        self._media_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        row = self._media_row
         row.setSpacing(16)
 
-        # Source column
-        src_col = QVBoxLayout()
-        src_title = QLabel(_("Source Face"))
-        src_title.setObjectName("mediaTitle")
-        src_col.addWidget(src_title)
         self.source_label = _make_image_drop(
-            _("Source Face"),
+            _("Drop or select a face image"),
             (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE),
         )
-        src_col.addWidget(self.source_label, alignment=Qt.AlignmentFlag.AlignCenter)
         src_row = QHBoxLayout()
         src_row.setSpacing(8)
         self.btn_select_source = QPushButton(_("Select Face"))
-        self.btn_select_source.setFixedWidth(112)
+        self.btn_select_source.setMinimumWidth(132)
         self.btn_select_source.setToolTip(
             _("Choose the source face image to swap onto the target")
         )
         self.btn_select_source.clicked.connect(self._on_select_source)
-        self.btn_random_face = QPushButton(_("Random"))
-        self.btn_random_face.setObjectName("secondary")
-        self.btn_random_face.setFixedWidth(90)
-        self.btn_random_face.setToolTip(
-            _("Get a random face from thispersondoesnotexist.com")
-        )
-        self.btn_random_face.clicked.connect(self._on_random_face)
         src_row.addWidget(self.btn_select_source)
-        src_row.addWidget(self.btn_random_face)
-        src_col.addLayout(src_row)
+        src_row.addStretch(1)
+        src_slot = _media_slot(
+            _("Source face"),
+            _("Identity image used for the swap"),
+            self.source_label,
+            src_row,
+        )
 
         # Swap button column
         swap_col = QVBoxLayout()
         swap_col.addStretch(1)
         self.btn_swap = QPushButton(_("Swap"))
         self.btn_swap.setObjectName("secondary")
-        self.btn_swap.setFixedSize(82, 38)
+        self.btn_swap.setFixedSize(64, 38)
         self.btn_swap.setToolTip(_("Swap source and target images"))
         self.btn_swap.clicked.connect(self._on_swap_paths)
         swap_col.addWidget(self.btn_swap, alignment=Qt.AlignmentFlag.AlignCenter)
         swap_col.addStretch(1)
 
-        # Target column
-        tgt_col = QVBoxLayout()
-        tgt_title = QLabel(_("Target Media"))
-        tgt_title.setObjectName("mediaTitle")
-        tgt_col.addWidget(tgt_title)
         self.target_label = _make_image_drop(
-            _("Target Media"),
+            _("Drop or select target media"),
             (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE),
         )
-        tgt_col.addWidget(self.target_label, alignment=Qt.AlignmentFlag.AlignCenter)
         self.btn_select_target = QPushButton(_("Select Target"))
         self.btn_select_target.setToolTip(
             _("Choose the target image or video to apply face swap to")
         )
         self.btn_select_target.clicked.connect(self._on_select_target)
-        tgt_col.addWidget(self.btn_select_target)
+        tgt_slot = _media_slot(
+            _("Target media"),
+            _("Image or video that receives the face"),
+            self.target_label,
+            self.btn_select_target,
+        )
 
-        row.addLayout(src_col)
+        row.addWidget(src_slot, 1)
         row.addLayout(swap_col)
-        row.addLayout(tgt_col)
+        row.addWidget(tgt_slot, 1)
         return row
 
     # ── options card ─────────────────────────────────────────────────────
@@ -1136,7 +1222,7 @@ class MainWindow(QMainWindow):
         else:
             modules.globals.source_path = None
             self.source_label.clear()
-            self.source_label.setText(_("Source Face"))
+            self.source_label.setText(_("Drop or select a face image"))
 
     def _on_select_target(self) -> None:
         global _RECENT_TARGET_DIR
@@ -1172,31 +1258,7 @@ class MainWindow(QMainWindow):
         else:
             modules.globals.target_path = None
             self.target_label.clear()
-            self.target_label.setText(_("Target Media"))
-
-    def _on_random_face(self) -> None:
-        if _PREVIEW is not None:
-            _PREVIEW.hide()
-        try:
-            response = requests.get(
-                "https://thispersondoesnotexist.com/",
-                headers={"User-Agent": "Mozilla/5.0"},
-                timeout=10,
-            )
-            response.raise_for_status()
-            temp_path = os.path.join(tempfile.gettempdir(), "deep_live_cam_random_face.jpg")
-            with open(temp_path, "wb") as f:
-                f.write(response.content)
-            modules.globals.source_path = temp_path
-            self.source_label.setPixmap(
-                render_image_preview(
-                    temp_path,
-                    (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE),
-                )
-            )
-            self.source_label.setText("")
-        except Exception as exc:
-            print(f"Failed to fetch random face: {exc}")
+            self.target_label.setText(_("Drop or select target media"))
 
     def _on_swap_paths(self) -> None:
         global _RECENT_SOURCE_DIR, _RECENT_TARGET_DIR
