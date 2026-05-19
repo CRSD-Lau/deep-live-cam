@@ -131,6 +131,31 @@ if ($SourceManifestText -match "Archive mode:\s*``([^``]+)``") {
     $SourceMode = $Matches[1]
 }
 
+$ReleaseNotesTemplate = Join-Path $StagingDir "RELEASE_NOTES_TEMPLATE.md"
+$ReleaseNotes = Join-Path $StagingDir "RELEASE_NOTES.md"
+$ReleaseNotesText = Get-Content -LiteralPath $ReleaseNotesTemplate -Raw
+$ReleaseNotesText = $ReleaseNotesText.Replace(
+    "Installer SHA-256: listed in the uploaded ``RELEASE_ASSETS.md`` and ``DeepLiveCamStudio-$AppVersion-x64-setup.exe.sha256``",
+    "Installer SHA-256: ``$InstallerDigest``"
+)
+$ReleaseNotesText = $ReleaseNotesText.Replace(
+    "Corresponding source archive: listed in the uploaded ``RELEASE_ASSETS.md``",
+    "Corresponding source archive: ``$($SourceArchive.Name)``"
+)
+$ReleaseNotesText = $ReleaseNotesText.Replace(
+    "Source archive SHA-256: listed in the uploaded ``RELEASE_ASSETS.md`` and source ``.zip.sha256`` sidecar",
+    "Source archive SHA-256: ``$SourceDigest``"
+)
+$ReleaseNotesText = $ReleaseNotesText.Replace(
+    "Source ref: listed in the uploaded ``RELEASE_ASSETS.md`` and source ``.manifest.md``",
+    "Source ref: ``$ResolvedRef``"
+)
+$ReleaseNotesText = $ReleaseNotesText.Replace(
+    "powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion $AppVersion -GitRef HEAD",
+    "powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion $AppVersion -GitRef $ResolvedRef"
+)
+$ReleaseNotesText | Set-Content -LiteralPath $ReleaseNotes -Encoding utf8
+
 $AssetManifest = Join-Path $StagingDir "RELEASE_ASSETS.md"
 $UploadNames = @(
     Get-ChildItem -LiteralPath $StagingDir -File |
@@ -159,7 +184,7 @@ $Lines = @(
     "## Notes",
     "",
     "- Do not upload model/checkpoint files unless separate redistribution approval exists.",
-    "- Confirm ``RELEASE_NOTES_TEMPLATE.md`` references the exact installer, source archive, source ref, and hashes before publishing.",
+    "- Use ``RELEASE_NOTES.md`` for the GitHub Release body; it is generated from the template with the exact installer, source archive, source ref, and hashes.",
     "- Attach or link the exact corresponding source archive listed above for AGPL-3.0 compliance.",
     "- This asset set is not publish-approved until clean VM, OBS workflow, and legal review gates are complete.",
     ""

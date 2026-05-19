@@ -210,6 +210,7 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
 
     required_docs = (
         "RELEASE_ASSETS.md",
+        "RELEASE_NOTES.md",
         "RELEASE_NOTES_TEMPLATE.md",
         "RELEASE_VERIFICATION.md",
         "RELEASE_CHECKLIST.md",
@@ -247,6 +248,24 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
                 fail(f"RELEASE_ASSETS.md does not list required document: {doc}", failures)
         if "Do not upload model/checkpoint files" not in asset_manifest_text:
             fail("RELEASE_ASSETS.md missing model/checkpoint upload warning", failures)
+
+    release_notes = assets_dir / "RELEASE_NOTES.md"
+    if release_notes.exists():
+        release_notes_text = release_notes.read_text(encoding="utf-8", errors="replace")
+        expected_phrases = (
+            f"`{installer.name}`",
+            f"`{sha256(installer)}`",
+            f"`{source.name}`",
+            f"`{sha256(source)}`",
+            "Deep-Live-Cam is licensed under AGPL-3.0",
+            "The installer intentionally does not include model/checkpoint files",
+            "This release candidate is not publish-approved",
+        )
+        for phrase in expected_phrases:
+            if phrase not in release_notes_text:
+                fail(f"RELEASE_NOTES.md missing phrase: {phrase}", failures)
+        if "listed in the uploaded `RELEASE_ASSETS.md`" in release_notes_text:
+            fail("RELEASE_NOTES.md still contains manifest cross-reference placeholders", failures)
 
 
 def main(argv: list[str] | None = None) -> int:

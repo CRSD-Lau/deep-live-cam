@@ -65,6 +65,7 @@ def write_release_assets(tmp_path):
     for path in files:
         (assets_dir / path.name).write_bytes(path.read_bytes())
     for doc in (
+        "RELEASE_NOTES.md",
         "RELEASE_NOTES_TEMPLATE.md",
         "RELEASE_VERIFICATION.md",
         "RELEASE_CHECKLIST.md",
@@ -75,6 +76,20 @@ def write_release_assets(tmp_path):
     ):
         content = MANUAL_GATE_SUMMARY if doc == "MANUAL_RELEASE_GATES.md" else "doc"
         write_file(assets_dir / doc, content)
+    write_file(
+        assets_dir / "RELEASE_NOTES.md",
+        "\n".join(
+            (
+                f"`{installer.name}`",
+                f"`{validator.sha256(installer)}`",
+                f"`{source.name}`",
+                f"`{validator.sha256(source)}`",
+                "Deep-Live-Cam is licensed under AGPL-3.0",
+                "The installer intentionally does not include model/checkpoint files",
+                "This release candidate is not publish-approved",
+            )
+        ),
+    )
     upload_lines = "\n".join(f"- `{path.name}`" for path in files)
     doc_upload_lines = "\n".join(
         f"- `{doc}`"
@@ -83,6 +98,7 @@ def write_release_assets(tmp_path):
             "MANUAL_RELEASE_GATES.md",
             "RELEASE_ASSETS.md",
             "RELEASE_CHECKLIST.md",
+            "RELEASE_NOTES.md",
             "RELEASE_NOTES_TEMPLATE.md",
             "RELEASE_REPORT.md",
             "RELEASE_VERIFICATION.md",
