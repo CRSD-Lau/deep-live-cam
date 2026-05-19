@@ -21,6 +21,8 @@ That is enough for the installed app and required face-swap model setup.
 
 In 2.1.7, model setup is built into the Studio window. You do not need to search Windows for a separate model downloader shortcut.
 
+![Zoomed view of the Set Up Models button in the app header](docs/images/set-up-models-button.png)
+
 For video files, `ffmpeg` and `ffprobe` are also needed. Install them with:
 
 ```powershell
