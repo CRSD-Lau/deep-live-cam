@@ -45,6 +45,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
+    QMessageBox,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -481,6 +482,7 @@ class _UIBridge(QObject):
     """Single QObject that owns cross-thread signals."""
 
     statusChanged = Signal(str)
+    modelDownloadFinished = Signal(int)
 
 
 def _emit_status(text: str) -> None:
@@ -644,6 +646,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(app_icon())
         self.setMinimumSize(ROOT_WIDTH, ROOT_HEIGHT)
         self.resize(ROOT_WIDTH, ROOT_HEIGHT)
+        self._model_download_running = False
 
         root = QWidget()
         self.setCentralWidget(root)
@@ -682,6 +685,8 @@ class MainWindow(QMainWindow):
         footer.setCursor(Qt.CursorShape.PointingHandCursor)
         footer.mousePressEvent = lambda _e: webbrowser.open("https://deeplivecam.net")
         self.statusBar().addPermanentWidget(footer)
+        if _BRIDGE is not None:
+            _BRIDGE.modelDownloadFinished.connect(self._on_model_download_finished)
 
     def _build_header(self) -> QFrame:
         header = QFrame()
@@ -722,7 +727,14 @@ class MainWindow(QMainWindow):
         self.lbl_provider_badge.setObjectName("pillLabel")
         self.lbl_enhancer_badge = QLabel()
         self.lbl_enhancer_badge.setObjectName("pillLabel")
+        self.btn_model_setup = QPushButton(_("Set Up Models"))
+        self.btn_model_setup.setObjectName("secondary")
+        self.btn_model_setup.setToolTip(
+            _("Download and verify required model files")
+        )
+        self.btn_model_setup.clicked.connect(self._on_setup_models)
 
+        layout.addWidget(self.btn_model_setup)
         layout.addWidget(self.lbl_quality_badge)
         layout.addWidget(self.lbl_provider_badge)
         layout.addWidget(self.lbl_enhancer_badge)
@@ -989,6 +1001,108 @@ class MainWindow(QMainWindow):
 
     def set_status(self, text: str) -> None:
         self._status_label.setText(text)
+
+    def _on_setup_models(self) -> None:
+        if self._model_download_running:
+            return
+
+        from modules.model_manager import missing_models, model_directory
+
+        specs = missing_models()
+        if not specs:
+            QMessageBox.information(
+                self,
+                _("Models Ready"),
+                _("All model files are already downloaded and verified."),
+            )
+            update_status(f"All model files are verified in {model_directory()}.")
+            return
+
+        names = "\n".join(f"- {spec.file_name}" for spec in specs)
+        details = "\n\n".join(
+            (
+                f"{spec.file_name}\n"
+                f"Source: {spec.source}\n"
+                f"URL: {spec.url}\n"
+                f"SHA256: {spec.sha256}\n"
+                f"License note: {spec.license_note}"
+            )
+            for spec in specs
+        )
+        message = QMessageBox(self)
+        message.setIcon(QMessageBox.Icon.Question)
+        message.setWindowTitle(_("Download Models"))
+        message.setText(
+            _(
+                "Deep Live Cam Studio needs model files before face swapping can run."
+            )
+        )
+        message.setInformativeText(
+            _(
+                "The installer does not include these files. Download and verify "
+                "the missing models now?\n\n"
+            )
+            + names
+            + "\n\n"
+            + _("Models will be stored in:")
+            + f"\n{model_directory()}"
+        )
+        message.setDetailedText(details)
+        message.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        message.setDefaultButton(QMessageBox.StandardButton.Yes)
+        if message.exec() != QMessageBox.StandardButton.Yes:
+            update_status("Model download cancelled.")
+            return
+
+        self._model_download_running = True
+        self.btn_model_setup.setEnabled(False)
+        self.btn_model_setup.setText(_("Downloading..."))
+        update_status("Downloading and verifying model files...")
+
+        worker = threading.Thread(
+            target=self._download_models_background,
+            name="DeepLiveCamModelDownloader",
+            daemon=True,
+        )
+        worker.start()
+
+    def _download_models_background(self) -> None:
+        try:
+            from modules.model_manager import download_models
+
+            exit_code = download_models(assume_yes=True)
+        except Exception:
+            traceback.print_exc()
+            exit_code = 1
+
+        if _BRIDGE is not None:
+            _BRIDGE.modelDownloadFinished.emit(exit_code)
+
+    def _on_model_download_finished(self, exit_code: int) -> None:
+        self._model_download_running = False
+        self.btn_model_setup.setEnabled(True)
+        self.btn_model_setup.setText(_("Set Up Models"))
+        if exit_code == 0:
+            update_status("Model files downloaded and verified.")
+            QMessageBox.information(
+                self,
+                _("Models Ready"),
+                _("Model files were downloaded and verified successfully."),
+            )
+        elif exit_code == 2:
+            update_status("Model download cancelled.")
+        else:
+            update_status("Model download failed. Check the desktop launch log for details.")
+            QMessageBox.warning(
+                self,
+                _("Model Download Failed"),
+                _(
+                    "The model download did not complete. Check your internet "
+                    "connection and try Set Up Models again."
+                ),
+            )
 
     def _refresh_studio_badges(self) -> None:
         if hasattr(self, "lbl_quality_badge"):
