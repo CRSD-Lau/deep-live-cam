@@ -291,8 +291,27 @@ def render_group(title: str, paths: list[str], limit: int) -> list[str]:
     return lines
 
 
-def collect_status(repo_root: Path, allow_mixed_scope_dirty: bool = False) -> CutoverStatus:
-    entries = git_status_entries(repo_root)
+def repo_relative_path(repo_root: Path, path: str) -> str:
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        candidate = repo_root / candidate
+    try:
+        return normalize(str(candidate.resolve().relative_to(repo_root.resolve())))
+    except ValueError:
+        return normalize(str(candidate))
+
+
+def collect_status(
+    repo_root: Path,
+    allow_mixed_scope_dirty: bool = False,
+    ignored_paths: set[str] | None = None,
+) -> CutoverStatus:
+    ignored_paths = ignored_paths or set()
+    entries = [
+        entry
+        for entry in git_status_entries(repo_root)
+        if entry.path not in ignored_paths
+    ]
     paths = [entry.path for entry in entries]
     release_paths, mixed_paths, unknown_paths = classify(paths)
     release_path_set = set(release_paths)
@@ -391,7 +410,16 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     repo_root = Path(args.repo_root).resolve()
-    status = collect_status(repo_root, allow_mixed_scope_dirty=args.allow_mixed_scope_dirty)
+    ignored_paths: set[str] = set()
+    if args.output:
+        ignored_paths.add(repo_relative_path(repo_root, args.output))
+    if args.json_output:
+        ignored_paths.add(repo_relative_path(repo_root, args.json_output))
+    status = collect_status(
+        repo_root,
+        allow_mixed_scope_dirty=args.allow_mixed_scope_dirty,
+        ignored_paths=ignored_paths,
+    )
 
     report = render_report(status, args.limit)
     print(report)

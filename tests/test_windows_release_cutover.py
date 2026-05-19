@@ -144,6 +144,36 @@ def test_writes_markdown_report(tmp_path, monkeypatch):
     assert "BLOCKED: mixed-scope dirty paths" in report
 
 
+def test_output_report_path_does_not_block_itself(tmp_path, monkeypatch):
+    for gate in cutover.MANUAL_GATE_FILES:
+        write_file(tmp_path / gate, "Status: PASS\n- [x] done\n")
+
+    monkeypatch.setattr(
+        cutover,
+        "run_git",
+        lambda args, cwd: " M RELEASE_CUTOVER_STATUS.md\n?? modules/compositing/blend.py\n",
+    )
+
+    output = tmp_path / "RELEASE_CUTOVER_STATUS.md"
+
+    assert (
+        cutover.main(
+            [
+                "--repo-root",
+                str(tmp_path),
+                "--output",
+                str(output),
+                "--strict",
+                "--allow-mixed-scope-dirty",
+            ]
+        )
+        == 0
+    )
+    report = output.read_text(encoding="utf-8")
+    assert "Release-required or release-owned dirty paths: 0" in report
+    assert "`RELEASE_CUTOVER_STATUS.md`" not in report
+
+
 def test_writes_json_report(tmp_path, monkeypatch):
     for gate in cutover.MANUAL_GATE_FILES:
         write_file(tmp_path / gate, "Status: PASS\n- [x] done\n")
