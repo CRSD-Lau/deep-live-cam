@@ -1,8 +1,8 @@
 # Windows Release Verification
 
-Generated: see the latest generated source archive manifest and artifact sidecars
+Generated: 2026-05-19T03:50:42Z from the assembled release-assets manifest and artifact sidecars
 App version: `2.1.5`
-Git HEAD: see the matching git-ref source archive manifest
+Git HEAD: `6b229c7d0b248453d8d50674d0e7ff7d87606471`
 
 This file records local release evidence for the Windows installer. It is not a legal opinion and does not replace the manual checks in `RELEASE_CHECKLIST.md`.
 
@@ -17,17 +17,17 @@ This file records local release evidence for the Windows installer. It is not a 
 - Manual gate evidence complete: **NO**
 - Ready to publish without remaining manual gates: **NO**
 
-Current status: the installer is locally verified, but this is not yet a publishable GitHub Release until the clean Git ref source archive and the manual checklist gates are completed.
+Current status: the installer and matching Git-ref source archive are locally verified, but this is not yet a publishable GitHub Release until the manual checklist gates are completed.
 
 ## Automated Evidence
 
 - [x] Installer exists: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe`
 - [x] Installer SHA-256 sidecar matches
-  - SHA-256: `ECD1840E2C8761C38BAE4E05488CB716D00B0A95B3A32471F5306F19DF86ACF7`
-  - Installer bytes: `431579581`
-- [x] Windows bundle manifest exists: `C:\Projects\deep-live-cam\dist\DeepLiveCamStudio\LICENSES\WINDOWS_BUNDLE_MANIFEST.md`
+  - SHA-256: `C96FA88BB1F8C382D079EC407522B7114C6326ADC7E53547D3CF004C4E2E43A1`
+  - Installer bytes: `431579555`
+- [x] Windows bundle manifest was generated from the PyInstaller payload and included in the installer/source evidence as `LICENSES/WINDOWS_BUNDLE_MANIFEST.md`
 - [x] Packaged payload contains no forbidden model/checkpoint files
-- [x] Clean detached release worktree verified for corresponding-source packaging
+- [x] Clean detached release checkout built the PyInstaller payload and passed packaged-runtime smoke testing
 - [x] Corresponding-source archive exists
 - [x] Corresponding-source SHA-256 sidecar matches
 - [x] Corresponding-source manifest exists
@@ -67,10 +67,12 @@ Current status: the installer is locally verified, but this is not yet a publish
 
 ## Source Archive
 
-- Latest source archive: see the latest `DeepLiveCamStudio-2.1.5-source-*.zip` whose manifest records `Archive mode: git-ref`
+- Latest source archive: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-6b229c7d0b24.zip`
 - Source archive mode: `git-ref`
-- Source archive hash sidecar: see the matching `.zip.sha256`
-- Source archive manifest: see the matching `.manifest.md`
+- Source archive SHA-256: `8A3FBFE51B5500C8C7DC8C66423FBF0495ECDC2018C198F22AA15B3D818C14A1`
+- Source archive hash sidecar: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-6b229c7d0b24.zip.sha256`
+- Source archive manifest: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.5-source-6b229c7d0b24.manifest.md`
+- Source archive bytes: `67807508`
 
 ## Cutover Status
 
