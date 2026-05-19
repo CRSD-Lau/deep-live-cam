@@ -6,6 +6,38 @@ This repository is the working source for the Windows Studio build published by 
 
 ![Deep Live Cam Studio main window](docs/images/deep-live-cam-studio-main.png)
 
+## Download The App
+
+If you only want to install Deep Live Cam Studio, do not use the green **Code** button. The source `.zip` files are for developers. Download the Windows installer from the latest GitHub Release:
+
+[Download DeepLiveCamStudio-2.1.6-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.6/DeepLiveCamStudio-2.1.6-x64-setup.exe)
+
+Or open the full release page:
+
+[Deep Live Cam Studio 2.1.6 release](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.6)
+
+On the release page, expand **Assets** and choose:
+
+```text
+DeepLiveCamStudio-2.1.6-x64-setup.exe
+```
+
+Run the installer after it downloads. Windows may show a Microsoft Defender SmartScreen warning because the public installer is not signed by a paid code-signing certificate. Choose **More info** and then **Run anyway** only if you downloaded it from the release link above.
+
+After installing, launch **Deep Live Cam Studio** from the Start Menu. The app installs here by default:
+
+```text
+%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.6
+```
+
+The installer does not include model/checkpoint files. After first install, open the Start Menu shortcut named **Download and Verify Models**. If you prefer the terminal, open one in the installed app folder and run:
+
+```powershell
+DeepLiveCamStudioCLI.exe --download-models
+```
+
+The downloader shows model sources, license notes, and checksums before installing model files.
+
 ## What We Added
 
 - Windows x64 per-user installer built with PyInstaller and Inno Setup.
@@ -23,27 +55,23 @@ This repository is the working source for the Windows Studio build published by 
 
 ## Latest Release
 
-Current release:
+Current release page:
 
 [Deep Live Cam Studio 2.1.6](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.6)
 
-Installer:
+Direct installer download:
+
+[DeepLiveCamStudio-2.1.6-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.6/DeepLiveCamStudio-2.1.6-x64-setup.exe)
+
+The release asset name is:
 
 ```text
 DeepLiveCamStudio-2.1.6-x64-setup.exe
 ```
 
-The installer does not bundle model/checkpoint files. After installing, run:
-
-```powershell
-DeepLiveCamStudioCLI.exe --download-models
-```
-
-The downloader shows model sources, license notes, and checksums before installing model files.
-
 ## Install And Update
 
-Install the latest release by downloading and running the Windows installer from the GitHub Release page.
+Install the latest release by downloading and running `DeepLiveCamStudio-2.1.6-x64-setup.exe` from the GitHub Release page.
 
 Default install path:
 
