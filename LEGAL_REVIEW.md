@@ -11,7 +11,7 @@ distribution context. The release verifier only treats this file as passed when
 ## Artifact Under Review
 
 - Installer: `DeepLiveCamStudio-2.1.7-x64-setup.exe`
-- Installer SHA-256: `C904A7930F7643313669EA5A20A7027772D8FB126BD33756073683A48B7BBE7F`
+- Installer SHA-256: `07DAD2B8A589BC79712B18A5A544469FDC483150A81EA55654531FECE5339FA5`
 - Source commit/tag: see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`
 - Reviewer: Neil Mitchell
 - Date: 2026-05-19
