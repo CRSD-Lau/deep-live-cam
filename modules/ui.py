@@ -1206,7 +1206,7 @@ class MainWindow(QMainWindow):
             path, _f = QFileDialog.getSaveFileName(
                 self, _("save image output file"),
                 os.path.join(_RECENT_OUTPUT_DIR or "", "output.png"),
-                "Images (*.png *.jpg *.jpeg *.bmp *.webp)",
+                IMAGE_FILE_FILTER,
             )
         elif is_video(modules.globals.target_path):
             path, _f = QFileDialog.getSaveFileName(

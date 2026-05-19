@@ -3,12 +3,17 @@ import numpy as np
 import pytest
 from PIL import Image, features
 
-from modules.utilities import has_image_extension, read_image
+from modules.utilities import IMAGE_FILE_FILTER, has_image_extension, read_image
 
 
 def test_has_image_extension_accepts_webp_and_avif():
     assert has_image_extension("source.webp")
     assert has_image_extension("target.AVIF")
+
+
+def test_image_file_filter_exposes_webp_and_avif_to_file_dialogs():
+    assert "*.webp" in IMAGE_FILE_FILTER
+    assert "*.avif" in IMAGE_FILE_FILTER
 
 
 def test_read_image_decodes_webp_upload(tmp_path):
