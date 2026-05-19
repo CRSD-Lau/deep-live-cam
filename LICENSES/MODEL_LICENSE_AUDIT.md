@@ -1,6 +1,6 @@
 # Model License Audit
 
-Audit date: 2026-05-18
+Audit date: 2026-05-19
 
 This audit covers model and checkpoint files referenced by the Windows model downloader. It is not legal advice. Model repositories can change after this date, so repeat this review immediately before publishing a GitHub Release.
 
@@ -14,11 +14,11 @@ This audit covers model and checkpoint files referenced by the Windows model dow
 
 ## Current Source Evidence
 
-| Source | Evidence observed on 2026-05-18 | Release decision |
+| Source | Evidence observed on 2026-05-19 | Release decision |
 | --- | --- | --- |
-| `hacksider/deep-live-cam` Hugging Face repository | The repository currently shows `License: gpl-3.0` and lists `inswapper_128.onnx`, `inswapper_128_fp16.onnx`, `gfpgan-1024.onnx`, and many additional model/checkpoint files. | Exclude from installer; allow explicit user download after source/license/checksum notice. |
-| `netrunner-exe/Face-Upscalers-onnx` Hugging Face repository | The model card currently states that all models in the repository are intended for non-commercial use, academic research, and educational purposes only. | Exclude GPEN models from installer; do not redistribute without permission/legal review. |
-| `TencentARC/GFPGANv1` license text | The upstream license text states GFPGAN is Apache-2.0 except for listed third-party components, including non-commercial third-party items. | Do not assume a converted `gfpgan-1024.onnx` mirror is redistributable; verify exact conversion provenance before bundling. |
+| `hacksider/deep-live-cam` Hugging Face repository | The repository currently shows `License: gpl-3.0` and lists `inswapper_128.onnx`, `inswapper_128_fp16.onnx`, `gfpgan-1024.onnx`, and many additional model/checkpoint files. Source checked: https://huggingface.co/hacksider/deep-live-cam | Exclude from installer; allow explicit user download after source/license/checksum notice. |
+| `netrunner-exe/Face-Upscalers-onnx` Hugging Face repository | The model card currently states that all models in the repository are intended for non-commercial use, academic research, and educational purposes only. Source checked: https://huggingface.co/netrunner-exe/Face-Upscalers-onnx | Exclude GPEN models from installer; do not redistribute without permission/legal review. |
+| `TencentARC/GFPGANv1` license text | The upstream license text states GFPGAN is Apache-2.0 except for listed third-party components. Source checked: https://github.com/TencentARC/GFPGAN/blob/master/LICENSE | Do not assume a converted `gfpgan-1024.onnx` mirror is redistributable; verify exact conversion provenance before bundling. |
 
 ## Downloader Model Table
 
@@ -36,3 +36,10 @@ This audit covers model and checkpoint files referenced by the Windows model dow
 - Recompute or re-download-and-verify the SHA-256 values before a public release.
 - Confirm no model/checkpoint files appear in `dist\DeepLiveCamStudio`, the installer payload, source archive, or GitHub Release assets.
 - Record any legal approval or redistribution permission in this file before changing the installer policy to bundle a model.
+
+## Source URLs To Recheck
+
+- `hacksider/deep-live-cam`: https://huggingface.co/hacksider/deep-live-cam
+- `hacksider/deep-live-cam` file tree snapshot: https://huggingface.co/hacksider/deep-live-cam/tree/main
+- `netrunner-exe/Face-Upscalers-onnx`: https://huggingface.co/netrunner-exe/Face-Upscalers-onnx
+- TencentARC/GFPGAN license: https://github.com/TencentARC/GFPGAN/blob/master/LICENSE

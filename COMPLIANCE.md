@@ -44,6 +44,8 @@ Known model sources used by the app:
 
 Current SHA-256 values are encoded in `modules/model_manager.py` and should be rechecked before each release.
 
+The model-source review was refreshed on 2026-05-19. The exact URLs and review notes are recorded in `LICENSES/MODEL_LICENSE_AUDIT.md`.
+
 ## Dependency redistribution notes
 
 The installer bundles Python wheels and native libraries collected by PyInstaller. The most important license obligations and risks are summarized in `THIRD_PARTY_NOTICES.md`, the current transitive dependency metadata snapshot is in `LICENSES/PYTHON_DEPENDENCIES.md`, high-attention package license files are collected under `LICENSES/THIRD_PARTY_LICENSES/`, high-attention bundled binary obligations are in `LICENSES/BUNDLED_BINARY_OBLIGATIONS.md`, and the dated model-source review is in `LICENSES/MODEL_LICENSE_AUDIT.md`.

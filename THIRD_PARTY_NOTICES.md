@@ -1,6 +1,6 @@
 # Third Party Notices
 
-This file summarizes third-party components expected to be bundled by the Windows PyInstaller build. It is based on `requirements.txt`, installed package metadata in this workspace, and model repository notices reviewed on 2026-05-18. Re-run a license scan before every public release. See `LICENSES/PYTHON_DEPENDENCIES.md` for the current installed-package license snapshot, `LICENSES/BUNDLED_BINARY_OBLIGATIONS.md` for LGPL/GPL-family binary distribution notes, and `LICENSES/MODEL_LICENSE_AUDIT.md` for the dated model-source audit.
+This file summarizes third-party components expected to be bundled by the Windows PyInstaller build. It is based on `requirements.txt`, installed package metadata in this workspace, and model repository notices reviewed on 2026-05-19. Re-run a license scan before every public release. See `LICENSES/PYTHON_DEPENDENCIES.md` for the current installed-package license snapshot, `LICENSES/BUNDLED_BINARY_OBLIGATIONS.md` for LGPL/GPL-family binary distribution notes, and `LICENSES/MODEL_LICENSE_AUDIT.md` for the dated model-source audit.
 
 ## Application
 
@@ -39,7 +39,7 @@ No model files are bundled by the Windows installer by default.
 
 The model downloader presents source URLs, license notes, and SHA-256 checksums before download. Downloaded files are stored in the user's app data model folder, not in the installer.
 
-Current public source evidence reviewed on 2026-05-18 is captured in `LICENSES/MODEL_LICENSE_AUDIT.md`. Summary:
+Current public source evidence reviewed on 2026-05-19 is captured in `LICENSES/MODEL_LICENSE_AUDIT.md`. Summary:
 
 - `hacksider/deep-live-cam` on Hugging Face is labeled `gpl-3.0`.
 - `netrunner-exe/Face-Upscalers-onnx` on Hugging Face states that repository models are for non-commercial, academic, and educational purposes only.

@@ -17,6 +17,7 @@ Keep this file installed beside `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, and `
 | `cv2_enumerate_cameras` | GPL license text in package metadata | Include GPL notice and corresponding source availability. Treat this as part of the AGPL-compatible copyleft surface. |
 | `pyvirtualcam` | GPLv2 classifier in package metadata | Review compatibility before public binary distribution. Keep source availability and license notice. Consider disabling/removing this optional feature if legal review does not approve the combined binary. |
 | ONNX Runtime GPU, TensorFlow, OpenCV, NumPy/SciPy, Pillow, PySide6 | Native DLLs and `.pyd` extension modules | Preserve bundled notice/license files collected from wheels. Review native-library notices in the generated `WINDOWS_BUNDLE_MANIFEST.md` and installed `_internal` tree before publishing. |
+| Inno Setup | Build-time installer tool, not part of the installed runtime payload | JR Software currently asks commercial users to buy a commercial license even though the installer compiler is used only as a build tool here. Confirm publisher acceptance before commercial production distribution. Source checked on 2026-05-19: https://jrsoftware.org/isorder.php |
 
 ## Release checklist
 
