@@ -43,6 +43,7 @@ Current status: the installer and Git-ref source archive are locally verified, b
 - [x] `THIRD_PARTY_NOTICES.md`
 - [x] `COMPLIANCE.md`
 - [x] `RELEASE_CHECKLIST.md`
+- [x] `RELEASE_PUBLISH_HANDOFF.md`
 - [x] `RELEASE_REPORT.md`
 - [x] `RELEASE_SOURCE_PREP.md`
 - [x] `MODEL_DOWNLOAD_VERIFICATION.md`
