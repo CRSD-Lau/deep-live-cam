@@ -65,6 +65,12 @@ with a generated `RELEASE_ASSETS.md` manifest listing the installer, installer
 hash, git-ref source archive, source hash, source manifest, release notes
 template, and verification documents to upload or quote.
 
+Validate the curated upload folder with:
+
+```powershell
+python tools\validate_windows_release_artifacts.py --app-version 2.1.5 --require-git-ref-source --release-assets-dir build\windows\release-assets\2.1.5
+```
+
 If using the existing local development virtual environment, pass:
 
 ```powershell

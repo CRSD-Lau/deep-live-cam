@@ -29,6 +29,7 @@ Use this checklist for every Windows installer release.
 - [ ] Confirm `package_source.ps1` reported source archive content verification passed.
 - [ ] Run `python tools\validate_windows_release_artifacts.py --app-version 2.1.5 --require-git-ref-source` before publishing.
 - [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.1.5 -RequireGitRefSource`.
+- [ ] Run `python tools\validate_windows_release_artifacts.py --app-version 2.1.5 --require-git-ref-source --release-assets-dir build\windows\release-assets\2.1.5`.
 - [ ] Confirm the source archive manifest says `Archive mode: ` followed by `git-ref` for public GitHub Releases. `draft-working-tree` archives are for local traceability only.
 - [ ] Review generated `RELEASE_VERIFICATION.md` and confirm no automated evidence item unexpectedly failed.
 - [ ] Confirm manual gate evidence files remain `PENDING` until their gate is actually complete: `CLEAN_VM_VERIFICATION.md`, `OBS_VIRTUAL_CAMERA_VERIFICATION.md`, and `LEGAL_REVIEW.md`.

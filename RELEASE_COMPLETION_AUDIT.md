@@ -71,6 +71,9 @@ These must be complete before the active goal can be marked done:
   pass.
 - `build/windows/assemble_release_assets.ps1 -RequireGitRefSource` should
   produce the final upload folder and `RELEASE_ASSETS.md` manifest.
+- `tools/validate_windows_release_artifacts.py --release-assets-dir
+  build/windows/release-assets/2.1.5 --require-git-ref-source` should pass
+  before uploading GitHub Release assets.
 - `tools/check_windows_release_cutover.py --strict` must pass on the intended
   release branch or clean detached release worktree after staging/committing
   decisions are complete.

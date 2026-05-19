@@ -157,9 +157,81 @@ def fail(message: str, failures: list[str]) -> None:
     failures.append(message)
 
 
+def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_ref: bool, failures: list[str]) -> None:
+    if not assets_dir.exists():
+        fail(f"missing release assets directory: {assets_dir}", failures)
+        return
+
+    installer = assets_dir / f"DeepLiveCamStudio-{app_version}-x64-setup.exe"
+    installer_hash = installer.with_suffix(installer.suffix + ".sha256")
+    if not installer.exists():
+        fail(f"release assets missing installer: {installer.name}", failures)
+    elif read_sidecar_digest(installer_hash) != sha256(installer):
+        fail(f"release assets installer hash missing or mismatched: {installer_hash.name}", failures)
+
+    source_archives = sorted(assets_dir.glob(f"DeepLiveCamStudio-{app_version}-source-*.zip"))
+    if len(source_archives) != 1:
+        fail(f"release assets must contain exactly one source archive, found {len(source_archives)}", failures)
+        return
+
+    source = source_archives[0]
+    source_hash = Path(str(source) + ".sha256")
+    source_manifest = source.with_suffix(".manifest.md")
+    if read_sidecar_digest(source_hash) != sha256(source):
+        fail(f"release assets source hash missing or mismatched: {source_hash.name}", failures)
+    manifest_text = source_manifest.read_text(encoding="utf-8", errors="replace") if source_manifest.exists() else ""
+    if not manifest_text:
+        fail(f"release assets source manifest missing: {source_manifest.name}", failures)
+    elif require_git_ref and "Archive mode: `git-ref`" not in manifest_text:
+        fail("release assets source manifest is not git-ref mode", failures)
+
+    try:
+        forbidden_entries = source_archive_has_forbidden_entries(source)
+    except zipfile.BadZipFile:
+        fail(f"release assets source archive is not a valid zip: {source.name}", failures)
+        forbidden_entries = []
+    if forbidden_entries:
+        for entry in forbidden_entries[:20]:
+            print(f"[release-artifacts] forbidden release asset source entry: {entry}")
+        fail("release assets source archive contains forbidden model/checkpoint entries", failures)
+
+    forbidden_asset_files = [
+        path.name
+        for path in assets_dir.rglob("*")
+        if path.is_file() and path.suffix.lower() in FORBIDDEN_SUFFIXES
+    ]
+    if forbidden_asset_files:
+        for name in forbidden_asset_files[:20]:
+            print(f"[release-artifacts] forbidden release asset file: {name}")
+        fail("release assets directory contains forbidden model/checkpoint files", failures)
+
+    required_docs = (
+        "RELEASE_ASSETS.md",
+        "RELEASE_NOTES_TEMPLATE.md",
+        "RELEASE_VERIFICATION.md",
+        "RELEASE_CHECKLIST.md",
+        "RELEASE_REPORT.md",
+        "COMPLIANCE.md",
+        "THIRD_PARTY_NOTICES.md",
+    )
+    for doc in required_docs:
+        if not (assets_dir / doc).exists():
+            fail(f"release assets missing required document: {doc}", failures)
+
+    asset_manifest = assets_dir / "RELEASE_ASSETS.md"
+    if asset_manifest.exists():
+        asset_manifest_text = asset_manifest.read_text(encoding="utf-8", errors="replace")
+        for path in [installer, installer_hash, source, source_hash, source_manifest]:
+            if f"`{path.name}`" not in asset_manifest_text:
+                fail(f"RELEASE_ASSETS.md does not list: {path.name}", failures)
+        if "Do not upload model/checkpoint files" not in asset_manifest_text:
+            fail("RELEASE_ASSETS.md missing model/checkpoint upload warning", failures)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate Windows release artifact set.")
     parser.add_argument("--output-dir", default="build/windows/installer", help="Installer output directory.")
+    parser.add_argument("--release-assets-dir", help="Optional curated GitHub Release asset directory to validate.")
     parser.add_argument("--app-version", default="2.1.5", help="Application version.")
     parser.add_argument("--repo-root", default=".", help="Repository root containing RELEASE_VERIFICATION.md.")
     parser.add_argument(
@@ -236,6 +308,14 @@ def main(argv: list[str] | None = None) -> int:
         for phrase in required_phrases:
             if phrase not in verification_text:
                 fail(f"RELEASE_VERIFICATION.md missing phrase: {phrase}", failures)
+
+    if args.release_assets_dir:
+        validate_release_assets_dir(
+            assets_dir=(repo_root / args.release_assets_dir).resolve(),
+            app_version=args.app_version,
+            require_git_ref=args.require_git_ref_source,
+            failures=failures,
+        )
 
     if failures:
         print(f"[release-artifacts] {len(failures)} validation failure(s).")

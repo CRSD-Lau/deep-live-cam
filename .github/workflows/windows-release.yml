@@ -69,6 +69,10 @@ jobs:
         shell: pwsh
         run: powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion "${{ inputs.app_version }}"
 
+      - name: Validate GitHub Release asset set
+        shell: pwsh
+        run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --release-assets-dir build\windows\release-assets\${{ inputs.app_version }} --app-version "${{ inputs.app_version }}"
+
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:

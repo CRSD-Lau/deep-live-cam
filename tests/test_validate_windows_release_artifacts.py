@@ -34,6 +34,37 @@ def write_artifacts(tmp_path, extra_source_entry_name=None, omit_required_entry=
         tmp_path / "RELEASE_VERIFICATION.md",
         "Local installer automation passed:\nPublic-release source archive from clean Git ref:\nReady to publish without remaining manual gates:\n",
     )
+    return installer, source
+
+
+def write_release_assets(tmp_path):
+    installer, source = write_artifacts(tmp_path)
+    assets_dir = tmp_path / "build" / "windows" / "release-assets" / "2.1.5"
+    assets_dir.mkdir(parents=True)
+    files = [
+        installer,
+        installer.with_suffix(installer.suffix + ".sha256"),
+        source,
+        source.with_suffix(source.suffix + ".sha256"),
+        source.with_suffix(".manifest.md"),
+    ]
+    for path in files:
+        (assets_dir / path.name).write_bytes(path.read_bytes())
+    for doc in (
+        "RELEASE_NOTES_TEMPLATE.md",
+        "RELEASE_VERIFICATION.md",
+        "RELEASE_CHECKLIST.md",
+        "RELEASE_REPORT.md",
+        "COMPLIANCE.md",
+        "THIRD_PARTY_NOTICES.md",
+    ):
+        write_file(assets_dir / doc, "doc")
+    upload_lines = "\n".join(f"- `{path.name}`" for path in files)
+    write_file(
+        assets_dir / "RELEASE_ASSETS.md",
+        f"{upload_lines}\n- `RELEASE_ASSETS.md`\nDo not upload model/checkpoint files unless approved.\n",
+    )
+    return assets_dir
 
 
 def parse_package_source_required_entries():
@@ -89,3 +120,22 @@ def test_validate_release_artifacts_prefers_git_ref_source_when_required(tmp_pat
     monkeypatch.chdir(tmp_path)
 
     assert validator.main(["--require-git-ref-source"]) == 0
+
+
+def test_validate_release_artifacts_accepts_curated_release_assets(tmp_path, monkeypatch):
+    write_release_assets(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 0
+
+
+def test_validate_release_artifacts_rejects_stale_extra_source_archive_in_assets(tmp_path, monkeypatch):
+    assets_dir = write_release_assets(tmp_path)
+    source = assets_dir / "DeepLiveCamStudio-2.1.5-source-testref.zip"
+    stale_source = assets_dir / "DeepLiveCamStudio-2.1.5-source-stale.zip"
+    stale_source.write_bytes(source.read_bytes())
+    write_file(stale_source.with_suffix(stale_source.suffix + ".sha256"), f"{validator.sha256(stale_source)}  {stale_source.name}\n")
+    write_file(stale_source.with_suffix(".manifest.md"), source.with_suffix(".manifest.md").read_text(encoding="utf-8"))
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1
