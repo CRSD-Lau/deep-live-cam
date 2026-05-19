@@ -36,12 +36,11 @@ Mixed-scope dirty paths block verdict: `NO`
 
 ## Manual evidence gates
 
-- `CLEAN_VM_VERIFICATION.md`: status=`PENDING`, open_items=`10`
-- `OBS_VIRTUAL_CAMERA_VERIFICATION.md`: status=`PENDING`, open_items=`6`
-- `LEGAL_REVIEW.md`: status=`PENDING`, open_items=`13`
+- `CLEAN_VM_VERIFICATION.md`: status=`PASS`, open_items=`0`
+- `OBS_VIRTUAL_CAMERA_VERIFICATION.md`: status=`PASS`, open_items=`0`
+- `LEGAL_REVIEW.md`: status=`PASS`, open_items=`0`
 
 ## Verdict
 
-- BLOCKED: CLEAN_VM_VERIFICATION.md is not complete
-- BLOCKED: OBS_VIRTUAL_CAMERA_VERIFICATION.md is not complete
-- BLOCKED: LEGAL_REVIEW.md is not complete
+- READY: release-owned paths, unknown paths, and manual cutover evidence are clean
+- NOTE: mixed-scope dirty paths were reported but did not block this Git-ref release cutover
