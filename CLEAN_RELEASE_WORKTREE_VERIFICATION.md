@@ -8,7 +8,7 @@ the manual clean VM, OBS visual workflow, or legal review gates.
 
 ## Release Commit Under Test
 
-- Commit: `ee44e48b3781ee6a2362ed431b18b46c7db44204`
+- Commit: see the generated source archive manifest and `RELEASE_ASSETS.md` for the exact resolved Git ref.
 - Worktree used: `C:\Projects\deep-live-cam-release-verify`
 - Verification time UTC: `2026-05-19T07:25:46Z`
 - Main developer worktree status at the time: dirty with mixed-scope runtime and quality work excluded from this release commit.
