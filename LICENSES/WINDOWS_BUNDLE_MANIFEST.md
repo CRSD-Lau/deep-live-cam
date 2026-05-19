@@ -1,6 +1,6 @@
 # Windows Bundle Manifest
 
-Generated: 2026-05-19T04:35:52+00:00
+Generated: 2026-05-19T04:49:38+00:00
 Dist directory: `C:\Projects\deep-live-cam\dist\DeepLiveCamStudio`
 
 This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload. It is audit evidence, not a legal opinion.
@@ -8,7 +8,7 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 ## Summary
 
 - Files scanned: 2267
-- Total payload bytes: 2236910684
+- Total payload bytes: 2236910690
 - Python package metadata directories: 8
 - Native/binary files: 523
 - Forbidden model/checkpoint files found: 0
@@ -60,8 +60,8 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 
 | Payload Area | File Count | Bytes |
 | --- | ---: | ---: |
-| `DeepLiveCamStudio.exe` | 1 | 45024235 |
-| `DeepLiveCamStudioCLI.exe` | 1 | 45028843 |
+| `DeepLiveCamStudio.exe` | 1 | 45024229 |
+| `DeepLiveCamStudioCLI.exe` | 1 | 45028837 |
 | `_internal/81d243bd2c585b0f4821__mypyc.cp311-win_amd64.pyd` | 1 | 216064 |
 | `_internal/Cython` | 15 | 3310080 |
 | `_internal/PIL` | 7 | 13306368 |
