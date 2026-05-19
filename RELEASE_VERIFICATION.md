@@ -38,6 +38,7 @@ Current status: the installer and Git-ref source archive are locally verified, b
 
 ## Required Installed Release Files
 
+- [x] `Logo.png`
 - [x] `README.md`
 - [x] `LICENSE`
 - [x] `THIRD_PARTY_NOTICES.md`

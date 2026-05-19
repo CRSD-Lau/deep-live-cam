@@ -28,6 +28,7 @@ MANUAL_GATE_EVIDENCE = {
 
 
 REQUIRED_DIST_FILES = (
+    "Logo.png",
     "README.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
