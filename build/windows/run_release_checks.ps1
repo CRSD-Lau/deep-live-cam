@@ -116,7 +116,7 @@ Invoke-ReleaseStep "Refresh Python dependency license snapshot" {
     }
     Copy-Item -LiteralPath (Join-Path $RepoRoot "LICENSES\WINDOWS_BUNDLE_MANIFEST.md") -Destination (Join-Path $LicenseDestination "WINDOWS_BUNDLE_MANIFEST.md") -Force
 
-    $RequiredDocs = @("README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "COMPLIANCE.md", "RELEASE_CHECKLIST.md", "RELEASE_REPORT.md", "RELEASE_SOURCE_PREP.md", "MODEL_DOWNLOAD_VERIFICATION.md", "PROCESSING_VERIFICATION.md", "docs\OBS_VIRTUAL_CAMERA.md")
+    $RequiredDocs = @("README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "COMPLIANCE.md", "RELEASE_CHECKLIST.md", "RELEASE_PUBLISH_HANDOFF.md", "RELEASE_REPORT.md", "RELEASE_SOURCE_PREP.md", "MODEL_DOWNLOAD_VERIFICATION.md", "PROCESSING_VERIFICATION.md", "docs\OBS_VIRTUAL_CAMERA.md")
     foreach ($Doc in $RequiredDocs) {
         $Source = Join-Path $RepoRoot $Doc
         if (-not (Test-Path $Source)) {

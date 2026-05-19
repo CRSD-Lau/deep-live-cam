@@ -74,7 +74,7 @@ Use this checklist for every Windows installer release.
 
 ## Compliance
 
-- [ ] Include `LICENSE`, `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, `RELEASE_CHECKLIST.md`, `RELEASE_REPORT.md`, and `RELEASE_SOURCE_PREP.md` in the installed app.
+- [ ] Include `LICENSE`, `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, `RELEASE_CHECKLIST.md`, `RELEASE_PUBLISH_HANDOFF.md`, `RELEASE_REPORT.md`, and `RELEASE_SOURCE_PREP.md` in the installed app.
 - [ ] Include `LICENSES/MODEL_LICENSE_AUDIT.md` in the installed app.
 - [ ] Include `LICENSES/PYTHON_DEPENDENCIES.md` in the installed app.
 - [ ] Include generated `LICENSES/WINDOWS_BUNDLE_MANIFEST.md` in the installed app.

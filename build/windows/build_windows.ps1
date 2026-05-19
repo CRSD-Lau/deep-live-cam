@@ -42,7 +42,7 @@ Invoke-Checked $PythonExe @("tools\prune_windows_dist.py", "--dist", $DistDir)
 
 Invoke-Checked $PythonExe @("tools\collect_third_party_license_files.py", "--output", "LICENSES\THIRD_PARTY_LICENSES")
 
-$RequiredDocs = @("README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "COMPLIANCE.md", "RELEASE_CHECKLIST.md", "RELEASE_REPORT.md", "RELEASE_SOURCE_PREP.md", "MODEL_DOWNLOAD_VERIFICATION.md", "PROCESSING_VERIFICATION.md", "docs\OBS_VIRTUAL_CAMERA.md")
+$RequiredDocs = @("README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "COMPLIANCE.md", "RELEASE_CHECKLIST.md", "RELEASE_PUBLISH_HANDOFF.md", "RELEASE_REPORT.md", "RELEASE_SOURCE_PREP.md", "MODEL_DOWNLOAD_VERIFICATION.md", "PROCESSING_VERIFICATION.md", "docs\OBS_VIRTUAL_CAMERA.md")
 foreach ($Doc in $RequiredDocs) {
     $Source = Join-Path $RepoRoot $Doc
     if (-not (Test-Path $Source)) {

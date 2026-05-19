@@ -67,6 +67,7 @@ def write_release_assets(tmp_path):
     for doc in (
         "RELEASE_NOTES.md",
         "RELEASE_NOTES_TEMPLATE.md",
+        "RELEASE_PUBLISH_HANDOFF.md",
         "RELEASE_VERIFICATION.md",
         "RELEASE_CHECKLIST.md",
         "RELEASE_COMPLETION_AUDIT.md",
@@ -125,6 +126,7 @@ def write_release_assets(tmp_path):
             "LICENSE",
             "RELEASE_NOTES.md",
             "RELEASE_NOTES_TEMPLATE.md",
+            "RELEASE_PUBLISH_HANDOFF.md",
             "RELEASE_REPORT.md",
             "CLEAN_VM_VERIFICATION.md",
             "OBS_VIRTUAL_CAMERA_VERIFICATION.md",
