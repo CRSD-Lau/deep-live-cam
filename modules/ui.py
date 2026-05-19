@@ -115,11 +115,8 @@ import json
 
 # ─── constants ────────────────────────────────────────────────────────────
 
-ROOT_HEIGHT = 760
-ROOT_WIDTH = 1120
-ROOT_MIN_HEIGHT = 560
-ROOT_MIN_WIDTH = 760
-COMPACT_LAYOUT_WIDTH = 1000
+ROOT_HEIGHT = 900
+ROOT_WIDTH = 1500
 
 PREVIEW_MAX_HEIGHT = 700
 PREVIEW_MAX_WIDTH = 1200
@@ -137,7 +134,8 @@ POPUP_LIVE_SCROLL_WIDTH = 870
 POPUP_LIVE_SCROLL_HEIGHT = 700
 
 MAPPER_PREVIEW_SIZE = 100
-SOURCE_TARGET_PREVIEW_SIZE = 200
+SOURCE_TARGET_PREVIEW_SIZE = 240
+MEDIA_SLOT_HEIGHT = 390
 APP_LOGO_NAME = "Logo.png"
 
 
@@ -604,7 +602,8 @@ def _media_slot(
 ) -> QFrame:
     slot = QFrame()
     slot.setObjectName("mediaSlot")
-    slot.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+    slot.setFixedHeight(MEDIA_SLOT_HEIGHT)
+    slot.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
     layout = QVBoxLayout(slot)
     layout.setContentsMargins(14, 14, 14, 16)
@@ -697,7 +696,7 @@ class MainWindow(QMainWindow):
             f"{modules.metadata.name} {modules.metadata.version} {modules.metadata.edition}"
         )
         self.setWindowIcon(app_icon())
-        self.setMinimumSize(ROOT_MIN_WIDTH, ROOT_MIN_HEIGHT)
+        self.setMinimumSize(ROOT_WIDTH, ROOT_HEIGHT)
         self.resize(ROOT_WIDTH, ROOT_HEIGHT)
         self._model_download_running = False
 
@@ -708,7 +707,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(scroll)
 
         root = QWidget()
-        root.setMinimumSize(ROOT_MIN_WIDTH - 36, ROOT_MIN_HEIGHT - 70)
+        root.setMinimumSize(ROOT_WIDTH - 36, ROOT_HEIGHT - 70)
         scroll.setWidget(root)
         layout = QVBoxLayout(root)
         layout.setContentsMargins(18, 16, 18, 14)
@@ -747,38 +746,6 @@ class MainWindow(QMainWindow):
         self.statusBar().addPermanentWidget(footer)
         if _BRIDGE is not None:
             _BRIDGE.modelDownloadFinished.connect(self._on_model_download_finished)
-        self._sync_responsive_layout()
-
-    def resizeEvent(self, event) -> None:
-        super().resizeEvent(event)
-        self._sync_responsive_layout()
-
-    def _sync_responsive_layout(self) -> None:
-        compact = self.width() < COMPACT_LAYOUT_WIDTH
-        if hasattr(self, "_body_layout"):
-            direction = (
-                QBoxLayout.Direction.TopToBottom
-                if compact
-                else QBoxLayout.Direction.LeftToRight
-            )
-            if self._body_layout.direction() != direction:
-                self._body_layout.setDirection(direction)
-        if hasattr(self, "_media_row"):
-            direction = (
-                QBoxLayout.Direction.TopToBottom
-                if compact
-                else QBoxLayout.Direction.LeftToRight
-            )
-            if self._media_row.direction() != direction:
-                self._media_row.setDirection(direction)
-        if hasattr(self, "_header_layout"):
-            direction = (
-                QBoxLayout.Direction.TopToBottom
-                if compact
-                else QBoxLayout.Direction.LeftToRight
-            )
-            if self._header_layout.direction() != direction:
-                self._header_layout.setDirection(direction)
 
     def _build_header(self) -> QFrame:
         header = QFrame()
@@ -841,13 +808,14 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(card)
         layout.setContentsMargins(16, 22, 16, 16)
         layout.setSpacing(14)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addLayout(self._build_image_row())
         return card
 
     def _build_image_row(self) -> QBoxLayout:
         self._media_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         row = self._media_row
-        row.setSpacing(16)
+        row.setSpacing(20)
 
         self.source_label = _make_image_drop(
             _("Drop or select a face image"),
@@ -875,7 +843,7 @@ class MainWindow(QMainWindow):
         swap_col.addStretch(1)
         self.btn_swap = QPushButton(_("Swap"))
         self.btn_swap.setObjectName("secondary")
-        self.btn_swap.setFixedSize(64, 38)
+        self.btn_swap.setFixedSize(84, 40)
         self.btn_swap.setToolTip(_("Swap source and target images"))
         self.btn_swap.clicked.connect(self._on_swap_paths)
         swap_col.addWidget(self.btn_swap, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -897,9 +865,10 @@ class MainWindow(QMainWindow):
             self.btn_select_target,
         )
 
-        row.addWidget(src_slot, 1)
+        row.addWidget(src_slot, 1, alignment=Qt.AlignmentFlag.AlignTop)
         row.addLayout(swap_col)
-        row.addWidget(tgt_slot, 1)
+        row.addWidget(tgt_slot, 1, alignment=Qt.AlignmentFlag.AlignTop)
+        row.setAlignment(Qt.AlignmentFlag.AlignTop)
         return row
 
     # ── options card ─────────────────────────────────────────────────────
