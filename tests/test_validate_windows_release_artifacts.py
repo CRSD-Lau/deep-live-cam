@@ -90,8 +90,21 @@ def write_release_assets(tmp_path):
         "MODEL_LICENSE_AUDIT.md",
         "PYTHON_DEPENDENCIES.md",
         "WINDOWS_BUNDLE_MANIFEST.md",
+        "CLEAN_VM_AUTOMATED_EVIDENCE.md",
+        "OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md",
+        "LEGAL_REVIEW_EVIDENCE_PACKET.md",
     ):
         content = MANUAL_GATE_SUMMARY if doc == "MANUAL_RELEASE_GATES.md" else "doc"
+        if doc in {"CLEAN_VM_VERIFICATION.md", "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "LEGAL_REVIEW.md", "CLEAN_VM_AUTOMATED_EVIDENCE.md"}:
+            content = f"Installer SHA-256: `{validator.sha256(installer)}`\n"
+        if doc == "LEGAL_REVIEW_EVIDENCE_PACKET.md":
+            content = "\n".join(
+                (
+                    f"- Installer SHA-256: `{validator.sha256(installer)}`",
+                    f"- Source archive: `{source.name}`",
+                    f"- Source archive SHA-256: `{validator.sha256(source)}`",
+                )
+            )
         write_file(assets_dir / doc, content)
     write_file(
         assets_dir / "RELEASE_NOTES.md",
@@ -141,6 +154,9 @@ def write_release_assets(tmp_path):
             "MODEL_LICENSE_AUDIT.md",
             "PYTHON_DEPENDENCIES.md",
             "WINDOWS_BUNDLE_MANIFEST.md",
+            "CLEAN_VM_AUTOMATED_EVIDENCE.md",
+            "OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md",
+            "LEGAL_REVIEW_EVIDENCE_PACKET.md",
         )
     )
     write_file(
@@ -256,6 +272,42 @@ def test_validate_release_artifacts_rejects_bad_sha256sums(tmp_path, monkeypatch
         sums.read_text(encoding="ascii").replace("RELEASE_ASSETS.md", "MISSING.md"),
         encoding="ascii",
     )
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1
+
+
+def test_validate_release_artifacts_rejects_stale_clean_vm_evidence_hash(tmp_path, monkeypatch):
+    assets_dir = write_release_assets(tmp_path)
+    write_file(assets_dir / "CLEAN_VM_AUTOMATED_EVIDENCE.md", "Installer SHA-256: `STALE`\n")
+    sums_lines = []
+    for path in sorted(assets_dir.iterdir(), key=lambda item: item.name):
+        if path.is_file() and path.name != "SHA256SUMS.txt":
+            sums_lines.append(f"{validator.sha256(path)}  {path.name}")
+    write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1
+
+
+def test_validate_release_artifacts_rejects_stale_legal_evidence_source(tmp_path, monkeypatch):
+    assets_dir = write_release_assets(tmp_path)
+    installer = assets_dir / "DeepLiveCamStudio-2.1.5-x64-setup.exe"
+    write_file(
+        assets_dir / "LEGAL_REVIEW_EVIDENCE_PACKET.md",
+        "\n".join(
+            (
+                f"- Installer SHA-256: `{validator.sha256(installer)}`",
+                "- Source archive: `DeepLiveCamStudio-2.1.5-source-old.zip`",
+                "- Source archive SHA-256: `OLDHASH`",
+            )
+        ),
+    )
+    sums_lines = []
+    for path in sorted(assets_dir.iterdir(), key=lambda item: item.name):
+        if path.is_file() and path.name != "SHA256SUMS.txt":
+            sums_lines.append(f"{validator.sha256(path)}  {path.name}")
+    write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
     monkeypatch.chdir(tmp_path)
 
     assert validator.main(["--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.5"]) == 1

@@ -204,6 +204,41 @@ def fail(message: str, failures: list[str]) -> None:
     failures.append(message)
 
 
+def require_text(path: Path, phrase: str, description: str, failures: list[str]) -> None:
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if phrase not in text:
+        fail(f"{path.name} does not reference current {description}: {phrase}", failures)
+
+
+def validate_release_evidence_consistency(
+    assets_dir: Path,
+    installer_digest: str,
+    source: Path,
+    source_digest: str,
+    failures: list[str],
+) -> None:
+    gate_docs_with_installer_hash = (
+        "CLEAN_VM_VERIFICATION.md",
+        "OBS_VIRTUAL_CAMERA_VERIFICATION.md",
+        "LEGAL_REVIEW.md",
+        "CLEAN_VM_AUTOMATED_EVIDENCE.md",
+        "LEGAL_REVIEW_EVIDENCE_PACKET.md",
+    )
+    for name in gate_docs_with_installer_hash:
+        require_text(
+            assets_dir / name,
+            installer_digest,
+            "installer SHA-256",
+            failures,
+        )
+
+    legal_packet = assets_dir / "LEGAL_REVIEW_EVIDENCE_PACKET.md"
+    require_text(legal_packet, source.name, "source archive name", failures)
+    require_text(legal_packet, source_digest, "source archive SHA-256", failures)
+
+
 def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_ref: bool, failures: list[str]) -> None:
     if not assets_dir.exists():
         fail(f"missing release assets directory: {assets_dir}", failures)
@@ -226,6 +261,7 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
     source_manifest = source.with_suffix(".manifest.md")
     if read_sidecar_digest(source_hash) != sha256(source):
         fail(f"release assets source hash missing or mismatched: {source_hash.name}", failures)
+    source_digest = sha256(source)
     manifest_text = source_manifest.read_text(encoding="utf-8", errors="replace") if source_manifest.exists() else ""
     if not manifest_text:
         fail(f"release assets source manifest missing: {source_manifest.name}", failures)
@@ -285,6 +321,14 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         if not (assets_dir / doc).exists():
             fail(f"release assets missing required document: {doc}", failures)
     validate_sha256sums(assets_dir, failures)
+    if installer.exists() and source.exists():
+        validate_release_evidence_consistency(
+            assets_dir=assets_dir,
+            installer_digest=sha256(installer),
+            source=source,
+            source_digest=source_digest,
+            failures=failures,
+        )
 
     manual_gate_summary = assets_dir / "MANUAL_RELEASE_GATES.md"
     if manual_gate_summary.exists():
