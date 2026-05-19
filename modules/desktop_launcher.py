@@ -17,7 +17,9 @@ def project_root() -> Path:
 
 
 def desktop_log_path(root: Path | None = None) -> Path:
-    from modules.paths import runtime_dir
+    from modules.paths import is_frozen, runtime_dir
+    if root is not None and not is_frozen():
+        return root / "runtime" / "desktop-launch.log"
     return runtime_dir() / "desktop-launch.log"
 
 

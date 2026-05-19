@@ -2,6 +2,14 @@ import cv2
 import numpy as np
 from modules.typing import Face, Frame
 import modules.globals
+from modules.expression_regions import (
+    LEFT_EYE_INDICES,
+    LEFT_EYEBROW_INDICES,
+    MOUTH_OUTER_INDICES,
+    RIGHT_EYE_INDICES,
+    RIGHT_EYEBROW_INDICES,
+    extract_region_points,
+)
 from modules.gpu_processing import gpu_gaussian_blur, gpu_resize, gpu_cvt_color
 
 def apply_color_transfer(source, target):
@@ -37,15 +45,14 @@ def create_face_mask(face: Face, frame: Frame) -> np.ndarray:
     landmarks = face.landmark_2d_106
     if landmarks is not None:
         # Convert landmarks to int32
-        landmarks = landmarks.astype(np.int32)
+        landmarks = np.asarray(landmarks, dtype=np.float32)
+        if landmarks.ndim != 2 or landmarks.shape[1] < 2 or landmarks.shape[0] < 33:
+            return mask
+        landmarks = landmarks[:, :2].astype(np.int32)
 
         # Extract facial features
         right_side_face = landmarks[0:16]
         left_side_face = landmarks[17:32]
-        right_eye = landmarks[33:42]
-        right_eye_brow = landmarks[43:51]
-        left_eye = landmarks[87:96]
-        left_eye_brow = landmarks[97:105]
 
         # Calculate padding
         padding = int(
@@ -83,7 +90,7 @@ def create_lower_mouth_mask(
     landmarks = face.landmark_2d_106
     if landmarks is not None:
         # Use outer mouth landmarks (52-71) to capture the full mouth area
-        lower_lip_order = list(range(52, 72))
+        lower_lip_order = list(MOUTH_OUTER_INDICES)
         
         if max(lower_lip_order) >= landmarks.shape[0]:
             return mask, mouth_cutout, mouth_box, lower_lip_polygon
@@ -150,11 +157,20 @@ def create_lower_mouth_mask(
 def create_eyes_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple, np.ndarray):
     mask = np.zeros(frame.shape[:2], dtype=np.uint8)
     eyes_cutout = None
+    eyes_box = (0,0,0,0)
+    eyes_polygon = None
     landmarks = face.landmark_2d_106
     if landmarks is not None:
-        # Left eye landmarks (87-96) and right eye landmarks (33-42)
-        left_eye = landmarks[87:96]
-        right_eye = landmarks[33:42]
+        # Left eye landmarks (87-95) and right eye landmarks (33-41)
+        left_eye = extract_region_points(face, LEFT_EYE_INDICES)
+        right_eye = extract_region_points(face, RIGHT_EYE_INDICES)
+        if (
+            left_eye.size == 0
+            or right_eye.size == 0
+            or not np.all(np.isfinite(left_eye))
+            or not np.all(np.isfinite(right_eye))
+        ):
+            return mask, eyes_cutout, eyes_box, eyes_polygon
         
         # Calculate centers and dimensions for each eye
         left_eye_center = np.mean(left_eye, axis=0).astype(np.int32)
@@ -164,8 +180,12 @@ def create_eyes_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple
         def get_eye_dimensions(eye_points):
             x_coords = eye_points[:, 0]
             y_coords = eye_points[:, 1]
-            width = int((np.max(x_coords) - np.min(x_coords)) * (1 + modules.globals.mask_down_size * modules.globals.eyes_mask_size))
-            height = int((np.max(y_coords) - np.min(y_coords)) * (1 + modules.globals.mask_down_size * modules.globals.eyes_mask_size))
+            size_scale = 1 + (
+                getattr(modules.globals, "mask_down_size", 0.1)
+                * getattr(modules.globals, "eyes_mask_size", 1.0)
+            )
+            width = int((np.max(x_coords) - np.min(x_coords)) * size_scale)
+            height = int((np.max(y_coords) - np.min(y_coords)) * size_scale)
             return width, height
         
         left_width, left_height = get_eye_dimensions(left_eye)
@@ -185,6 +205,8 @@ def create_eyes_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple
         min_y = max(0, min_y)
         max_x = min(frame.shape[1], max_x)
         max_y = min(frame.shape[0], max_y)
+        if max_x <= min_x or max_y <= min_y:
+            return mask, eyes_cutout, eyes_box, eyes_polygon
         
         # Create mask for the eyes region
         mask_roi = np.zeros((max_y - min_y, max_x - min_x), dtype=np.uint8)
@@ -223,8 +245,9 @@ def create_eyes_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple
         
         # Combine points for both eyes
         eyes_polygon = np.vstack([left_points, right_points])
+        eyes_box = (min_x, min_y, max_x, max_y)
         
-    return mask, eyes_cutout, (min_x, min_y, max_x, max_y), eyes_polygon
+    return mask, eyes_cutout, eyes_box, eyes_polygon
 
 def create_curved_eyebrow(points):
     if len(points) >= 5:
@@ -288,11 +311,20 @@ def create_curved_eyebrow(points):
 def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple, np.ndarray):
     mask = np.zeros(frame.shape[:2], dtype=np.uint8)
     eyebrows_cutout = None
+    eyebrows_box = (0,0,0,0)
+    eyebrows_polygon = None
     landmarks = face.landmark_2d_106
     if landmarks is not None:
-        # Left eyebrow landmarks (97-105) and right eyebrow landmarks (43-51)
-        left_eyebrow = landmarks[97:105].astype(np.float32)
-        right_eyebrow = landmarks[43:51].astype(np.float32)
+        # Left eyebrow landmarks (97-104) and right eyebrow landmarks (43-50)
+        left_eyebrow = extract_region_points(face, LEFT_EYEBROW_INDICES)
+        right_eyebrow = extract_region_points(face, RIGHT_EYEBROW_INDICES)
+        if (
+            left_eyebrow.size == 0
+            or right_eyebrow.size == 0
+            or not np.all(np.isfinite(left_eyebrow))
+            or not np.all(np.isfinite(right_eyebrow))
+        ):
+            return mask, eyebrows_cutout, eyebrows_box, eyebrows_polygon
         
         # Calculate centers and dimensions for each eyebrow
         left_center = np.mean(left_eyebrow, axis=0)
@@ -300,7 +332,7 @@ def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, t
         
         # Calculate bounding box with padding adjusted by size
         all_points = np.vstack([left_eyebrow, right_eyebrow])
-        padding_factor = modules.globals.eyebrows_mask_size
+        padding_factor = getattr(modules.globals, "eyebrows_mask_size", 1.0)
         min_x = np.min(all_points[:, 0]) - 25 * padding_factor
         max_x = np.max(all_points[:, 0]) + 25 * padding_factor
         min_y = np.min(all_points[:, 1]) - 20 * padding_factor
@@ -311,6 +343,8 @@ def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, t
         min_y = max(0, int(min_y))
         max_x = min(frame.shape[1], int(max_x))
         max_y = min(frame.shape[0], int(max_y))
+        if max_x <= min_x or max_y <= min_y:
+            return mask, eyebrows_cutout, eyebrows_box, eyebrows_polygon
         
         # Create mask for the eyebrows region
         mask_roi = np.zeros((max_y - min_y, max_x - min_x), dtype=np.uint8)
@@ -382,6 +416,8 @@ def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, t
             # Generate and draw eyebrow shapes
             left_shape = create_curved_eyebrow(left_local)
             right_shape = create_curved_eyebrow(right_local)
+            cv2.fillPoly(mask_roi, [left_shape.astype(np.int32)], 255)
+            cv2.fillPoly(mask_roi, [right_shape.astype(np.int32)], 255)
             
             # Apply multi-stage blurring for natural feathering (GPU-accelerated when available)
             # First, strong Gaussian blur for initial softening
@@ -407,6 +443,7 @@ def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, t
                 left_shape + [min_x, min_y],
                 right_shape + [min_x, min_y]
             ]).astype(np.int32)
+            eyebrows_box = (min_x, min_y, max_x, max_y)
             
         except Exception as e:
             # Fallback to simple polygons if curve fitting fails
@@ -418,8 +455,9 @@ def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, t
             mask[min_y:max_y, min_x:max_x] = mask_roi
             eyebrows_cutout = frame[min_y:max_y, min_x:max_x].copy()
             eyebrows_polygon = np.vstack([left_eyebrow, right_eyebrow]).astype(np.int32)
+            eyebrows_box = (min_x, min_y, max_x, max_y)
         
-    return mask, eyebrows_cutout, (min_x, min_y, max_x, max_y), eyebrows_polygon
+    return mask, eyebrows_cutout, eyebrows_box, eyebrows_polygon
 
 def apply_mask_area(
     frame: np.ndarray,

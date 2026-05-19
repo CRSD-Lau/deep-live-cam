@@ -8,9 +8,10 @@ import cv2
 import numpy as np
 import modules.globals
 from tqdm import tqdm
+from modules.enhancement_registry import ENHANCER_KEYS
 from modules.typing import Frame
 from modules.cluster_analysis import find_cluster_centroids, find_closest_centroid
-from modules.utilities import get_temp_directory_path, create_temp, extract_frames, clean_temp, get_temp_frame_paths
+from modules.utilities import get_temp_directory_path, create_temp, extract_frames, clean_temp, get_temp_frame_paths, read_image
 from pathlib import Path
 
 FACE_ANALYSER = None
@@ -30,7 +31,19 @@ def get_face_analyser() -> Any:
                 from modules.processors.frame._onnx_enhancer import (
                     build_provider_config,
                 )
+                from modules.execution_providers import provider_names
+                from modules.execution_providers import format_provider_config_summary
                 providers = build_provider_config()
+                print(
+                    f"[DLC.FACE-ANALYSER] Requested providers: "
+                    f"{provider_names(providers)}",
+                    flush=True,
+                )
+                print(
+                    f"[DLC.FACE-ANALYSER] Provider config: "
+                    f"{format_provider_config_summary(providers)}",
+                    flush=True,
+                )
                 FACE_ANALYSER = insightface.app.FaceAnalysis(
                     name='buffalo_l',
                     providers=providers,
@@ -38,6 +51,14 @@ def get_face_analyser() -> Any:
                 )
                 FACE_ANALYSER.prepare(ctx_id=0, det_size=DET_SIZE)
                 _optimize_det_model(FACE_ANALYSER, providers)
+                for model_name, model in getattr(FACE_ANALYSER, "models", {}).items():
+                    session = getattr(model, "session", None)
+                    if session is not None and hasattr(session, "get_providers"):
+                        print(
+                            f"[DLC.FACE-ANALYSER] {model_name} active providers: "
+                            f"{session.get_providers()}",
+                            flush=True,
+                        )
     return FACE_ANALYSER
 
 
@@ -97,8 +118,7 @@ def _needs_landmark() -> bool:
     if getattr(modules.globals, "mouth_mask", False):
         return True
     processors = getattr(modules.globals, "frame_processors", [])
-    return any(p in processors for p in
-               ("face_enhancer", "face_enhancer_gpen256", "face_enhancer_gpen512"))
+    return any(p in processors for p in ENHANCER_KEYS)
 
 
 def _is_dml() -> bool:
@@ -112,6 +132,9 @@ def _analyse_faces(frame: Frame) -> list:
     landmark_2d_106 model when only face_swapper is active (saves ~1ms
     per face and avoids an unnecessary ONNX session call).
     """
+    if frame is None or not hasattr(frame, "shape"):
+        return []
+
     fa = get_face_analyser()
 
     bboxes, kpss = fa.det_model.detect(frame, max_num=0, metric="default")
@@ -225,7 +248,7 @@ def add_blank_map() -> Any:
 def get_unique_faces_from_target_image() -> Any:
     try:
         modules.globals.source_target_map = []
-        target_frame = cv2.imread(modules.globals.target_path)
+        target_frame = read_image(modules.globals.target_path)
         many_faces = get_many_faces(target_frame)
         i = 0
 
