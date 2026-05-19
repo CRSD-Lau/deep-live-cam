@@ -57,7 +57,7 @@ Current status: the installer, Git-ref source archive, cutover evidence, and man
 - [x] `LICENSES/THIRD_PARTY_LICENSES/tensorflow-2.19.1/package/THIRD_PARTY_NOTICES.txt`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/onnxruntime-gpu-1.23.2/package/LICENSE`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/opencv-python-4.10.0.84/package/LICENSE-3RD-PARTY.txt`
-- [x] `LICENSES/THIRD_PARTY_LICENSES/onnx-1.18.0/licenses/LICENSE`
+- [x] `LICENSES/THIRD_PARTY_LICENSES/onnx-1.21.0/licenses/LICENSE`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/opennsfw2-0.10.2/LICENSE`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/METADATA`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/licenses/LicenseRef-Qt-Commercial.txt`
@@ -77,12 +77,12 @@ Current status: the installer, Git-ref source archive, cutover evidence, and man
 ## Cutover Status
 
 - Cutover status report: `C:\Projects\deep-live-cam\RELEASE_CUTOVER_STATUS.md`
-- Dirty paths: `10`
+- Dirty paths: `0`
 - Release-owned dirty paths: `0`
 - Staged release-owned paths: `0`
 - Unstaged release-owned paths: `0`
-- Mixed-scope dirty paths: `10`
-- Mixed-scope dirty paths block verdict: **NO**
+- Mixed-scope dirty paths: `0`
+- Mixed-scope dirty paths block verdict: **YES**
 - Unknown dirty paths: `0`
 - Cutover report blocked: **NO**
 
