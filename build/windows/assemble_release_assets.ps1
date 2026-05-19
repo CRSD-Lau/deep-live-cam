@@ -99,6 +99,8 @@ $FilesToCopy = @(
     $SourceArchive.FullName,
     $SourceHash,
     $SourceManifest,
+    (Join-Path $RepoRoot "README.md"),
+    (Join-Path $RepoRoot "LICENSE"),
     (Join-Path $RepoRoot "RELEASE_NOTES_TEMPLATE.md"),
     (Join-Path $RepoRoot "RELEASE_VERIFICATION.md"),
     (Join-Path $RepoRoot "RELEASE_CHECKLIST.md"),
@@ -107,6 +109,11 @@ $FilesToCopy = @(
     (Join-Path $RepoRoot "RELEASE_CUTOVER_STATUS.md"),
     (Join-Path $RepoRoot "CLEAN_RELEASE_WORKTREE_VERIFICATION.md"),
     (Join-Path $RepoRoot "RELEASE_REPORT.md"),
+    (Join-Path $RepoRoot "CLEAN_VM_VERIFICATION.md"),
+    (Join-Path $RepoRoot "OBS_VIRTUAL_CAMERA_VERIFICATION.md"),
+    (Join-Path $RepoRoot "LEGAL_REVIEW.md"),
+    (Join-Path $RepoRoot "MODEL_DOWNLOAD_VERIFICATION.md"),
+    (Join-Path $RepoRoot "PROCESSING_VERIFICATION.md"),
     (Join-Path $RepoRoot "COMPLIANCE.md"),
     (Join-Path $RepoRoot "THIRD_PARTY_NOTICES.md")
 )
