@@ -66,6 +66,13 @@ if (Test-Path $LicensesSource) {
     Copy-Item -LiteralPath $LicensesSource -Destination $DistDir -Recurse -Force
 }
 
+& $LicensePython tools\generate_windows_bundle_manifest.py --dist $DistDir --output LICENSES\WINDOWS_BUNDLE_MANIFEST.md
+if ($LASTEXITCODE -ne 0) {
+    throw "Windows bundle manifest generation failed with exit code $LASTEXITCODE."
+}
+New-Item -ItemType Directory -Path (Join-Path $DistDir "LICENSES") -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $RepoRoot "LICENSES\WINDOWS_BUNDLE_MANIFEST.md") -Destination (Join-Path $DistDir "LICENSES\WINDOWS_BUNDLE_MANIFEST.md") -Force
+
 if (-not $IsccPath) {
     $Command = Get-Command iscc.exe -ErrorAction SilentlyContinue
     if ($Command) {
