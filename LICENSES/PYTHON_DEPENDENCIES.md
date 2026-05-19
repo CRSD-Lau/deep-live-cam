@@ -14,6 +14,8 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `annotated-types` | `0.7.0` | OSI Approved :: MIT License |
 | `astunparse` | `1.6.3` | BSD |
 | `beautifulsoup4` | `4.14.3` | MIT License |
+| `boolean.py` | `5.0` | BSD-2-Clause |
+| `CacheControl` | `0.14.4` | Apache-2.0 |
 | `certifi` | `2026.4.22` | MPL-2.0 |
 | `charset-normalizer` | `3.4.7` | MIT |
 | `colorama` | `0.4.6` | OSI Approved :: BSD License |
@@ -22,7 +24,9 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `contourpy` | `1.3.3` | BSD 3-Clause License Copyright (c) 2021-2025, ContourPy Developers. All rights reserved. Redistribution and use in source and binary forms,  |
 | `cv2_enumerate_cameras` | `1.1.15` | GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/> Everyone is permitte |
 | `cycler` | `0.12.1` | Copyright (c) 2015, matplotlib project All rights reserved. Redistribution and use in source and binary forms, with or without modification, |
+| `cyclonedx-python-lib` | `11.7.0` | Apache-2.0 |
 | `Cython` | `3.2.4` | Apache-2.0 |
+| `defusedxml` | `0.7.1` | PSFL |
 | `easydict` | `1.13` | LGPL-3.0 |
 | `filelock` | `3.29.0` | MIT |
 | `flatbuffers` | `25.12.19` | Apache 2.0 |
@@ -43,6 +47,7 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `kiwisolver` | `1.5.0` | ========================= The Kiwi licensing terms ========================= Kiwi is licensed under the terms of the Modified BSD License (a |
 | `lazy-loader` | `0.5` | BSD-3-Clause |
 | `libclang` | `18.1.1` | Apache License 2.0 |
+| `license-expression` | `30.4.4` | Apache-2.0 |
 | `Markdown` | `3.10.2` | BSD-3-Clause |
 | `markdown-it-py` | `4.2.0` | OSI Approved :: MIT License |
 | `MarkupSafe` | `3.0.3` | BSD-3-Clause |
@@ -50,21 +55,28 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `mdurl` | `0.1.2` | OSI Approved :: MIT License |
 | `ml_dtypes` | `0.5.4` | Apache-2.0 |
 | `mpmath` | `1.3.0` | BSD |
+| `msgpack` | `1.1.2` | Apache-2.0 |
 | `namex` | `0.1.0` | UNKNOWN |
 | `networkx` | `3.6.1` | BSD-3-Clause |
 | `numpy` | `1.26.4` | Copyright (c) 2005-2023, NumPy Developers. All rights reserved. Redistribution and use in source and binary forms, with or without modificat |
-| `onnx` | `1.18.0` | Apache License v2.0 |
+| `onnx` | `1.21.0` | Apache-2.0 |
 | `onnxruntime-gpu` | `1.23.2` | MIT License |
 | `opencv-python` | `4.10.0.84` | Apache 2.0 |
 | `opencv-python-headless` | `4.11.0.86` | Apache 2.0 |
 | `opennsfw2` | `0.10.2` | OSI Approved :: MIT License |
 | `opt_einsum` | `3.4.0` | MIT |
 | `optree` | `0.19.1` | Apache-2.0 |
+| `packageurl-python` | `0.17.6` | MIT |
 | `packaging` | `26.2` | Apache-2.0 OR BSD-2-Clause |
-| `pillow` | `12.1.1` | MIT-CMU |
+| `pillow` | `12.2.0` | MIT-CMU |
+| `pip-api` | `0.0.34` | OSI Approved :: Apache Software License |
+| `pip-requirements-parser` | `32.0.1` | MIT |
+| `pip_audit` | `2.10.0` | OSI Approved :: Apache Software License |
+| `platformdirs` | `4.9.6` | MIT |
 | `prettytable` | `3.17.0` | BSD-3-Clause |
-| `protobuf` | `4.25.1` | 3-Clause BSD License |
+| `protobuf` | `5.29.6` | 3-Clause BSD License |
 | `psutil` | `5.9.8` | BSD-3-Clause |
+| `py-serializable` | `2.1.0` | Apache-2.0 |
 | `pydantic` | `2.13.4` | MIT |
 | `pydantic_core` | `2.46.4` | MIT |
 | `Pygments` | `2.20.0` | BSD-2-Clause |
@@ -86,6 +98,7 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `shiboken6` | `6.11.1` | LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only |
 | `simsimd` | `6.5.16` | Apache-2.0 |
 | `six` | `1.17.0` | MIT |
+| `sortedcontainers` | `2.4.0` | Apache 2.0 |
 | `soupsieve` | `2.8.3` | MIT |
 | `stringzilla` | `4.6.1` | Apache-2.0 |
 | `sympy` | `1.14.0` | BSD |
@@ -96,6 +109,8 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `termcolor` | `3.3.0` | MIT |
 | `threadpoolctl` | `3.6.0` | BSD-3-Clause |
 | `tifffile` | `2026.3.3` | BSD-3-Clause |
+| `tomli` | `2.4.1` | MIT |
+| `tomli_w` | `1.2.0` | OSI Approved :: MIT License |
 | `tqdm` | `4.67.3` | MPL-2.0 AND MIT |
 | `typing-inspection` | `0.4.2` | MIT |
 | `typing_extensions` | `4.15.0` | PSF-2.0 |

@@ -1,16 +1,16 @@
 # Windows Bundle Manifest
 
-Generated: 2026-05-19T12:39:32+00:00
+Generated: 2026-05-19T19:50:01+00:00
 Dist directory: `C:\Projects\deep-live-cam\dist\DeepLiveCamStudio`
 
 This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload. It is audit evidence, not a legal opinion.
 
 ## Summary
 
-- Files scanned: 2289
-- Total payload bytes: 5177641460
+- Files scanned: 2295
+- Total payload bytes: 5177530687
 - Python package metadata directories: 8
-- Native/binary files: 544
+- Native/binary files: 548
 - Forbidden model/checkpoint files found: 0
 - Dev-only sample/test payload paths found: 0
 
@@ -35,7 +35,7 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 - [x] `LICENSES/THIRD_PARTY_LICENSES/tensorflow-2.19.1/package/THIRD_PARTY_NOTICES.txt`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/onnxruntime-gpu-1.23.2/package/LICENSE`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/opencv-python-4.10.0.84/package/LICENSE-3RD-PARTY.txt`
-- [x] `LICENSES/THIRD_PARTY_LICENSES/onnx-1.18.0/licenses/LICENSE`
+- [x] `LICENSES/THIRD_PARTY_LICENSES/onnx-1.21.0/licenses/LICENSE`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/opennsfw2-0.10.2/LICENSE`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/METADATA`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/licenses/LicenseRef-Qt-Commercial.txt`
@@ -61,11 +61,11 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 
 | Payload Area | File Count | Bytes |
 | --- | ---: | ---: |
-| `DeepLiveCamStudio.exe` | 1 | 45024293 |
-| `DeepLiveCamStudioCLI.exe` | 1 | 45028901 |
+| `DeepLiveCamStudio.exe` | 1 | 45063002 |
+| `DeepLiveCamStudioCLI.exe` | 1 | 45067610 |
 | `_internal/81d243bd2c585b0f4821__mypyc.cp311-win_amd64.pyd` | 1 | 216064 |
 | `_internal/Cython` | 15 | 3310080 |
-| `_internal/PIL` | 7 | 13306368 |
+| `_internal/PIL` | 7 | 13370368 |
 | `_internal/PySide6` | 46 | 89661968 |
 | `_internal/_asyncio.pyd` | 1 | 65304 |
 | `_internal/_bz2.pyd` | 1 | 84760 |
@@ -103,7 +103,7 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 | `_internal/cusolverMg64_11.dll` | 1 | 157071360 |
 | `_internal/cusparse64_12.dll` | 1 | 379535872 |
 | `_internal/cv2` | 3 | 128798720 |
-| `_internal/google` | 1 | 767885 |
+| `_internal/google` | 1 | 713789 |
 | `_internal/grpc` | 1 | 10764288 |
 | `_internal/h5py` | 28 | 7120384 |
 | `_internal/insightface` | 1 | 109568 |
@@ -122,7 +122,7 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 | `_internal/nvToolsExt64_1.dll` | 1 | 48128 |
 | `_internal/nvrtc-builtins64_128.dll` | 1 | 6356480 |
 | `_internal/nvrtc64_120_0.dll` | 1 | 86728192 |
-| `_internal/onnx` | 1 | 3262464 |
+| `_internal/onnx` | 1 | 3012096 |
 | `_internal/onnxruntime` | 5 | 402087184 |
 | `_internal/optree` | 1 | 622592 |
 | `_internal/psutil` | 1 | 67072 |
@@ -143,6 +143,7 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 | `_internal/tcl86t.dll` | 1 | 1871128 |
 | `_internal/tensorflow` | 65 | 1201356800 |
 | `_internal/tk86t.dll` | 1 | 1546520 |
+| `_internal/tomli` | 4 | 43008 |
 | `_internal/unicodedata.pyd` | 1 | 1140504 |
 | `_internal/vcruntime140.dll` | 1 | 124544 |
 | `_internal/vcruntime140_1.dll` | 1 | 49792 |
