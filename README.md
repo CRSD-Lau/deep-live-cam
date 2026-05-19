@@ -14,15 +14,12 @@ This is the normal setup path for someone who just wants to run the app:
    [DeepLiveCamStudio-2.1.7-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.7/DeepLiveCamStudio-2.1.7-x64-setup.exe)
 2. Run the installer.
 3. If Windows SmartScreen appears, choose **More info** and then **Run anyway** only if the installer came from the release link above.
-4. Open the Windows Start Menu.
-5. Run **Download and Verify Models**.
-6. Open **Deep Live Cam Studio** from the Windows Start Menu.
+4. Open **Deep Live Cam Studio** from the Windows Start Menu.
+5. Click **Set Up Models** in the app header and follow the prompts.
 
 That is enough for the installed app and required face-swap model setup.
 
-**Download and Verify Models** is a Windows Start Menu shortcut created by the installer. It is not inside the `2.1.7` app window.
-
-![Windows Start Menu search showing Download and Verify Models](docs/images/windows-start-menu-download-models.svg)
+In 2.1.7, model setup is built into the Studio window. You do not need to search Windows for a separate model downloader shortcut.
 
 For video files, `ffmpeg` and `ffprobe` are also needed. Install them with:
 
@@ -39,13 +36,13 @@ Then close and reopen Deep Live Cam Studio. OBS Virtual Camera is optional and o
 Included:
 
 - Deep Live Cam Studio desktop app.
-- Start Menu shortcuts for the app and model downloader.
+- Start Menu shortcut for the app.
 - Packaged Python runtime and app dependencies.
 - CUDA 12/cuDNN 9 runtime DLLs for NVIDIA GPU acceleration.
 
 Not included:
 
-- Face-swap model/checkpoint files. Use **Download and Verify Models** after install.
+- Face-swap model/checkpoint files. Use **Set Up Models** in the app after install.
 - `ffmpeg` and `ffprobe`, which are needed for video-file processing and audio restore.
 - OBS Virtual Camera, which is optional.
 
@@ -73,7 +70,7 @@ After installing, launch **Deep Live Cam Studio** from the Start Menu. The app i
 %LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.7
 ```
 
-The installer does not include model/checkpoint files. After first install, use the Windows Start Menu shortcut named **Download and Verify Models**. If you prefer the terminal, open one in the installed app folder and run:
+The installer does not include model/checkpoint files. After first install, open **Deep Live Cam Studio** and click **Set Up Models** in the app header. If you prefer the terminal, open one in the installed app folder and run:
 
 ```powershell
 DeepLiveCamStudioCLI.exe --download-models
@@ -87,7 +84,7 @@ The downloader shows model sources, license notes, and checksums before installi
 - Versioned install path under `%LOCALAPPDATA%\Programs\DeepLiveCamStudio\<version>`.
 - Desktop/Start Menu app launcher for `DeepLiveCamStudio.exe`.
 - Separate CLI entry point, `DeepLiveCamStudioCLI.exe`, for diagnostics, model setup, and batch processing.
-- Explicit model downloader with source URLs, license notes, and SHA-256 checks before download.
+- In-app **Set Up Models** flow with source URLs, license notes, and SHA-256 checks before download.
 - User model storage under `%LOCALAPPDATA%\DeepLiveCamStudio\models`, preserved during uninstall.
 - CUDA 12/cuDNN 9 runtime DLL bundling for `onnxruntime-gpu` in packaged Windows builds.
 - Startup DLL registration for frozen PyInstaller installs so CUDA sessions load correctly.
@@ -151,7 +148,7 @@ Updates install into a new versioned folder. You do not need to uninstall the pr
 
 From an installed build:
 
-Use the Windows Start Menu shortcut named **Download and Verify Models**, or run:
+From the installed app, click **Set Up Models** in the header. For terminal setup, open a shell in the installed app folder and run:
 
 ```powershell
 DeepLiveCamStudioCLI.exe --download-models
