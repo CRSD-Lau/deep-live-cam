@@ -29,7 +29,7 @@ unchecked `- [ ]` checklist rows remain.
 - [ ] `%LOCALAPPDATA%\DeepLiveCamStudio\models` is preserved by silent uninstall.
 - [ ] Interactive uninstall prompts before deleting user model data.
 - [ ] Installed payload contains no `.onnx`, `.pth`, or `.safetensors` files.
-- [ ] Installed payload includes `README.md`, `LICENSE`, `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, `RELEASE_CHECKLIST.md`, `RELEASE_PUBLISH_HANDOFF.md`, `RELEASE_REPORT.md`, `RELEASE_SOURCE_PREP.md`, `LICENSES/`, and `docs/OBS_VIRTUAL_CAMERA.md`.
+- [ ] Installed payload includes `Logo.png`, `README.md`, `LICENSE`, `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, `RELEASE_CHECKLIST.md`, `RELEASE_PUBLISH_HANDOFF.md`, `RELEASE_REPORT.md`, `RELEASE_SOURCE_PREP.md`, `LICENSES/`, and `docs/OBS_VIRTUAL_CAMERA.md`.
 
 ## Evidence
 

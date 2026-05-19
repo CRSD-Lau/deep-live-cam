@@ -74,14 +74,14 @@ Use this checklist for every Windows installer release.
 
 ## Compliance
 
-- [ ] Include `LICENSE`, `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, `RELEASE_CHECKLIST.md`, `RELEASE_PUBLISH_HANDOFF.md`, `RELEASE_REPORT.md`, and `RELEASE_SOURCE_PREP.md` in the installed app.
+- [ ] Include `Logo.png`, `LICENSE`, `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, `RELEASE_CHECKLIST.md`, `RELEASE_PUBLISH_HANDOFF.md`, `RELEASE_REPORT.md`, and `RELEASE_SOURCE_PREP.md` in the installed app.
 - [ ] Include `LICENSES/MODEL_LICENSE_AUDIT.md` in the installed app.
 - [ ] Include `LICENSES/PYTHON_DEPENDENCIES.md` in the installed app.
 - [ ] Include generated `LICENSES/WINDOWS_BUNDLE_MANIFEST.md` in the installed app.
 - [ ] Include `MODEL_DOWNLOAD_VERIFICATION.md` and `PROCESSING_VERIFICATION.md` in the installed app.
 - [ ] Include `docs/OBS_VIRTUAL_CAMERA.md` in the installed app.
 - [ ] Link the GitHub Release to the exact source tag or commit.
-- [ ] Confirm complete corresponding source includes build and installer scripts.
+- [ ] Confirm complete corresponding source includes `Logo.png`, build scripts, and installer scripts.
 - [ ] Confirm corresponding source archive contains `LICENSE`, `COMPLIANCE.md`, `THIRD_PARTY_NOTICES.md`, `RELEASE_SOURCE_PREP.md`, `LICENSES/BUNDLED_BINARY_OBLIGATIONS.md`, `LICENSES/THIRD_PARTY_LICENSES/`, `LICENSES/MODEL_LICENSE_AUDIT.md`, packaging scripts, and model-download source.
 - [ ] Confirm `package_source.ps1` was run against the exact tag or commit used for the installer and not against a workspace-only dirty state.
 - [ ] Confirm corresponding source archive contains no `.onnx`, `.pth`, `.safetensors`, `models/`, `checkpoints/`, or model-cache entries.
