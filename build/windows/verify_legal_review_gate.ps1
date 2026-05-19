@@ -18,7 +18,23 @@ if (-not (Test-Path $InstallerPath)) {
     throw "Installer not found: $InstallerPath"
 }
 if (-not $SourceArchivePath) {
-    $SourceArchives = @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot "installer") -Filter "DeepLiveCamStudio-$AppVersion-source-*.zip" -File | Sort-Object LastWriteTime)
+    $ReleaseAssetsManifest = Join-Path $PSScriptRoot "release-assets\$AppVersion\RELEASE_ASSETS.md"
+    if (Test-Path $ReleaseAssetsManifest) {
+        $ReleaseAssetsText = Get-Content -LiteralPath $ReleaseAssetsManifest -Raw
+        $ReleaseAssetMatch = [regex]::Match($ReleaseAssetsText, "DeepLiveCamStudio-$([regex]::Escape($AppVersion))-source-[^``\s]+\.zip")
+        if ($ReleaseAssetMatch.Success) {
+            $ReleaseAssetSourcePath = Join-Path $PSScriptRoot "release-assets\$AppVersion\$($ReleaseAssetMatch.Value)"
+            if (Test-Path $ReleaseAssetSourcePath) {
+                $SourceArchivePath = $ReleaseAssetSourcePath
+            }
+        }
+    }
+}
+if (-not $SourceArchivePath) {
+    $SourceArchives = @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot "installer") -Filter "DeepLiveCamStudio-$AppVersion-source-*.zip" -File | Where-Object {
+        $CandidateManifest = [System.IO.Path]::ChangeExtension($_.FullName, ".manifest.md")
+        (Test-Path $CandidateManifest) -and ((Get-Content -LiteralPath $CandidateManifest -Raw) -match 'Archive mode: `git-ref`')
+    } | Sort-Object LastWriteTime)
     if ($SourceArchives) {
         $SourceArchivePath = $SourceArchives[-1].FullName
     }
