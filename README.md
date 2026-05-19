@@ -22,6 +22,8 @@ That is enough for the installed app and required face-swap model setup.
 
 **Download and Verify Models** is a Windows Start Menu shortcut created by the installer. It is not inside the `2.1.6` app window.
 
+![Windows Start Menu search showing Download and Verify Models](docs/images/windows-start-menu-download-models.svg)
+
 For video files, `ffmpeg` and `ffprobe` are also needed. Install them with:
 
 ```powershell
