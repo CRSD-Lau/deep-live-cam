@@ -40,6 +40,10 @@ For the local release-gate wrapper, run:
 powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit>
 ```
 
+This wrapper builds and smoke-tests the installer, packages corresponding
+source, validates the installer/source artifact set, assembles
+`build/windows/release-assets/2.1.5/`, and validates that curated upload folder.
+
 For the final publish gate, use strict mode on appropriate release-test
 machines so the command fails unless the installer evidence, clean Git-ref
 source archive, and manual gate evidence are all complete:

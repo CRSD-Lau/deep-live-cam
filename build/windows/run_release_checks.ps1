@@ -20,6 +20,7 @@ $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $DistDir = Join-Path $RepoRoot "dist\DeepLiveCamStudio"
 $Installer = Join-Path $PSScriptRoot "installer\DeepLiveCamStudio-$AppVersion-x64-setup.exe"
 $InstallerHash = "$Installer.sha256"
+$ReleaseAssetsDir = Join-Path $PSScriptRoot "release-assets\$AppVersion"
 
 if ($RequirePublishReady) {
     if ($AllowDirtySource) {
@@ -257,8 +258,44 @@ Invoke-ReleaseStep "Validate release artifact set" {
     & $ArtifactPython @Args
 }
 
+Invoke-ReleaseStep "Assemble GitHub Release asset set" {
+    $Args = @(
+        "-ExecutionPolicy", "Bypass",
+        "-File", (Join-Path $PSScriptRoot "assemble_release_assets.ps1"),
+        "-AppVersion", $AppVersion
+    )
+    if ($RequirePublishReady) {
+        $Args += "-RequireGitRefSource"
+    }
+    & powershell @Args
+}
+
+Invoke-ReleaseStep "Validate GitHub Release asset set" {
+    $ArtifactPythonCandidates = @(
+        (Join-Path $RepoRoot "venv\Scripts\python.exe"),
+        (Join-Path $RepoRoot ".venv-build-windows\Scripts\python.exe"),
+        $Python
+    )
+    $ArtifactPython = ($ArtifactPythonCandidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1)
+    if (-not $ArtifactPython) {
+        $ArtifactPython = $Python
+    }
+    $Args = @(
+        "tools\validate_windows_release_artifacts.py",
+        "--repo-root", $RepoRoot,
+        "--output-dir", (Join-Path $PSScriptRoot "installer"),
+        "--release-assets-dir", $ReleaseAssetsDir,
+        "--app-version", $AppVersion
+    )
+    if ($RequirePublishReady) {
+        $Args += "--require-git-ref-source"
+    }
+    & $ArtifactPython @Args
+}
+
 Write-Host ""
 Write-Host "Windows release checks completed."
 Write-Host "Installer: $Installer"
 Write-Host "Installer SHA-256 sidecar: $InstallerHash"
+Write-Host "GitHub Release assets: $ReleaseAssetsDir"
 Write-Host "Release verification summary: $(Join-Path $RepoRoot "RELEASE_VERIFICATION.md")"
