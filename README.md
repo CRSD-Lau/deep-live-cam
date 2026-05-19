@@ -124,10 +124,14 @@ cd Deep-Live-Cam
 
 **3. Download the Models**
 
-1. [GFPGANv1.4](https://huggingface.co/hacksider/deep-live-cam/resolve/main/GFPGANv1.4.onnx)
+1. [gfpgan-1024.onnx](https://huggingface.co/hacksider/deep-live-cam/resolve/main/gfpgan-1024.onnx)
 2. [inswapper\_128\_fp16.onnx](https://huggingface.co/hacksider/deep-live-cam/resolve/main/inswapper_128_fp16.onnx)
 
-Place these files in the "**models**" folder.
+Review the model license notes before downloading. For source checkouts, place reviewed files in the "**models**" folder, or run:
+
+```bash
+python run.py --download-models
+```
 
 **4. Install Dependencies**
 
@@ -186,22 +190,47 @@ pip uninstall gfpgan -y
 pip install git+https://github.com/TencentARC/GFPGAN.git@master
 ```
 
-**Run:** If you don't have a GPU, you can run Deep-Live-Cam using `python run.py`. Note that initial execution will download models (~300MB).
+**Run:** If you don't have a GPU, you can run Deep-Live-Cam using `python run.py`. Model download is explicit; run `python run.py --download-models` first or place reviewed models in the configured model folder.
+
+### Windows Clickable Desktop App
+
+After dependencies are installed, create a no-console desktop shortcut:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\install_windows_desktop_app.ps1
+```
+
+This adds **Deep Live Cam Studio** to your Windows Desktop. The shortcut launches
+`DeepLiveCamStudio.pyw` with `venv\Scripts\pythonw.exe` when the local virtual
+environment exists, so the native PySide studio opens without a command prompt.
+Desktop startup logs are written to `runtime\desktop-launch.log`.
+
+The command-line entry point remains available for benchmarking, diagnostics,
+OBS virtual camera flags, and explicit provider selection:
+
+```bash
+python run.py --execution-provider cuda
+```
 
 ### GPU Acceleration
 
 **CUDA Execution Provider (Nvidia)**
 
-1. Install [CUDA Toolkit 12.8.0](https://developer.nvidia.com/cuda-12-8-0-download-archive)
-2. Install [cuDNN v8.9.7 for CUDA 12.x](https://developer.nvidia.com/rdp/cudnn-archive) (required for onnxruntime-gpu):
-   - Download cuDNN v8.9.7 for CUDA 12.x
-   - Make sure the cuDNN bin directory is in your system PATH
-3. Install dependencies:
+1. Install a current NVIDIA driver.
+2. Install dependencies:
 
 ```bash
 pip install -U torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 pip uninstall onnxruntime onnxruntime-gpu
-pip install onnxruntime-gpu==1.21.0
+pip install onnxruntime-gpu==1.23.2
+```
+
+The CUDA-enabled PyTorch wheel supplies the CUDA 12/cuDNN 9 DLLs that
+`onnxruntime-gpu==1.23.2` needs on Windows. To verify that CUDA really loads for
+an ONNX session:
+
+```bash
+python tools/check_cuda_provider.py --execution-provider cuda --strict
 ```
 
 3. Usage:
@@ -309,8 +338,37 @@ python run.py --execution-provider openvino
 -   Use a screen capture tool like OBS to stream.
 -   To change the face, select a new source image.
 
-## Download all models in this huggingface link
-- [**Download models here**](https://huggingface.co/hacksider/deep-live-cam/tree/main)
+**3. Windows OBS Virtual Camera Mode**
+
+Deep-Live-Cam can send the processed live output directly to a virtual camera:
+
+```bash
+python run.py --execution-provider cuda --virtual-cam
+```
+
+The default virtual camera output is `1280x720@30`. Optional settings:
+
+```bash
+python run.py --execution-provider cuda --virtual-cam --virtual-cam-name "OBS Virtual Camera" --virtual-cam-width 1280 --virtual-cam-height 720 --virtual-cam-fps 30
+```
+
+For higher-FPS streaming, keep the model processing resolution separate from
+the virtual camera signal. This processes at `720p60` and publishes a
+`1080p60` virtual camera stream:
+
+```bash
+python run.py --execution-provider cuda --virtual-cam --camera-width 1280 --camera-height 720 --camera-fps 60 --virtual-cam-width 1920 --virtual-cam-height 1080 --virtual-cam-fps 60
+```
+
+OBS's built-in virtual camera is a single device. Use direct virtual camera
+output for Discord/Zoom/Teams, or use OBS Window Capture on the
+`Deep-Live-Cam Live Preview` window when you need OBS to rebroadcast the scene.
+See [docs/OBS_VIRTUAL_CAMERA.md](docs/OBS_VIRTUAL_CAMERA.md) for setup,
+diagnostics, and troubleshooting.
+
+## Model download and license review
+
+Models are not bundled with Windows installers by default. Use `python run.py --download-models` from source checkouts or `DeepLiveCamStudioCLI.exe --download-models` from installed builds to review model sources, license notes, and SHA-256 checksums before download. Do not upload model binaries to GitHub Releases unless redistribution rights are confirmed for each file.
 
 ## Command Line Arguments (Unmaintained)
 
@@ -331,13 +389,119 @@ options:
   --video-quality [0-51]                                   adjust output video quality
   --live-mirror                                            the live camera display as you see it in the front-facing camera frame
   --live-resizable                                         the live camera frame is resizable
+  --camera-width CAMERA_WIDTH                              live camera capture width
+  --camera-height CAMERA_HEIGHT                            live camera capture height
+  --camera-fps CAMERA_FPS                                  live camera capture fps
+  --virtual-cam                                            send processed live preview frames to a virtual camera
+  --virtual-cam-name VIRTUAL_CAM_NAME                      virtual camera device name to use
+  --virtual-cam-width VIRTUAL_CAM_WIDTH                    virtual camera output width
+  --virtual-cam-height VIRTUAL_CAM_HEIGHT                  virtual camera output height
+  --virtual-cam-fps VIRTUAL_CAM_FPS                        virtual camera output fps
   --max-memory MAX_MEMORY                                  maximum amount of RAM in GB
-  --execution-provider {cpu} [{cpu} ...]                   available execution provider (choices: cpu, ...)
+  --execution-provider PROVIDER [PROVIDER ...]             execution provider (cuda, directml, dml, cpu, ...)
   --execution-threads EXECUTION_THREADS                    number of execution threads
   -v, --version                                            show program's version number and exit
 ```
 
 Looking for a CLI mode? Using the -s/--source argument will make the run program in cli mode.
+
+## Windows installer builds
+
+This repository includes a Windows packaging flow for GitHub Releases. It builds a PyInstaller application bundle and wraps it with an Inno Setup per-user installer.
+
+Run the standard local release gate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit>
+```
+
+The GitHub Actions workflow in `.github/workflows/windows-release.yml` runs the same release gate and uploads the installer, installer hash, corresponding-source archive, and source hash.
+The gate also writes `RELEASE_VERIFICATION.md`, which summarizes the installer hash, payload manifest status, source-archive status, and manual gates that still need human confirmation.
+
+Build the application bundle:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1
+```
+
+Run local preflight checks:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\test_packaged_runtime.ps1
+powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1
+```
+
+Package the installer:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.5
+```
+
+Package the corresponding source archive for the exact release tag or commit:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.5 -GitRef <release-tag-or-commit>
+```
+
+The source archive script refuses a dirty working tree by default, verifies required AGPL/compliance/build files are present in the selected Git ref, and rejects model/checkpoint entries.
+It also writes a `.manifest.md` beside the source zip with the resolved commit, archive hash, required-entry checks, and forbidden model/checkpoint scan result.
+Before running it for a public release, commit the generated release evidence files such as `LICENSES\PYTHON_DEPENDENCIES.md`, `LICENSES\THIRD_PARTY_LICENSES\`, and `LICENSES\WINDOWS_BUNDLE_MANIFEST.md`; `-AllowDirty` is only for CI/local diagnostics and does not include uncommitted files in the source archive.
+For a draft installer built from a dirty local workspace, you can create a traceability-only worktree source archive:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.5 -FromWorkingTree
+```
+
+Do not use a `draft-working-tree` source archive for a public GitHub Release; tag or commit the release and rerun the clean Git ref command above.
+
+The installer output is:
+
+```text
+build\windows\installer\DeepLiveCamStudio-2.1.5-x64-setup.exe
+```
+
+The build also generates `LICENSES\WINDOWS_BUNDLE_MANIFEST.md` from the actual PyInstaller payload and includes it in the installer for release auditing. Bundled LGPL/GPL-family binary obligations are summarized in `LICENSES\BUNDLED_BINARY_OBLIGATIONS.md`, and high-attention package license files are collected under `LICENSES\THIRD_PARTY_LICENSES\`, including TensorFlow, ONNX Runtime, OpenCV, Qt/PySide, pyvirtualcam, and model-safety dependencies. The release gate prunes known dependency sample/test folders from the PyInstaller payload and records that scan in the bundle manifest. Model redistribution notes live in `LICENSES\MODEL_LICENSE_AUDIT.md` and should be rechecked before every public release.
+After the release gate completes, review `RELEASE_VERIFICATION.md` before publishing.
+
+The default install path is versioned and per-user:
+
+```text
+%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.5
+```
+
+### Model setup for installed builds
+
+The Windows installer does not bundle model files. This is intentional: model repositories can have licenses and use restrictions separate from AGPL-3.0, including GPL-3.0 and non-commercial research restrictions.
+
+After installing, run:
+
+```powershell
+DeepLiveCamStudioCLI.exe --download-models
+```
+
+The downloader shows the model source URLs, license notes, and SHA-256 checksums before downloading. Models are stored in:
+
+```text
+%LOCALAPPDATA%\DeepLiveCamStudio\models
+```
+
+Use `DLC_MODELS_DIR` to point the app at a different reviewed model folder.
+
+### Windows runtime notes
+
+- ffmpeg and ffprobe are required for video processing and audio restore. This installer does not bundle ffmpeg by default. Install ffmpeg separately or place `ffmpeg.exe` and `ffprobe.exe` beside `DeepLiveCamStudio.exe`.
+- CUDA acceleration requires compatible NVIDIA drivers and CUDA/cuDNN runtime libraries for `onnxruntime-gpu`. If CUDA is unavailable, use CPU or DirectML where supported.
+- OBS Virtual Camera is optional and must be installed/configured through OBS. Start the OBS virtual camera before selecting virtual camera output in the app.
+- Desktop launch logs are written to `%LOCALAPPDATA%\DeepLiveCamStudio\logs`.
+- UI switch state is written to `%LOCALAPPDATA%\DeepLiveCamStudio\switch_states.json`.
+
+### Uninstall
+
+The uninstaller removes application files. It asks before deleting downloaded models under `%LOCALAPPDATA%\DeepLiveCamStudio\models`.
+
+### License and source obligations
+
+Deep-Live-Cam is AGPL-3.0. If you distribute a Windows installer or executable, publish the complete corresponding source for the exact binary release, including packaging scripts and modifications. Include `LICENSE`, `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, `LICENSES\BUNDLED_BINARY_OBLIGATIONS.md`, `LICENSES\THIRD_PARTY_LICENSES\`, and a link to the exact source tag or commit in the GitHub Release.
 
 ## Press
 

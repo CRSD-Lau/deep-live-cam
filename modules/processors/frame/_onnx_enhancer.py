@@ -14,6 +14,11 @@ import numpy as np
 import onnxruntime
 
 import modules.globals
+from modules.execution_providers import (
+    build_provider_config as build_execution_provider_config,
+    format_provider_config_summary,
+    provider_names,
+)
 
 IS_APPLE_SILICON = platform.system() == "Darwin" and platform.machine() == "arm64"
 
@@ -22,37 +27,18 @@ THREAD_SEMAPHORE = threading.Semaphore(min(max(1, (os.cpu_count() or 1)), 8))
 
 
 def build_provider_config(providers=None):
-    """Wrap raw provider name strings with optimised CUDA / CoreML options.
+    """Wrap raw provider name strings with optimized accelerator options.
 
     Providers that are already ``(name, options_dict)`` tuples are passed
-    through unchanged.  Non-CUDA providers are left as bare strings.
+    through unchanged.
     """
     if providers is None:
         providers = modules.globals.execution_providers
 
-    config = []
-    for p in providers:
-        if isinstance(p, tuple):
-            # Already configured – pass through
-            config.append(p)
-        elif p == "CUDAExecutionProvider":
-            # Use bare provider — ONNX Runtime's defaults are fastest on
-            # modern GPUs (Blackwell/sm_120).  Custom options like
-            # EXHAUSTIVE cudnn_conv_algo_search hurt performance on these
-            # architectures.
-            config.append(p)
-        elif p == "CoreMLExecutionProvider" and IS_APPLE_SILICON:
-            config.append((
-                "CoreMLExecutionProvider",
-                {
-                    "ModelFormat": "MLProgram",
-                    "MLComputeUnits": "ALL",
-                    "AllowLowPrecisionAccumulationOnGPU": 1,
-                },
-            ))
-        else:
-            config.append(p)
-    return config
+    return build_execution_provider_config(
+        providers,
+        is_apple_silicon=IS_APPLE_SILICON,
+    )
 
 
 def run_inference(session: onnxruntime.InferenceSession,
@@ -112,12 +98,27 @@ def create_onnx_session(model_path: str) -> onnxruntime.InferenceSession:
         model_path = optimize_for_coreml(model_path, input_shape=input_shape)
 
     providers = build_provider_config()
+    print(
+        f"[ONNX] Creating session for {os.path.basename(model_path)} "
+        f"with requested providers: {provider_names(providers)}",
+        flush=True,
+    )
+    print(
+        f"[ONNX] Provider config for {os.path.basename(model_path)}: "
+        f"{format_provider_config_summary(providers)}",
+        flush=True,
+    )
     session_options = onnxruntime.SessionOptions()
     session_options.graph_optimization_level = (
         onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
     )
     session = onnxruntime.InferenceSession(
         model_path, sess_options=session_options, providers=providers,
+    )
+    print(
+        f"[ONNX] Active providers for {os.path.basename(model_path)}: "
+        f"{session.get_providers()}",
+        flush=True,
     )
     return session
 

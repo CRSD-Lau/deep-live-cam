@@ -15,34 +15,47 @@ from modules.typing import Frame, Face
 from modules.utilities import (
     is_image,
     is_video,
+    read_image,
 )
 from modules.processors.frame._onnx_enhancer import (
     create_onnx_session,
     warmup_session,
     enhance_face_onnx,
 )
+from modules.paths import MODELS_DIR
 
 NAME = "DLC.FACE-ENHANCER-GPEN256"
 INPUT_SIZE = 256
-MODEL_URL = "https://github.com/harisreedhar/Face-Upscalers-ONNX/releases/download/GPEN-BFR/GPEN-BFR-256.onnx"
+MODEL_URL = "https://huggingface.co/netrunner-exe/Face-Upscalers-onnx/resolve/main/GPEN-BFR-256.onnx"
 MODEL_FILE = "GPEN-BFR-256.onnx"
 
 ENHANCER = None
 THREAD_LOCK = threading.Lock()
+DOWNLOAD_ATTEMPTED = False
+MODEL_UNAVAILABLE_REASON = None
 
-abs_dir = os.path.dirname(os.path.abspath(__file__))
-models_dir = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(abs_dir))), "models"
-)
+models_dir = MODELS_DIR
 
 
 def pre_check() -> bool:
+    return ensure_model_available()
+
+
+def ensure_model_available() -> bool:
+    global DOWNLOAD_ATTEMPTED, MODEL_UNAVAILABLE_REASON
+
     model_path = os.path.join(models_dir, MODEL_FILE)
-    if not os.path.exists(model_path):
-        update_status(f"Downloading {MODEL_FILE}...", NAME)
-        from modules.utilities import conditional_download
-        conditional_download(models_dir, [MODEL_URL])
-    return True
+    if os.path.exists(model_path):
+        return True
+
+    MODEL_UNAVAILABLE_REASON = MODEL_UNAVAILABLE_REASON or (
+        f"{MODEL_FILE} was not found in {models_dir}. "
+        "Run DeepLiveCamStudioCLI.exe --download-models after reviewing model licenses, "
+        "or select Face Enhancer: None."
+    )
+    update_status(MODEL_UNAVAILABLE_REASON, NAME)
+    modules.globals.fp_ui["face_enhancer_gpen256"] = False
+    return False
 
 
 def pre_start() -> bool:
@@ -57,10 +70,7 @@ def get_enhancer() -> Any:
     with THREAD_LOCK:
         if ENHANCER is None:
             model_path = os.path.join(models_dir, MODEL_FILE)
-            if not os.path.exists(model_path):
-                from modules.utilities import conditional_download
-                conditional_download(models_dir, [MODEL_URL])
-            if not os.path.exists(model_path):
+            if not ensure_model_available():
                 raise FileNotFoundError(f"Model file not found: {model_path}")
             print(f"{NAME}: Loading ONNX model from {model_path}")
             ENHANCER = create_onnx_session(model_path)
@@ -115,7 +125,7 @@ def process_frames(
 
 
 def process_image(source_path: str | None, target_path: str, output_path: str) -> None:
-    target_frame = cv2.imread(target_path)
+    target_frame = read_image(target_path)
     if target_frame is None:
         print(f"{NAME}: Error: Failed to read target image {target_path}")
         return

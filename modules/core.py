@@ -6,7 +6,6 @@ if any(arg.startswith('--execution-provider') for arg in sys.argv):
 # reduce tensorflow log level
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import warnings
-from typing import List
 import platform
 import signal
 import shutil
@@ -16,7 +15,6 @@ try:
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
-import onnxruntime
 try:
     import tensorflow
     HAS_TENSORFLOW = True
@@ -26,8 +24,19 @@ except ImportError:
 import modules.globals
 import modules.metadata
 import modules.ui as ui
+from modules.enhancement_registry import ENHANCER_KEYS
+from modules.execution_providers import (
+    encode_providers,
+    resolve_execution_providers,
+    supported_provider_aliases,
+)
+from modules.quality_profiles import QUALITY_MODE_NAMES, apply_quality_profile
 from modules.processors.frame.core import get_frame_processors_modules, process_video_in_memory
 from modules.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
+from modules.diagnostics.overlays import parse_overlay_layers
+from modules.visual_qa import parse_frame_selection
+
+FRAME_PROCESSOR_CHOICES = ("face_swapper",) + ENHANCER_KEYS
 
 if HAS_TORCH and 'ROCMExecutionProvider' in modules.globals.execution_providers:
     del torch
@@ -43,7 +52,7 @@ def parse_args() -> None:
     program.add_argument('-s', '--source', help='select an source image', dest='source_path')
     program.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
     program.add_argument('-o', '--output', help='select output file or directory', dest='output_path')
-    program.add_argument('--frame-processor', help='pipeline of frame processors', dest='frame_processor', default=['face_swapper'], choices=['face_swapper', 'face_enhancer', 'face_enhancer_gpen256', 'face_enhancer_gpen512'], nargs='+')
+    program.add_argument('--frame-processor', help='pipeline of frame processors', dest='frame_processor', default=['face_swapper'], choices=FRAME_PROCESSOR_CHOICES, nargs='+')
     program.add_argument('--keep-fps', help='keep original fps', dest='keep_fps', action='store_true', default=False)
     program.add_argument('--keep-audio', help='keep original audio', dest='keep_audio', action='store_true', default=True)
     program.add_argument('--keep-frames', help='keep temporary frames', dest='keep_frames', action='store_true', default=False)
@@ -51,14 +60,33 @@ def parse_args() -> None:
     program.add_argument('--nsfw-filter', help='filter the NSFW image or video', dest='nsfw_filter', action='store_true', default=False)
     program.add_argument('--map-faces', help='map source target faces', dest='map_faces', action='store_true', default=False)
     program.add_argument('--mouth-mask', help='mask the mouth region', dest='mouth_mask', action='store_true', default=False)
+    program.add_argument('--quality-mode', help='quality/performance profile', dest='quality_mode', choices=QUALITY_MODE_NAMES)
+    program.add_argument('--benchmark-pipeline', help='print live/video pipeline stage timing summaries', dest='benchmark_pipeline', action='store_true', default=False)
+    program.add_argument('--benchmark-log-interval', help='seconds between benchmark summaries', dest='benchmark_log_interval', type=float, default=5.0)
+    program.add_argument('--benchmark-output', help='append benchmark snapshots as JSONL at the selected path', dest='benchmark_output_path')
+    program.add_argument('--visual-qa-dir', help='export before/after QA snapshots during in-memory video processing', dest='visual_qa_output_dir')
+    program.add_argument('--visual-qa-frames', help='comma-separated zero-based frames to capture when --visual-qa-dir is set', dest='visual_qa_frames', default='0')
+    program.add_argument('--visual-qa-temporal', help='export temporal flicker/jitter QA across selected --visual-qa-frames', dest='visual_qa_temporal', action='store_true', default=False)
+    program.add_argument('--diagnostic-overlay', help='draw debug overlays on processed face frames', dest='diagnostic_overlay', action='store_true', default=False)
+    program.add_argument('--diagnostic-overlay-layers', help='comma-separated overlay layers: bbox,kps,landmarks,mouth,eyes,mask,profile,all', dest='diagnostic_overlay_layers', default='bbox,kps,profile')
     program.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264', choices=['libx264', 'libx265', 'libvpx-vp9'])
     program.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18, choices=range(52), metavar='[0-51]')
     program.add_argument('-l', '--lang', help='Ui language', default="en")
     program.add_argument('--live-mirror', help='The live camera display as you see it in the front-facing camera frame', dest='live_mirror', action='store_true', default=False)
     program.add_argument('--live-resizable', help='The live camera frame is resizable', dest='live_resizable', action='store_true', default=False)
+    program.add_argument('--camera-width', help='live camera capture width; overrides the virtual camera width for processing', dest='camera_width', type=positive_int)
+    program.add_argument('--camera-height', help='live camera capture height; overrides the virtual camera height for processing', dest='camera_height', type=positive_int)
+    program.add_argument('--camera-fps', help='live camera capture fps; overrides the virtual camera fps for processing', dest='camera_fps', type=positive_int)
+    program.add_argument('--virtual-cam', help='send processed live preview frames to a virtual camera', dest='virtual_cam', action='store_true', default=False)
+    program.add_argument('--virtual-cam-name', help='virtual camera device name to use, for example "OBS Virtual Camera"', dest='virtual_cam_name')
+    program.add_argument('--virtual-cam-width', help='virtual camera output width', dest='virtual_cam_width', type=positive_int, default=1280)
+    program.add_argument('--virtual-cam-height', help='virtual camera output height', dest='virtual_cam_height', type=positive_int, default=720)
+    program.add_argument('--virtual-cam-fps', help='virtual camera output fps', dest='virtual_cam_fps', type=positive_int, default=30)
     program.add_argument('--max-memory', help='maximum amount of RAM in GB', dest='max_memory', type=int, default=suggest_max_memory())
-    program.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default=[suggest_default_execution_provider()], choices=suggest_execution_providers(), nargs='+')
-    program.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int, default=suggest_execution_threads())
+    program.add_argument('--execution-provider', help=f'execution provider ({", ".join(suggest_execution_providers())})', dest='execution_provider', default=[suggest_default_execution_provider()], metavar='PROVIDER', nargs='+')
+    program.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int)
+    program.add_argument('--download-models', help='review model sources, download models, and verify checksums', dest='download_models', action='store_true', default=False)
+    program.add_argument('--yes', help='assume yes for non-interactive setup commands such as --download-models', dest='assume_yes', action='store_true', default=False)
     program.add_argument('-v', '--version', action='version', version=f'{modules.metadata.name} {modules.metadata.version}')
 
     # register deprecated args
@@ -68,7 +96,19 @@ def parse_args() -> None:
     program.add_argument('--gpu-threads', help=argparse.SUPPRESS, dest='gpu_threads_deprecated', type=int)
 
     args = program.parse_args()
+    try:
+        visual_qa_frame_indices = parse_frame_selection(args.visual_qa_frames)
+    except ValueError as exc:
+        program.error(f"invalid --visual-qa-frames: {exc}")
+    if args.visual_qa_temporal and not args.visual_qa_output_dir:
+        program.error("--visual-qa-temporal requires --visual-qa-dir")
+    try:
+        diagnostic_overlay_layers = parse_overlay_layers(args.diagnostic_overlay_layers)
+    except ValueError as exc:
+        program.error(f"invalid --diagnostic-overlay-layers: {exc}")
 
+    modules.globals.download_models = args.download_models
+    modules.globals.assume_yes = args.assume_yes
     modules.globals.source_path = args.source_path
     modules.globals.target_path = args.target_path
     modules.globals.output_path = normalize_output_path(modules.globals.source_path, modules.globals.target_path, args.output_path)
@@ -81,18 +121,41 @@ def parse_args() -> None:
     modules.globals.mouth_mask = args.mouth_mask
     modules.globals.nsfw_filter = args.nsfw_filter
     modules.globals.map_faces = args.map_faces
+    modules.globals.quality_mode = args.quality_mode or modules.globals.quality_mode
+    modules.globals.benchmark_pipeline = args.benchmark_pipeline or bool(args.benchmark_output_path)
+    modules.globals.benchmark_log_interval = max(0.5, args.benchmark_log_interval)
+    modules.globals.benchmark_output_path = args.benchmark_output_path
+    modules.globals.visual_qa_output_dir = args.visual_qa_output_dir
+    modules.globals.visual_qa_frame_indices = sorted(visual_qa_frame_indices)
+    modules.globals.visual_qa_temporal = args.visual_qa_temporal
+    modules.globals.diagnostic_overlay = args.diagnostic_overlay
+    modules.globals.diagnostic_overlay_layers = diagnostic_overlay_layers
     modules.globals.video_encoder = args.video_encoder
     modules.globals.video_quality = args.video_quality
     modules.globals.live_mirror = args.live_mirror
     modules.globals.live_resizable = args.live_resizable
+    modules.globals.camera_width = args.camera_width
+    modules.globals.camera_height = args.camera_height
+    modules.globals.camera_fps = args.camera_fps
+    modules.globals.virtual_cam = args.virtual_cam
+    modules.globals.virtual_cam_name = args.virtual_cam_name
+    modules.globals.virtual_cam_width = args.virtual_cam_width
+    modules.globals.virtual_cam_height = args.virtual_cam_height
+    modules.globals.virtual_cam_fps = args.virtual_cam_fps
     modules.globals.max_memory = args.max_memory
     modules.globals.execution_providers = decode_execution_providers(args.execution_provider)
-    modules.globals.execution_threads = args.execution_threads
+    modules.globals.execution_threads = (
+        args.execution_threads
+        if args.execution_threads is not None
+        else suggest_execution_threads(modules.globals.execution_providers)
+    )
     modules.globals.lang = args.lang
 
     #for ENHANCER tumblers:
-    for enhancer_key in ('face_enhancer', 'face_enhancer_gpen256', 'face_enhancer_gpen512'):
+    for enhancer_key in ENHANCER_KEYS:
         modules.globals.fp_ui[enhancer_key] = enhancer_key in args.frame_processor
+    if args.quality_mode:
+        apply_quality_profile(args.quality_mode, modules.globals)
 
     # translate deprecated args
     if args.source_path_deprecated:
@@ -114,15 +177,31 @@ def parse_args() -> None:
     if args.gpu_threads_deprecated:
         print('\033[33mArgument --gpu-threads is deprecated. Use --execution-threads instead.\033[0m')
         modules.globals.execution_threads = args.gpu_threads_deprecated
+    elif args.execution_threads is None:
+        modules.globals.execution_threads = suggest_execution_threads(
+            modules.globals.execution_providers
+        )
 
 
-def encode_execution_providers(execution_providers: List[str]) -> List[str]:
-    return [execution_provider.replace('ExecutionProvider', '').lower() for execution_provider in execution_providers]
+def positive_int(value: str) -> int:
+    try:
+        integer = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"{value} is not an integer") from exc
+    if integer < 1:
+        raise argparse.ArgumentTypeError("value must be greater than 0")
+    return integer
 
 
-def decode_execution_providers(execution_providers: List[str]) -> List[str]:
-    return [provider for provider, encoded_execution_provider in zip(onnxruntime.get_available_providers(), encode_execution_providers(onnxruntime.get_available_providers()))
-            if any(execution_provider in encoded_execution_provider for execution_provider in execution_providers)]
+def encode_execution_providers(execution_providers: list[str]) -> list[str]:
+    return encode_providers(execution_providers)
+
+
+def decode_execution_providers(execution_providers: list[str]) -> list[str]:
+    return resolve_execution_providers(
+        execution_providers,
+        logger=lambda message: print(f"[DLC.CORE] {message}", flush=True),
+    )
 
 
 def suggest_max_memory() -> int:
@@ -132,30 +211,27 @@ def suggest_max_memory() -> int:
 
 
 def suggest_default_execution_provider() -> str:
-    """Pick the best available provider: cuda > rocm > coreml > dml > cpu."""
-    available = encode_execution_providers(onnxruntime.get_available_providers())
-    for pref in ('cuda', 'rocm', 'coreml', 'dml'):
-        if pref in available:
-            return pref
-    return 'cpu'
+    from modules.execution_providers import suggest_default_execution_provider as suggest
+    return suggest()
 
 
-def suggest_execution_providers() -> List[str]:
-    return encode_execution_providers(onnxruntime.get_available_providers())
+def suggest_execution_providers() -> list[str]:
+    return supported_provider_aliases()
 
 
-def suggest_execution_threads() -> int:
+def suggest_execution_threads(execution_providers: list[str] | None = None) -> int:
     """Suggest optimal thread count based on hardware and execution provider."""
     import os
+    providers = execution_providers or modules.globals.execution_providers
     
     # Get CPU count
     cpu_count = os.cpu_count() or 4
     
-    if 'DmlExecutionProvider' in modules.globals.execution_providers:
+    if 'DmlExecutionProvider' in providers:
         return 1
-    if 'ROCMExecutionProvider' in modules.globals.execution_providers:
+    if 'ROCMExecutionProvider' in providers:
         return 1
-    if 'CUDAExecutionProvider' in modules.globals.execution_providers:
+    if 'CUDAExecutionProvider' in providers:
         return 2
     
     # For CPU execution, use most cores but leave some for system
@@ -192,8 +268,15 @@ def pre_check() -> bool:
         update_status('Python version is not supported - please upgrade to 3.9 or higher.')
         return False
     if not shutil.which('ffmpeg'):
-        update_status('ffmpeg is not installed.')
-        return False
+        message = (
+            'ffmpeg is not installed or not on PATH. Video processing and audio '
+            'restore require ffmpeg. Install ffmpeg or place ffmpeg.exe and '
+            'ffprobe.exe beside the application.'
+        )
+        update_status(message)
+        if modules.globals.headless:
+            return False
+        return True
     return True
 
 
@@ -329,6 +412,9 @@ def destroy(to_quit=True) -> None:
 
 def run() -> None:
     parse_args()
+    if getattr(modules.globals, "download_models", False):
+        from modules.model_manager import download_models
+        raise SystemExit(download_models(assume_yes=modules.globals.assume_yes))
     if not pre_check():
         return
     for frame_processor in get_frame_processors_modules(modules.globals.frame_processors):

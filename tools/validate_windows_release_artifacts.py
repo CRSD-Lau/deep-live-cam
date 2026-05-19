@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+"""Validate Windows release artifacts before upload."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import sys
+import zipfile
+from pathlib import Path
+
+
+FORBIDDEN_SUFFIXES = {".onnx", ".pth", ".safetensors"}
+FORBIDDEN_DIRS = {"models", "checkpoints", "model-cache", "model_cache"}
+REQUIRED_SOURCE_ENTRIES = (
+    "LICENSE",
+    "README.md",
+    "COMPLIANCE.md",
+    "THIRD_PARTY_NOTICES.md",
+    "RELEASE_CHECKLIST.md",
+    "RELEASE_COMPLETION_AUDIT.md",
+    "RELEASE_CUTOVER_PLAN.md",
+    "RELEASE_CUTOVER_STATUS.md",
+    "RELEASE_NOTES_TEMPLATE.md",
+    "RELEASE_REPORT.md",
+    "RELEASE_SOURCE_PREP.md",
+    "CLEAN_VM_VERIFICATION.md",
+    "OBS_VIRTUAL_CAMERA_VERIFICATION.md",
+    "LEGAL_REVIEW.md",
+    "MODEL_DOWNLOAD_VERIFICATION.md",
+    "PROCESSING_VERIFICATION.md",
+    "docs/OBS_VIRTUAL_CAMERA.md",
+    "LICENSES/BUNDLED_BINARY_OBLIGATIONS.md",
+    "LICENSES/MODEL_LICENSE_AUDIT.md",
+    "LICENSES/PYTHON_DEPENDENCIES.md",
+    "LICENSES/README.md",
+    "LICENSES/WINDOWS_BUNDLE_MANIFEST.md",
+    "LICENSES/THIRD_PARTY_LICENSES/README.md",
+    "LICENSES/THIRD_PARTY_LICENSES/tensorflow-2.19.1/package/THIRD_PARTY_NOTICES.txt",
+    "LICENSES/THIRD_PARTY_LICENSES/onnxruntime-gpu-1.23.2/package/LICENSE",
+    "LICENSES/THIRD_PARTY_LICENSES/opencv-python-4.10.0.84/package/LICENSE-3RD-PARTY.txt",
+    "LICENSES/THIRD_PARTY_LICENSES/onnx-1.18.0/licenses/LICENSE",
+    "LICENSES/THIRD_PARTY_LICENSES/opennsfw2-0.10.2/LICENSE",
+    "LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/METADATA",
+    "LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/licenses/LicenseRef-Qt-Commercial.txt",
+    "LICENSES/THIRD_PARTY_LICENSES/shiboken6-6.11.1/METADATA",
+    "LICENSES/THIRD_PARTY_LICENSES/pyvirtualcam-0.15.0/licenses/LICENSE",
+    "LICENSES/THIRD_PARTY_LICENSES/cv2_enumerate_cameras-1.1.15/LICENSE",
+    "LICENSES/THIRD_PARTY_LICENSES/easydict-1.13/LICENSE",
+    ".github/workflows/windows-release.yml",
+    "DeepLiveCamStudio.pyw",
+    "build/windows/build_windows.ps1",
+    "build/windows/clean_build.ps1",
+    "build/windows/package_installer.ps1",
+    "build/windows/package_source.ps1",
+    "build/windows/prepare_release_staging.ps1",
+    "build/windows/run_release_checks.ps1",
+    "build/windows/test_environment.ps1",
+    "build/windows/test_packaged_runtime.ps1",
+    "build/windows/test_installer.ps1",
+    "build/windows/verify_clean_vm_gate.ps1",
+    "build/windows/verify_legal_review_gate.ps1",
+    "build/windows/verify_obs_virtualcam_gate.ps1",
+    "build/windows/deep_live_cam_studio.spec",
+    "build/windows/installer.iss",
+    "tools/check_cuda_provider.py",
+    "tools/check_obs_virtualcam.py",
+    "tools/check_windows_release_cutover.py",
+    "tools/collect_third_party_license_files.py",
+    "tools/generate_python_dependency_licenses.py",
+    "tools/prune_windows_dist.py",
+    "tools/generate_windows_bundle_manifest.py",
+    "tools/generate_windows_release_verification.py",
+    "tools/install_windows_desktop_app.ps1",
+    "tools/validate_windows_release_artifacts.py",
+    "requirements.txt",
+    "run.py",
+    "modules/core.py",
+    "modules/globals.py",
+    "modules/execution_providers.py",
+    "modules/desktop_launcher.py",
+    "modules/model_manager.py",
+    "modules/paths.py",
+    "modules/ui.py",
+    "modules/utilities.py",
+    "modules/processors/frame/_onnx_enhancer.py",
+    "modules/processors/frame/core.py",
+    "modules/processors/frame/face_enhancer.py",
+    "modules/processors/frame/face_enhancer_gpen256.py",
+    "modules/processors/frame/face_enhancer_gpen512.py",
+    "modules/processors/frame/face_swapper.py",
+    "tests/test_image_upload_formats.py",
+    "tests/test_model_manager.py",
+    "tests/test_validate_windows_release_artifacts.py",
+    "tests/test_windows_release_scripts.py",
+    "tests/test_windows_release_cutover.py",
+    "tests/test_windows_release_verification.py",
+)
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest().upper()
+
+
+def read_sidecar_digest(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="ascii", errors="replace").strip().split()[0].upper()
+
+
+def source_archive_has_forbidden_entries(path: Path) -> list[str]:
+    forbidden: list[str] = []
+    with zipfile.ZipFile(path) as archive:
+        for name in archive.namelist():
+            lower = name.lower()
+            parts = set(lower.split("/"))
+            if Path(lower).suffix in FORBIDDEN_SUFFIXES or parts.intersection(FORBIDDEN_DIRS):
+                forbidden.append(name)
+    return forbidden
+
+
+def source_archive_missing_required_entries(path: Path, app_version: str) -> list[str]:
+    prefix = f"DeepLiveCamStudio-{app_version}-source/"
+    with zipfile.ZipFile(path) as archive:
+        names = set(archive.namelist())
+    return [entry for entry in REQUIRED_SOURCE_ENTRIES if f"{prefix}{entry}" not in names]
+
+
+def fail(message: str, failures: list[str]) -> None:
+    print(f"[release-artifacts] FAIL: {message}")
+    failures.append(message)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Validate Windows release artifact set.")
+    parser.add_argument("--output-dir", default="build/windows/installer", help="Installer output directory.")
+    parser.add_argument("--app-version", default="2.1.5", help="Application version.")
+    parser.add_argument("--repo-root", default=".", help="Repository root containing RELEASE_VERIFICATION.md.")
+    parser.add_argument(
+        "--require-git-ref-source",
+        action="store_true",
+        help="Require source archive manifest mode to be git-ref instead of allowing draft-working-tree.",
+    )
+    args = parser.parse_args(argv)
+
+    repo_root = Path(args.repo_root).resolve()
+    output_dir = (repo_root / args.output_dir).resolve()
+    failures: list[str] = []
+
+    installer = output_dir / f"DeepLiveCamStudio-{args.app_version}-x64-setup.exe"
+    installer_hash = installer.with_suffix(installer.suffix + ".sha256")
+    if not installer.exists():
+        fail(f"missing installer: {installer}", failures)
+    elif read_sidecar_digest(installer_hash) != sha256(installer):
+        fail(f"installer SHA-256 sidecar missing or mismatched: {installer_hash}", failures)
+    else:
+        print(f"[release-artifacts] installer hash ok: {installer.name}")
+
+    source_archives = sorted(output_dir.glob(f"DeepLiveCamStudio-{args.app_version}-source-*.zip"))
+    if not source_archives:
+        fail("missing corresponding-source archive", failures)
+        latest_source = None
+    else:
+        latest_source = source_archives[-1]
+        source_hash = Path(str(latest_source) + ".sha256")
+        source_manifest = latest_source.with_suffix(".manifest.md")
+        if read_sidecar_digest(source_hash) != sha256(latest_source):
+            fail(f"source SHA-256 sidecar missing or mismatched: {source_hash}", failures)
+        else:
+            print(f"[release-artifacts] source hash ok: {latest_source.name}")
+
+        if not source_manifest.exists():
+            fail(f"missing source manifest: {source_manifest}", failures)
+        else:
+            manifest_text = source_manifest.read_text(encoding="utf-8", errors="replace")
+            if args.require_git_ref_source and "Archive mode: `git-ref`" not in manifest_text:
+                fail("source archive manifest is not git-ref mode", failures)
+            if "No `.onnx`, `.pth`, `.safetensors`" not in manifest_text:
+                fail("source manifest does not record forbidden model/checkpoint scan", failures)
+            for entry in REQUIRED_SOURCE_ENTRIES:
+                if f"- [x] `{entry}`" not in manifest_text:
+                    fail(f"source manifest missing required entry check: {entry}", failures)
+
+        try:
+            forbidden_entries = source_archive_has_forbidden_entries(latest_source)
+            missing_entries = source_archive_missing_required_entries(latest_source, args.app_version)
+        except zipfile.BadZipFile:
+            fail(f"source archive is not a valid zip: {latest_source}", failures)
+            forbidden_entries = []
+            missing_entries = []
+        if forbidden_entries:
+            for entry in forbidden_entries[:20]:
+                print(f"[release-artifacts] forbidden source entry: {entry}")
+            fail("source archive contains forbidden model/checkpoint entries", failures)
+        if missing_entries:
+            for entry in missing_entries[:20]:
+                print(f"[release-artifacts] missing source entry: {entry}")
+            fail("source archive is missing required corresponding-source entries", failures)
+
+    release_verification = repo_root / "RELEASE_VERIFICATION.md"
+    if not release_verification.exists():
+        fail("missing RELEASE_VERIFICATION.md", failures)
+    else:
+        verification_text = release_verification.read_text(encoding="utf-8", errors="replace")
+        required_phrases = (
+            "Local installer automation passed:",
+            "Public-release source archive from clean Git ref:",
+            "Ready to publish without remaining manual gates:",
+        )
+        for phrase in required_phrases:
+            if phrase not in verification_text:
+                fail(f"RELEASE_VERIFICATION.md missing phrase: {phrase}", failures)
+
+    if failures:
+        print(f"[release-artifacts] {len(failures)} validation failure(s).")
+        return 1
+
+    print("[release-artifacts] artifact validation passed.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

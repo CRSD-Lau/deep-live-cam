@@ -1,0 +1,79 @@
+name: Windows Release Candidate Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_version:
+        description: "Installer version"
+        required: true
+        default: "2.1.5"
+      git_ref:
+        description: "Git ref used for corresponding-source packaging"
+        required: false
+        default: ""
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build, package, and verify release candidate
+        shell: pwsh
+        run: |
+          $gitRef = "${{ inputs.git_ref }}"
+          if (-not $gitRef) {
+            $gitRef = "${{ github.sha }}"
+          }
+          powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion "${{ inputs.app_version }}" -Python python -GitRef $gitRef -AllowDirtySource
+
+      - name: Guard against accidental publish approval
+        shell: pwsh
+        run: |
+          $strictArgs = @(
+            "tools\generate_windows_release_verification.py",
+            "--repo-root", ".",
+            "--dist", "dist\DeepLiveCamStudio",
+            "--output-dir", "build\windows\installer",
+            "--app-version", "${{ inputs.app_version }}",
+            "--output", "RELEASE_VERIFICATION.md",
+            "--require-publish-ready"
+          )
+          $strict = Start-Process -FilePath "python" -ArgumentList $strictArgs -NoNewWindow -Wait -PassThru
+          if ($strict.ExitCode -eq 0) {
+            throw "Hosted CI unexpectedly marked this build publish-ready. Final release approval must be performed with the documented manual gates."
+          }
+          if ($strict.ExitCode -ne 1) {
+            throw "Strict verifier failed unexpectedly with exit code $($strict.ExitCode)."
+          }
+          Write-Host "Hosted CI release-candidate build is not publish-ready by design. Complete the clean VM, OBS, legal, and strict local publish gates before publishing."
+
+      - name: Validate uploaded artifact set
+        shell: pwsh
+        run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version "${{ inputs.app_version }}"
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup
+          path: |
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup.exe
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup.exe.sha256
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.zip
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.zip.sha256
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.manifest.md
+            RELEASE_VERIFICATION.md
+            RELEASE_CUTOVER_STATUS.md

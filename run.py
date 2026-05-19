@@ -4,7 +4,7 @@ import os
 import sys
 
 # Add the project root to PATH so bundled ffmpeg/ffprobe are found
-project_root = os.path.dirname(os.path.abspath(__file__))
+project_root = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
 os.environ["PATH"] = project_root + os.pathsep + os.environ.get("PATH", "")
 
 # On Windows, register NVIDIA CUDA DLL directories so onnxruntime-gpu can

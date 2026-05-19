@@ -16,17 +16,18 @@ from modules.typing import Frame, Face
 from modules.utilities import (
     is_image,
     is_video,
+    read_image,
 )
+from modules.paths import MODELS_DIR
 
 FACE_ENHANCER = None
 THREAD_SEMAPHORE = threading.Semaphore()
 THREAD_LOCK = threading.Lock()
 NAME = "DLC.FACE-ENHANCER"
+MODEL_FILE = "gfpgan-1024.onnx"
+MODEL_UNAVAILABLE_REASON = None
 
-abs_dir = os.path.dirname(os.path.abspath(__file__))
-models_dir = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(abs_dir))), "models"
-)
+models_dir = MODELS_DIR
 
 # Standard FFHQ 5-point face template for 512x512 resolution
 # Points: left_eye, right_eye, nose, left_mouth, right_mouth
@@ -43,15 +44,27 @@ FFHQ_TEMPLATE_512 = np.array(
 
 
 def pre_check() -> bool:
-    model_path = os.path.join(models_dir, "gfpgan-1024.onnx")
-    if not os.path.exists(model_path):
-        update_status(
+    return ensure_model_available(disable_on_missing=False)
+
+
+def ensure_model_available(disable_on_missing: bool = True) -> bool:
+    global MODEL_UNAVAILABLE_REASON
+
+    model_path = os.path.join(models_dir, MODEL_FILE)
+    if os.path.exists(model_path):
+        return True
+
+    if MODEL_UNAVAILABLE_REASON is None:
+        MODEL_UNAVAILABLE_REASON = (
             f"GFPGAN ONNX model not found at {model_path}. "
-            "Please place gfpgan-1024.onnx in the models folder.",
-            NAME,
+            f"Run DeepLiveCamStudioCLI.exe --download-models, place {MODEL_FILE} "
+            "in the models folder, or select Face Enhancer: None."
         )
-        return False
-    return True
+
+    update_status(MODEL_UNAVAILABLE_REASON, NAME)
+    if disable_on_missing:
+        modules.globals.fp_ui["face_enhancer"] = False
+    return False
 
 
 def pre_start() -> bool:
@@ -72,9 +85,9 @@ def get_face_enhancer() -> onnxruntime.InferenceSession:
 
     with THREAD_LOCK:
         if FACE_ENHANCER is None:
-            model_path = os.path.join(models_dir, "gfpgan-1024.onnx")
+            model_path = os.path.join(models_dir, MODEL_FILE)
 
-            if not os.path.exists(model_path):
+            if not ensure_model_available():
                 raise FileNotFoundError(
                     f"{NAME}: Model not found at {model_path}"
                 )
@@ -293,7 +306,15 @@ def enhance_face(temp_frame: Frame, detected_faces=None) -> Frame:
             Also enables temporal caching — inference runs every
             _ENH_INTERVAL frames, reusing the cached result otherwise.
     """
-    session = get_face_enhancer()
+    try:
+        session = get_face_enhancer()
+    except Exception as exc:
+        update_status(
+            f"GFPGAN enhancer disabled: {exc}",
+            NAME,
+        )
+        modules.globals.fp_ui["face_enhancer"] = False
+        return temp_frame
 
     # Determine model input resolution from the session metadata
     input_info = session.get_inputs()[0]
@@ -426,7 +447,7 @@ def process_image(
     source_path: str | None, target_path: str, output_path: str
 ) -> None:
     """Processes a single image file."""
-    target_frame = cv2.imread(target_path)
+    target_frame = read_image(target_path)
     if target_frame is None:
         print(f"{NAME}: Error: Failed to read target image {target_path}")
         return

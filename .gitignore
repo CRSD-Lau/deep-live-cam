@@ -16,6 +16,7 @@ temp/
 .venv/
 venv/
 env/
+.venv-build-windows/
 workflow/
 gfpgan/
 models/inswapper_128.onnx
@@ -26,6 +27,11 @@ faceswap/
 .vscode/
 switch_states.json
 /models
+dist/
+build/deep_live_cam_studio/
+build/windows/manual-evidence/
+build/windows/installer/
+build/windows/pyinstaller-work/
 install.bat
 /.claude
 *.bat

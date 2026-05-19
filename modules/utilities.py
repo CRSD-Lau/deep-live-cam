@@ -8,12 +8,22 @@ import subprocess
 import urllib
 from pathlib import Path
 from typing import List, Any
+
+import cv2
+import numpy
+from PIL import Image, ImageOps
 from tqdm import tqdm
 
 import modules.globals
 
 TEMP_FILE = "temp.mp4"
 TEMP_DIRECTORY = "temp"
+IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".avif")
+IMAGE_FILE_FILTER = "Images (*.png *.jpg *.jpeg *.gif *.bmp *.webp *.avif)"
+MEDIA_FILE_FILTER = "Media (*.png *.jpg *.jpeg *.gif *.bmp *.webp *.avif *.mp4 *.mkv)"
+
+mimetypes.add_type("image/webp", ".webp")
+mimetypes.add_type("image/avif", ".avif")
 
 
 def run_ffmpeg(args: List[str]) -> bool:
@@ -261,14 +271,38 @@ def clean_temp(target_path: str) -> None:
         os.rmdir(parent_directory_path)
 
 
+def read_image(image_path: str, flags: int = cv2.IMREAD_COLOR) -> Any:
+    """Read image uploads as OpenCV arrays, including formats OpenCV may not decode."""
+    if not image_path or not os.path.isfile(image_path):
+        return None
+
+    try:
+        image = cv2.imdecode(numpy.fromfile(image_path, dtype=numpy.uint8), flags)
+        if image is not None:
+            return image
+    except Exception:
+        pass
+
+    try:
+        with Image.open(image_path) as pil_image:
+            pil_image = ImageOps.exif_transpose(pil_image)
+            if flags == cv2.IMREAD_GRAYSCALE:
+                return numpy.array(pil_image.convert("L"))
+            if flags == cv2.IMREAD_UNCHANGED and pil_image.mode in ("RGBA", "LA"):
+                return cv2.cvtColor(numpy.array(pil_image.convert("RGBA")), cv2.COLOR_RGBA2BGRA)
+            return cv2.cvtColor(numpy.array(pil_image.convert("RGB")), cv2.COLOR_RGB2BGR)
+    except Exception:
+        return None
+
+
 def has_image_extension(image_path: str) -> bool:
-    return image_path.lower().endswith(("png", "jpg", "jpeg"))
+    return bool(image_path) and image_path.lower().endswith(IMAGE_EXTENSIONS)
 
 
 def is_image(image_path: str) -> bool:
     if image_path and os.path.isfile(image_path):
         mimetype, _ = mimetypes.guess_type(image_path)
-        return bool(mimetype and mimetype.startswith("image/"))
+        return bool(mimetype and mimetype.startswith("image/")) or has_image_extension(image_path)
     return False
 
 

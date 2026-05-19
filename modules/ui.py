@@ -17,6 +17,7 @@ import sys
 import tempfile
 import threading
 import time
+import traceback
 import webbrowser
 from typing import Callable, List, Optional, Tuple
 
@@ -38,6 +39,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QFileDialog,
+    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -54,6 +56,14 @@ from PySide6.QtWidgets import (
 import modules.globals
 import modules.metadata
 from modules.capturer import get_video_frame, get_video_frame_total
+from modules.enhancement_registry import (
+    ENHANCER_KEYS,
+    active_enhancer_key,
+    default_enhancer_state,
+    enhancer_key_for_processor_name,
+    get_enhancer_choices,
+)
+from modules.execution_providers import provider_config_summary
 from modules.face_analyser import (
     add_blank_map,
     detect_many_faces_fast,
@@ -66,13 +76,36 @@ from modules.face_analyser import (
 )
 from modules.gettext import LanguageManager
 from modules.gpu_processing import gpu_cvt_color, gpu_flip, gpu_resize
-from modules.processors.frame.core import get_frame_processors_modules
+from modules.live_queue import get_latest, put_latest
+from modules.pipeline_metrics import (
+    MetricsJsonlWriter,
+    PipelineMetrics,
+    format_metrics,
+    safe_write_metrics_snapshot,
+)
+from modules.processors.frame.core import (
+    get_frame_processors_modules,
+    reset_frame_processor_temporal_state,
+)
+from modules.quality_profiles import (
+    QUALITY_MODE_NAMES,
+    apply_quality_profile,
+    get_quality_profile,
+    quality_profile_runtime_state,
+    restore_quality_profile_runtime_state,
+)
+from modules.tracking.face_track import FaceTracker
 from modules.utilities import (
+    IMAGE_FILE_FILTER,
+    MEDIA_FILE_FILTER,
     has_image_extension,
     is_image,
     is_video,
+    read_image,
 )
 from modules.video_capture import VideoCapturer
+from modules.paths import user_data_dir
+from runtime.virtual_cam import VirtualCameraSink
 
 if platform.system() == "Windows":
     from pygrabber.dshow_graph import FilterGraph
@@ -82,8 +115,8 @@ import json
 
 # ─── constants ────────────────────────────────────────────────────────────
 
-ROOT_HEIGHT = 820
-ROOT_WIDTH = 640
+ROOT_HEIGHT = 760
+ROOT_WIDTH = 1120
 
 PREVIEW_MAX_HEIGHT = 700
 PREVIEW_MAX_WIDTH = 1200
@@ -101,113 +134,160 @@ POPUP_LIVE_SCROLL_WIDTH = 870
 POPUP_LIVE_SCROLL_HEIGHT = 700
 
 MAPPER_PREVIEW_SIZE = 100
-SOURCE_TARGET_PREVIEW_SIZE = 200
+SOURCE_TARGET_PREVIEW_SIZE = 220
 
 
 # ─── modern dark stylesheet ───────────────────────────────────────────────
 
 QSS = """
-QMainWindow, QDialog { background-color: #1e1e1e; color: #e6e6e6; }
-QWidget { color: #e6e6e6; font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", Arial, sans-serif; font-size: 11pt; }
+QMainWindow, QDialog {
+    background-color: #171715;
+    color: #ece8df;
+}
+QWidget {
+    color: #ece8df;
+    font-family: "Segoe UI";
+    font-size: 10.5pt;
+}
+
+QFrame#studioHeader {
+    background-color: #22211e;
+    border: 1px solid #39352f;
+    border-radius: 8px;
+}
+QLabel#titleLabel {
+    color: #f4efe5;
+    font-size: 19pt;
+    font-weight: 700;
+}
+QLabel#subtitleLabel {
+    color: #b9b0a3;
+    font-size: 9.5pt;
+}
+QLabel#pillLabel {
+    background-color: #2d2b27;
+    border: 1px solid #4a443a;
+    border-radius: 8px;
+    color: #d8c9b3;
+    padding: 5px 10px;
+    font-size: 9pt;
+    font-weight: 600;
+}
 
 QGroupBox {
-    background-color: #262626;
-    border: 1px solid #333333;
-    border-radius: 10px;
-    margin-top: 14px;
-    padding-top: 18px;
+    background-color: #22211e;
+    border: 1px solid #39352f;
+    border-radius: 8px;
+    margin-top: 16px;
+    padding: 16px 14px 14px 14px;
     font-weight: 600;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
     padding: 0 8px;
-    color: #9ec5ff;
+    color: #d9b06d;
 }
 
 QPushButton {
-    background-color: #2d6cdf;
-    color: white;
-    border: none;
+    background-color: #c58a3a;
+    color: #181510;
+    border: 1px solid #d6a45a;
     border-radius: 8px;
     padding: 8px 16px;
-    font-weight: 600;
+    font-weight: 700;
 }
-QPushButton:hover  { background-color: #3a7af0; }
-QPushButton:pressed{ background-color: #1d57c2; }
-QPushButton:disabled { background-color: #444; color: #888; }
+QPushButton:hover  { background-color: #d49a4c; }
+QPushButton:pressed{ background-color: #aa752f; }
+QPushButton:disabled {
+    background-color: #393631;
+    border-color: #393631;
+    color: #7f786d;
+}
 QPushButton#secondary {
-    background-color: #3a3a3a;
+    background-color: #2d3332;
+    border-color: #43504d;
+    color: #d7e6e2;
 }
-QPushButton#secondary:hover { background-color: #4a4a4a; }
-QPushButton#danger { background-color: #c2412d; }
-QPushButton#danger:hover  { background-color: #d8523c; }
+QPushButton#secondary:hover { background-color: #37403e; }
+QPushButton#danger {
+    background-color: #5c2722;
+    border-color: #8e4037;
+    color: #f3ddd8;
+}
+QPushButton#danger:hover  { background-color: #723129; }
 
 QComboBox {
-    background-color: #2a2a2a;
-    border: 1px solid #404040;
+    background-color: #1b1b19;
+    border: 1px solid #454138;
     border-radius: 6px;
     padding: 6px 10px;
     min-height: 24px;
 }
-QComboBox:hover { border-color: #2d6cdf; }
+QComboBox:hover { border-color: #c58a3a; }
 QComboBox QAbstractItemView {
-    background-color: #2a2a2a;
-    selection-background-color: #2d6cdf;
-    border: 1px solid #404040;
+    background-color: #22211e;
+    selection-background-color: #725126;
+    border: 1px solid #454138;
 }
 
 QCheckBox {
     spacing: 8px;
-    padding: 4px 0;
+    padding: 3px 0;
 }
 QCheckBox::indicator {
-    width: 36px; height: 18px;
-    border-radius: 9px;
-    background-color: #3a3a3a;
+    width: 34px; height: 18px;
+    border-radius: 8px;
+    background-color: #3b3833;
+    border: 1px solid #4e493f;
 }
 QCheckBox::indicator:checked {
-    background-color: #2d6cdf;
+    background-color: #c58a3a;
+    border-color: #d6a45a;
 }
 
 QSlider::groove:horizontal {
     height: 6px;
-    background: #3a3a3a;
+    background: #383530;
     border-radius: 3px;
 }
 QSlider::handle:horizontal {
-    background: #ffffff;
+    background: #efe5d4;
     width: 16px; height: 16px;
     margin: -5px 0;
     border-radius: 8px;
-    border: 1px solid #cccccc;
+    border: 1px solid #c58a3a;
 }
 QSlider::sub-page:horizontal {
-    background: #2d6cdf;
+    background: #c58a3a;
     border-radius: 3px;
 }
 
+QLabel#mediaTitle {
+    color: #b9b0a3;
+    font-size: 9pt;
+    font-weight: 700;
+}
 QLabel#imageDrop {
-    background-color: #2a2a2a;
-    border: 2px dashed #444;
+    background-color: #1b1b19;
+    border: 1px dashed #5b5347;
     border-radius: 8px;
+    color: #8f8577;
+    font-weight: 600;
 }
 QLabel#statusLabel {
-    color: #b9b9b9;
+    color: #c8c0b4;
     font-size: 10pt;
-    font-style: italic;
 }
 QLabel#linkLabel {
-    color: #6ea8ff;
-    text-decoration: underline;
+    color: #d9b06d;
 }
 
+QStatusBar {
+    background-color: #171715;
+    color: #9f9689;
+}
 QScrollArea { border: none; background: transparent; }
-
-QFrame#card {
-    background-color: #262626;
-    border-radius: 10px;
-}
 """
 
 
@@ -295,6 +375,12 @@ def render_video_preview(
 # ─── persistence ─────────────────────────────────────────────────────────
 
 
+def _switch_state_path():
+    path = user_data_dir() / "switch_states.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def save_switch_states():
     state = {
         "keep_fps": modules.globals.keep_fps,
@@ -302,6 +388,7 @@ def save_switch_states():
         "keep_frames": modules.globals.keep_frames,
         "many_faces": modules.globals.many_faces,
         "map_faces": modules.globals.map_faces,
+        "quality_mode": modules.globals.quality_mode,
         "poisson_blend": modules.globals.poisson_blend,
         "color_correction": modules.globals.color_correction,
         "nsfw_filter": modules.globals.nsfw_filter,
@@ -312,9 +399,28 @@ def save_switch_states():
         "mouth_mask": modules.globals.mouth_mask,
         "show_mouth_mask_box": modules.globals.show_mouth_mask_box,
         "mouth_mask_size": modules.globals.mouth_mask_size,
+        "mouth_mask_temporal_smoothing": modules.globals.mouth_mask_temporal_smoothing,
+        "mouth_mask_temporal_motion_reduction": modules.globals.mouth_mask_temporal_motion_reduction,
+        "opacity": modules.globals.opacity,
+        "sharpness": modules.globals.sharpness,
+        "enable_interpolation": modules.globals.enable_interpolation,
+        "interpolation_weight": modules.globals.interpolation_weight,
+        "live_process_latest_frame": modules.globals.live_process_latest_frame,
+        "live_detection_interval_ratio": modules.globals.live_detection_interval_ratio,
+        "face_tracking_enabled": modules.globals.face_tracking_enabled,
+        "face_tracking_current_weight": modules.globals.face_tracking_current_weight,
+        "face_tracking_reset_ratio": modules.globals.face_tracking_reset_ratio,
+        "face_tracking_max_missed": modules.globals.face_tracking_max_missed,
+        "face_tracking_confidence_weight": modules.globals.face_tracking_confidence_weight,
+        "face_tracking_confidence_reference": modules.globals.face_tracking_confidence_reference,
+        "face_tracking_confidence_min_weight": modules.globals.face_tracking_confidence_min_weight,
+        "face_tracking_min_detection_confidence": modules.globals.face_tracking_min_detection_confidence,
+        "expression_temporal_unilateral_eye_motion_scale": modules.globals.expression_temporal_unilateral_eye_motion_scale,
+        "compositing_color_match_strength": modules.globals.compositing_color_match_strength,
     }
+    state.update(quality_profile_runtime_state(modules.globals))
     try:
-        with open("switch_states.json", "w") as f:
+        with _switch_state_path().open("w", encoding="utf-8") as f:
             json.dump(state, f)
     except OSError:
         pass
@@ -322,23 +428,30 @@ def save_switch_states():
 
 def load_switch_states():
     try:
-        with open("switch_states.json", "r") as f:
+        with _switch_state_path().open("r", encoding="utf-8") as f:
             state = json.load(f)
         modules.globals.keep_fps = state.get("keep_fps", True)
         modules.globals.keep_audio = state.get("keep_audio", True)
         modules.globals.keep_frames = state.get("keep_frames", False)
         modules.globals.many_faces = state.get("many_faces", False)
         modules.globals.map_faces = state.get("map_faces", False)
-        modules.globals.poisson_blend = state.get("poisson_blend", False)
+        quality_mode = state.get("quality_mode", "balanced")
+        if quality_mode not in QUALITY_MODE_NAMES:
+            quality_mode = "balanced"
+        apply_quality_profile(quality_mode, modules.globals)
         modules.globals.color_correction = state.get("color_correction", False)
         modules.globals.nsfw_filter = state.get("nsfw_filter", False)
         modules.globals.live_mirror = state.get("live_mirror", False)
         modules.globals.live_resizable = state.get("live_resizable", False)
-        modules.globals.fp_ui = state.get("fp_ui", {"face_enhancer": False})
+        if "fp_ui" in state:
+            saved_fp_ui = default_enhancer_state()
+            saved_fp_ui.update(state.get("fp_ui", {}))
+            modules.globals.fp_ui = saved_fp_ui
         modules.globals.show_fps = state.get("show_fps", False)
-        modules.globals.mouth_mask_size = state.get("mouth_mask_size", 0.0)
-        modules.globals.mouth_mask = modules.globals.mouth_mask_size > 0
         modules.globals.show_mouth_mask_box = False
+        modules.globals.opacity = state.get("opacity", 1.0)
+        restore_quality_profile_runtime_state(modules.globals, state)
+        modules.globals.mouth_mask = modules.globals.mouth_mask_size > 0
     except FileNotFoundError:
         pass
     except (OSError, json.JSONDecodeError):
@@ -391,6 +504,23 @@ def check_and_ignore_nsfw(target, destroy: Optional[Callable] = None) -> bool:
     return False
 
 
+def _load_source_face(source_path: str | None):
+    if not source_path:
+        return None
+
+    source_frame = read_image(source_path)
+    if source_frame is None:
+        update_status(f"Could not read source image: {source_path}")
+        return None
+
+    source_face = get_one_face(source_frame)
+    if source_face is None:
+        update_status(f"No face found in source image: {source_path}")
+        return None
+
+    return source_face
+
+
 # ─── camera enumeration (unchanged from tk version) ──────────────────────
 
 
@@ -433,6 +563,34 @@ def _make_image_drop(text: str, size: Tuple[int, int]) -> QLabel:
     return label
 
 
+def _quality_badge_text() -> str:
+    try:
+        profile = get_quality_profile(modules.globals.quality_mode)
+        return f"Mode: {profile.label}"
+    except ValueError:
+        return "Mode: Balanced"
+
+
+def _provider_badge_text() -> str:
+    providers = modules.globals.execution_providers or ["CPUExecutionProvider"]
+    provider_names = [
+        provider[0] if isinstance(provider, tuple) else str(provider)
+        for provider in providers
+    ]
+    compact = [name.replace("ExecutionProvider", "") for name in provider_names]
+    return "Provider: " + " + ".join(compact[:2])
+
+
+def _enhancer_badge_text() -> str:
+    active_key = active_enhancer_key(modules.globals.fp_ui)
+    if active_key is None:
+        return "Enhancer: None"
+    for enhancer_profile in get_enhancer_choices():
+        if enhancer_profile.key == active_key:
+            return f"Enhancer: {enhancer_profile.label}"
+    return f"Enhancer: {active_key}"
+
+
 class _Switch(QWidget):
     """Compact toggle switch with label + optional tooltip."""
 
@@ -473,38 +631,79 @@ class MainWindow(QMainWindow):
         root = QWidget()
         self.setCentralWidget(root)
         layout = QVBoxLayout(root)
-        layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(12)
+        layout.setContentsMargins(18, 16, 18, 14)
+        layout.setSpacing(14)
+        layout.addWidget(self._build_header())
 
-        # Source/Target row
-        layout.addLayout(self._build_image_row())
+        body = QHBoxLayout()
+        body.setSpacing(14)
 
-        # Options grid
-        layout.addWidget(self._build_options_card())
+        session_col = QVBoxLayout()
+        session_col.setSpacing(12)
+        session_col.addWidget(self._build_media_card(), 1)
+        session_col.addLayout(self._build_action_row())
 
-        # Sliders card
-        layout.addWidget(self._build_sliders_card())
+        controls_col = QVBoxLayout()
+        controls_col.setSpacing(12)
+        controls_col.addWidget(self._build_options_card())
+        controls_col.addWidget(self._build_sliders_card())
+        controls_col.addWidget(self._build_camera_card())
+        controls_col.addStretch(1)
 
-        # Action buttons
-        layout.addLayout(self._build_action_row())
+        body.addLayout(session_col, 3)
+        body.addLayout(controls_col, 2)
+        layout.addLayout(body, 1)
 
-        # Camera selection
-        layout.addWidget(self._build_camera_card())
-
-        # Status & footer
-        self._status_label = QLabel("")
+        self._status_label = QLabel("Ready")
         self._status_label.setObjectName("statusLabel")
-        self._status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self._status_label)
+        self._status_label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.statusBar().addWidget(self._status_label, 1)
 
         footer = QLabel("Deep Live Cam")
         footer.setObjectName("linkLabel")
-        footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        footer.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         footer.setCursor(Qt.CursorShape.PointingHandCursor)
         footer.mousePressEvent = lambda _e: webbrowser.open("https://deeplivecam.net")
-        layout.addWidget(footer)
+        self.statusBar().addPermanentWidget(footer)
+
+    def _build_header(self) -> QFrame:
+        header = QFrame()
+        header.setObjectName("studioHeader")
+        layout = QHBoxLayout(header)
+        layout.setContentsMargins(18, 14, 18, 14)
+        layout.setSpacing(14)
+
+        title_col = QVBoxLayout()
+        title_col.setSpacing(2)
+        title = QLabel("Deep Live Cam Studio")
+        title.setObjectName("titleLabel")
+        subtitle = QLabel("Native live-render control surface")
+        subtitle.setObjectName("subtitleLabel")
+        title_col.addWidget(title)
+        title_col.addWidget(subtitle)
+        layout.addLayout(title_col, 1)
+
+        self.lbl_quality_badge = QLabel()
+        self.lbl_quality_badge.setObjectName("pillLabel")
+        self.lbl_provider_badge = QLabel()
+        self.lbl_provider_badge.setObjectName("pillLabel")
+        self.lbl_enhancer_badge = QLabel()
+        self.lbl_enhancer_badge.setObjectName("pillLabel")
+
+        layout.addWidget(self.lbl_quality_badge)
+        layout.addWidget(self.lbl_provider_badge)
+        layout.addWidget(self.lbl_enhancer_badge)
+        self._refresh_studio_badges()
+        return header
 
     # ── image row ────────────────────────────────────────────────────────
+
+    def _build_media_card(self) -> QGroupBox:
+        card = QGroupBox(_("Media"))
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(14, 18, 14, 14)
+        layout.addLayout(self._build_image_row())
+        return card
 
     def _build_image_row(self) -> QHBoxLayout:
         row = QHBoxLayout()
@@ -512,17 +711,25 @@ class MainWindow(QMainWindow):
 
         # Source column
         src_col = QVBoxLayout()
-        self.source_label = _make_image_drop(_("Source face"), (200, 200))
+        src_title = QLabel(_("Source Face"))
+        src_title.setObjectName("mediaTitle")
+        src_col.addWidget(src_title)
+        self.source_label = _make_image_drop(
+            _("Source Face"),
+            (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE),
+        )
         src_col.addWidget(self.source_label, alignment=Qt.AlignmentFlag.AlignCenter)
         src_row = QHBoxLayout()
-        self.btn_select_source = QPushButton(_("Select a face"))
+        src_row.setSpacing(8)
+        self.btn_select_source = QPushButton(_("Select Face"))
+        self.btn_select_source.setFixedWidth(112)
         self.btn_select_source.setToolTip(
             _("Choose the source face image to swap onto the target")
         )
         self.btn_select_source.clicked.connect(self._on_select_source)
-        self.btn_random_face = QPushButton("🔄")
+        self.btn_random_face = QPushButton(_("Random"))
         self.btn_random_face.setObjectName("secondary")
-        self.btn_random_face.setFixedWidth(40)
+        self.btn_random_face.setFixedWidth(90)
         self.btn_random_face.setToolTip(
             _("Get a random face from thispersondoesnotexist.com")
         )
@@ -534,9 +741,9 @@ class MainWindow(QMainWindow):
         # Swap button column
         swap_col = QVBoxLayout()
         swap_col.addStretch(1)
-        self.btn_swap = QPushButton("↔")
+        self.btn_swap = QPushButton(_("Swap"))
         self.btn_swap.setObjectName("secondary")
-        self.btn_swap.setFixedSize(44, 44)
+        self.btn_swap.setFixedSize(82, 38)
         self.btn_swap.setToolTip(_("Swap source and target images"))
         self.btn_swap.clicked.connect(self._on_swap_paths)
         swap_col.addWidget(self.btn_swap, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -544,9 +751,15 @@ class MainWindow(QMainWindow):
 
         # Target column
         tgt_col = QVBoxLayout()
-        self.target_label = _make_image_drop(_("Target"), (200, 200))
+        tgt_title = QLabel(_("Target Media"))
+        tgt_title.setObjectName("mediaTitle")
+        tgt_col.addWidget(tgt_title)
+        self.target_label = _make_image_drop(
+            _("Target Media"),
+            (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE),
+        )
         tgt_col.addWidget(self.target_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        self.btn_select_target = QPushButton(_("Select a target"))
+        self.btn_select_target = QPushButton(_("Select Target"))
         self.btn_select_target.setToolTip(
             _("Choose the target image or video to apply face swap to")
         )
@@ -561,7 +774,7 @@ class MainWindow(QMainWindow):
     # ── options card ─────────────────────────────────────────────────────
 
     def _build_options_card(self) -> QGroupBox:
-        card = QGroupBox(_("Options"))
+        card = QGroupBox(_("Render Controls"))
         grid = QGridLayout(card)
         grid.setHorizontalSpacing(20)
         grid.setVerticalSpacing(6)
@@ -606,23 +819,42 @@ class MainWindow(QMainWindow):
         for i, w in enumerate(items):
             grid.addWidget(w, i // 2, i % 2)
 
+        quality_row = len(items) // 2
+        quality_label = QLabel(_("Quality Mode:"))
+        grid.addWidget(quality_label, quality_row, 0)
+
+        self.cb_quality_mode = QComboBox()
+        for mode_name in QUALITY_MODE_NAMES:
+            profile = get_quality_profile(mode_name)
+            self.cb_quality_mode.addItem(_(profile.label), mode_name)
+        current_quality_index = self.cb_quality_mode.findData(
+            modules.globals.quality_mode
+        )
+        if current_quality_index >= 0:
+            self.cb_quality_mode.setCurrentIndex(current_quality_index)
+        self.cb_quality_mode.currentIndexChanged.connect(
+            self._on_quality_mode_change
+        )
+        self.cb_quality_mode.setToolTip(
+            _("Select a preset for latency, stability, and enhancement quality")
+        )
+        grid.addWidget(self.cb_quality_mode, quality_row, 1)
+
         # Face enhancer dropdown
         enhancer_label = QLabel(_("Face Enhancer:"))
-        grid.addWidget(enhancer_label, len(items) // 2, 0)
+        grid.addWidget(enhancer_label, quality_row + 1, 0)
 
         self.cb_enhancer = QComboBox()
-        self.cb_enhancer.addItems(["None", "GFPGAN", "GPEN-512", "GPEN-256"])
-        initial = "None"
-        if modules.globals.fp_ui.get("face_enhancer", False):
-            initial = "GFPGAN"
-        elif modules.globals.fp_ui.get("face_enhancer_gpen512", False):
-            initial = "GPEN-512"
-        elif modules.globals.fp_ui.get("face_enhancer_gpen256", False):
-            initial = "GPEN-256"
-        self.cb_enhancer.setCurrentText(initial)
-        self.cb_enhancer.currentTextChanged.connect(self._on_enhancer_change)
+        self.cb_enhancer.addItem("None", None)
+        for enhancer_profile in get_enhancer_choices():
+            self.cb_enhancer.addItem(enhancer_profile.label, enhancer_profile.key)
+        initial_key = active_enhancer_key(modules.globals.fp_ui)
+        initial_index = self.cb_enhancer.findData(initial_key)
+        if initial_index >= 0:
+            self.cb_enhancer.setCurrentIndex(initial_index)
+        self.cb_enhancer.currentIndexChanged.connect(self._on_enhancer_change)
         self.cb_enhancer.setToolTip(_("Select a face enhancement model (None = no enhancement)"))
-        grid.addWidget(self.cb_enhancer, len(items) // 2, 1)
+        grid.addWidget(self.cb_enhancer, quality_row + 1, 1)
 
         return card
 
@@ -643,7 +875,7 @@ class MainWindow(QMainWindow):
 
         # Transparency
         grid.addWidget(QLabel(_("Transparency")), 0, 0)
-        self.s_transparency = slider(0.0, 1.0, 1.0, 100, self._on_transparency_change)
+        self.s_transparency = slider(0.0, 1.0, modules.globals.opacity, 100, self._on_transparency_change)
         self.s_transparency.setToolTip(
             _("Blend between original and swapped face (0% = original, 100% = fully swapped)")
         )
@@ -651,7 +883,7 @@ class MainWindow(QMainWindow):
 
         # Sharpness
         grid.addWidget(QLabel(_("Sharpness")), 1, 0)
-        self.s_sharpness = slider(0.0, 5.0, 0.0, 10, self._on_sharpness_change)
+        self.s_sharpness = slider(0.0, 5.0, modules.globals.sharpness, 10, self._on_sharpness_change)
         self.s_sharpness.setToolTip(_("Sharpen the enhanced face output"))
         grid.addWidget(self.s_sharpness, 1, 1)
 
@@ -671,11 +903,12 @@ class MainWindow(QMainWindow):
 
     def _build_action_row(self) -> QHBoxLayout:
         row = QHBoxLayout()
-        self.btn_start = QPushButton(_("Start"))
+        row.setSpacing(10)
+        self.btn_start = QPushButton(_("Start Render"))
         self.btn_start.setToolTip(_("Begin processing the target image/video with selected face"))
         self.btn_start.clicked.connect(self._on_start)
 
-        self.btn_destroy = QPushButton(_("Destroy"))
+        self.btn_destroy = QPushButton(_("Exit"))
         self.btn_destroy.setObjectName("danger")
         self.btn_destroy.setToolTip(_("Stop processing and close the application"))
         self.btn_destroy.clicked.connect(lambda: self._destroy_cb())
@@ -685,18 +918,19 @@ class MainWindow(QMainWindow):
         self.btn_preview.setToolTip(_("Show/hide a preview of the processed output"))
         self.btn_preview.clicked.connect(self._on_toggle_preview)
 
-        row.addWidget(self.btn_start)
-        row.addWidget(self.btn_destroy)
         row.addWidget(self.btn_preview)
+        row.addStretch(1)
+        row.addWidget(self.btn_destroy)
+        row.addWidget(self.btn_start)
         return row
 
     # ── camera card ──────────────────────────────────────────────────────
 
     def _build_camera_card(self) -> QGroupBox:
-        card = QGroupBox(_("Camera"))
+        card = QGroupBox(_("Live Output"))
         layout = QHBoxLayout(card)
 
-        layout.addWidget(QLabel(_("Select Camera:")))
+        layout.addWidget(QLabel(_("Camera")))
         self._camera_indices, self._camera_names = get_available_cameras()
 
         self.cb_camera = QComboBox()
@@ -710,7 +944,7 @@ class MainWindow(QMainWindow):
         self.cb_camera.setToolTip(_("Select which camera to use for live mode"))
         layout.addWidget(self.cb_camera, 1)
 
-        self.btn_live = QPushButton(_("Live"))
+        self.btn_live = QPushButton(_("Start Live"))
         self.btn_live.setEnabled(cam_ok)
         self.btn_live.setToolTip(_("Start real-time face swap using webcam"))
         self.btn_live.clicked.connect(self._on_live)
@@ -723,6 +957,14 @@ class MainWindow(QMainWindow):
     def set_status(self, text: str) -> None:
         self._status_label.setText(text)
 
+    def _refresh_studio_badges(self) -> None:
+        if hasattr(self, "lbl_quality_badge"):
+            self.lbl_quality_badge.setText(_quality_badge_text())
+        if hasattr(self, "lbl_provider_badge"):
+            self.lbl_provider_badge.setText(_provider_badge_text())
+        if hasattr(self, "lbl_enhancer_badge"):
+            self.lbl_enhancer_badge.setText(_enhancer_badge_text())
+
     def _on_select_source(self) -> None:
         global _RECENT_SOURCE_DIR
         if _PREVIEW is not None:
@@ -730,19 +972,24 @@ class MainWindow(QMainWindow):
         path, _filter = QFileDialog.getOpenFileName(
             self, _("select an source image"),
             _RECENT_SOURCE_DIR or "",
-            "Images (*.png *.jpg *.jpeg *.gif *.bmp)",
+            IMAGE_FILE_FILTER,
         )
         if path and is_image(path):
             modules.globals.source_path = path
             _RECENT_SOURCE_DIR = os.path.dirname(path)
-            self.source_label.setPixmap(render_image_preview(path, (200, 200)))
+            self.source_label.setPixmap(
+                render_image_preview(
+                    path,
+                    (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE),
+                )
+            )
             self.source_label.setText("")
         elif not path:
             return
         else:
             modules.globals.source_path = None
             self.source_label.clear()
-            self.source_label.setText(_("Source face"))
+            self.source_label.setText(_("Source Face"))
 
     def _on_select_target(self) -> None:
         global _RECENT_TARGET_DIR
@@ -751,26 +998,34 @@ class MainWindow(QMainWindow):
         path, _filter = QFileDialog.getOpenFileName(
             self, _("select an target image or video"),
             _RECENT_TARGET_DIR or "",
-            "Media (*.png *.jpg *.jpeg *.gif *.bmp *.mp4 *.mkv)",
+            MEDIA_FILE_FILTER,
         )
         if not path:
             return
         if is_image(path):
             modules.globals.target_path = path
             _RECENT_TARGET_DIR = os.path.dirname(path)
-            self.target_label.setPixmap(render_image_preview(path, (200, 200)))
+            self.target_label.setPixmap(
+                render_image_preview(
+                    path,
+                    (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE),
+                )
+            )
             self.target_label.setText("")
         elif is_video(path):
             modules.globals.target_path = path
             _RECENT_TARGET_DIR = os.path.dirname(path)
-            pm = render_video_preview(path, (200, 200))
+            pm = render_video_preview(
+                path,
+                (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE),
+            )
             if pm:
                 self.target_label.setPixmap(pm)
                 self.target_label.setText("")
         else:
             modules.globals.target_path = None
             self.target_label.clear()
-            self.target_label.setText(_("Target"))
+            self.target_label.setText(_("Target Media"))
 
     def _on_random_face(self) -> None:
         if _PREVIEW is not None:
@@ -786,7 +1041,12 @@ class MainWindow(QMainWindow):
             with open(temp_path, "wb") as f:
                 f.write(response.content)
             modules.globals.source_path = temp_path
-            self.source_label.setPixmap(render_image_preview(temp_path, (200, 200)))
+            self.source_label.setPixmap(
+                render_image_preview(
+                    temp_path,
+                    (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE),
+                )
+            )
             self.source_label.setText("")
         except Exception as exc:
             print(f"Failed to fetch random face: {exc}")
@@ -802,8 +1062,9 @@ class MainWindow(QMainWindow):
         _RECENT_TARGET_DIR = os.path.dirname(sp)
         if _PREVIEW is not None:
             _PREVIEW.hide()
-        self.source_label.setPixmap(render_image_preview(tp, (200, 200)))
-        self.target_label.setPixmap(render_image_preview(sp, (200, 200)))
+        preview_size = (SOURCE_TARGET_PREVIEW_SIZE, SOURCE_TARGET_PREVIEW_SIZE)
+        self.source_label.setPixmap(render_image_preview(tp, preview_size))
+        self.target_label.setPixmap(render_image_preview(sp, preview_size))
         self.source_label.setText("")
         self.target_label.setText("")
 
@@ -813,25 +1074,55 @@ class MainWindow(QMainWindow):
         if not value:
             close_mapper_window()
 
-    def _on_enhancer_change(self, choice: str) -> None:
-        key_map = {
-            "None": None,
-            "GFPGAN": "face_enhancer",
-            "GPEN-512": "face_enhancer_gpen512",
-            "GPEN-256": "face_enhancer_gpen256",
-        }
-        for key in ("face_enhancer", "face_enhancer_gpen256", "face_enhancer_gpen512"):
+    def _on_quality_mode_change(self) -> None:
+        mode_name = self.cb_quality_mode.currentData()
+        if not mode_name:
+            return
+        profile = apply_quality_profile(mode_name, modules.globals)
+        self._sync_quality_controls()
+        if _WEBCAM_PREVIEW is not None and _WEBCAM_PREVIEW.isVisible():
+            reset_frame_processor_temporal_state(
+                get_frame_processors_modules(modules.globals.frame_processors)
+            )
+        save_switch_states()
+        update_status(f"Quality mode set to {profile.label}.")
+
+    def _sync_quality_controls(self) -> None:
+        if hasattr(self, "sw_poisson"):
+            self.sw_poisson.setChecked(modules.globals.poisson_blend)
+
+        if hasattr(self, "cb_enhancer"):
+            enhancer_index = self.cb_enhancer.findData(
+                active_enhancer_key(modules.globals.fp_ui)
+            )
+            if enhancer_index < 0:
+                enhancer_index = 0
+            self.cb_enhancer.blockSignals(True)
+            self.cb_enhancer.setCurrentIndex(enhancer_index)
+            self.cb_enhancer.blockSignals(False)
+
+        if hasattr(self, "s_sharpness"):
+            self.s_sharpness.setValue(int(modules.globals.sharpness * 10))
+        if hasattr(self, "s_mouth"):
+            self.s_mouth.setValue(int(modules.globals.mouth_mask_size))
+        self._refresh_studio_badges()
+
+    def _on_enhancer_change(self, *_args) -> None:
+        for key in ENHANCER_KEYS:
             _update_tumbler(key, False)
-        selected = key_map.get(choice)
+        selected = self.cb_enhancer.currentData() if hasattr(self, "cb_enhancer") else None
         if selected:
             _update_tumbler(selected, True)
+        self._refresh_studio_badges()
         save_switch_states()
 
     def _on_transparency_change(self, value: float) -> None:
         modules.globals.opacity = value
         pct = int(value * 100)
         if pct == 0:
-            modules.globals.fp_ui["face_enhancer"] = False
+            for key in ENHANCER_KEYS:
+                modules.globals.fp_ui[key] = False
+            self._sync_quality_controls()
             update_status("Transparency set to 0% - Face swapping disabled.")
         elif pct == 100:
             modules.globals.face_swapper_enabled = True
@@ -882,7 +1173,7 @@ class MainWindow(QMainWindow):
             path, _f = QFileDialog.getSaveFileName(
                 self, _("save image output file"),
                 os.path.join(_RECENT_OUTPUT_DIR or "", "output.png"),
-                "Images (*.png *.jpg *.jpeg *.bmp)",
+                "Images (*.png *.jpg *.jpeg *.bmp *.webp)",
             )
         elif is_video(modules.globals.target_path):
             path, _f = QFileDialog.getSaveFileName(
@@ -921,10 +1212,7 @@ class MainWindow(QMainWindow):
             if modules.globals.source_path is None:
                 update_status("Please select a source image first")
                 return
-            from modules.face_analyser import get_face_analyser
-            from modules.processors.frame.face_swapper import get_face_swapper
-            get_face_analyser()
-            get_face_swapper()
+            update_status("Starting live preview; models will load in the background.")
             _open_webcam_preview(camera_index)
         else:
             modules.globals.source_target_map = []
@@ -932,6 +1220,9 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         # Treat OS-level close as Destroy click
+        if _WEBCAM_PREVIEW is not None:
+            _WEBCAM_PREVIEW.shutdown(block=True)
+            _WEBCAM_PREVIEW.close()
         self._destroy_cb()
         event.accept()
 
@@ -983,9 +1274,13 @@ class PreviewWindow(QWidget):
         if modules.globals.nsfw_filter and check_and_ignore_nsfw(temp_frame):
             return
         from modules.processors.frame.core import get_frame_processors_modules as _gfpm
+        source_face = _load_source_face(modules.globals.source_path)
+        if source_face is None:
+            update_status("Preview skipped because the source face could not be loaded.")
+            return
         for fp in _gfpm(modules.globals.frame_processors):
             temp_frame = fp.process_frame(
-                get_one_face(cv2.imread(modules.globals.source_path)), temp_frame
+                source_face, temp_frame
             )
         # Fit to current widget size while preserving aspect ratio.
         h, w = temp_frame.shape[:2]
@@ -1001,170 +1296,332 @@ class PreviewWindow(QWidget):
 # ─── webcam preview window ───────────────────────────────────────────────
 
 
-class _CaptureWorker(QThread):
+class _CaptureWorker(threading.Thread):
     """Reads frames from the camera into a bounded queue. Drops on overflow."""
 
-    def __init__(self, cap, capture_queue: queue.Queue, stop_event: threading.Event):
-        super().__init__()
+    def __init__(
+        self,
+        cap,
+        capture_queue: queue.Queue,
+        stop_event: threading.Event,
+        metrics: Optional[PipelineMetrics] = None,
+    ):
+        super().__init__(name="DeepLiveCamCapture", daemon=True)
         self._cap = cap
         self._queue = capture_queue
-        self._stop = stop_event
+        self._stop_event = stop_event
+        self._metrics = metrics
 
     def run(self) -> None:
-        while not self._stop.is_set():
-            ret, frame = self._cap.read()
-            if not ret:
-                self._stop.set()
-                break
-            try:
-                self._queue.put_nowait(frame)
-            except queue.Full:
-                try:
-                    self._queue.get_nowait()
-                except queue.Empty:
-                    pass
-                try:
-                    self._queue.put_nowait(frame)
-                except queue.Full:
-                    pass
+        try:
+            while not self._stop_event.is_set():
+                ret, frame = self._cap.read()
+                if not ret:
+                    self._stop_event.set()
+                    break
+                dropped = put_latest(self._queue, frame)
+                if dropped and self._metrics:
+                    self._metrics.drop_frames("capture_input_queue", dropped)
+        except Exception:
+            self._stop_event.set()
+            traceback.print_exc()
 
 
-class _ProcessingWorker(QThread):
+class _ProcessingWorker(threading.Thread):
     """Pulls raw frames, runs detect/swap/enhance, pushes processed frames."""
 
-    def __init__(self, capture_queue, processed_queue, stop_event, camera_fps: float):
-        super().__init__()
+    def __init__(
+        self,
+        capture_queue,
+        processed_queue,
+        stop_event,
+        camera_fps: float,
+        virtual_cam: Optional[VirtualCameraSink] = None,
+        metrics: Optional[PipelineMetrics] = None,
+    ):
+        super().__init__(name="DeepLiveCamProcessing", daemon=True)
         self._cq = capture_queue
         self._pq = processed_queue
-        self._stop = stop_event
+        self._stop_event = stop_event
         self._fps = camera_fps
+        self._virtual_cam = virtual_cam
+        self._metrics = metrics
 
     def run(self) -> None:
-        frame_processors = get_frame_processors_modules(modules.globals.frame_processors)
-        source_image = None
-        last_source_path = None
-        prev_time = time.time()
-        fps_update_interval = 0.5
-        frame_count = 0
-        fps = 0.0
-        det_count = 0
-        cached_target_face = None
-        cached_many_faces = None
-        det_interval = max(1, round(self._fps * 0.08))
-
-        while not self._stop.is_set():
-            try:
-                frame = self._cq.get(timeout=0.05)
-            except queue.Empty:
-                continue
-
-            temp_frame = frame
-            if modules.globals.live_mirror:
-                temp_frame = gpu_flip(temp_frame, 1)
-
-            if not modules.globals.map_faces:
-                if (
-                    modules.globals.source_path
-                    and modules.globals.source_path != last_source_path
-                ):
-                    last_source_path = modules.globals.source_path
-                    source_image = get_one_face(cv2.imread(modules.globals.source_path))
-
-                det_count += 1
-                if det_count % det_interval == 0:
-                    if modules.globals.many_faces:
-                        cached_target_face = None
-                        cached_many_faces = detect_many_faces_fast(temp_frame)
-                    else:
-                        cached_target_face = detect_one_face_fast(temp_frame)
-                        cached_many_faces = None
-
-                cached_faces = None
-                if cached_many_faces:
-                    cached_faces = cached_many_faces
-                elif cached_target_face is not None:
-                    cached_faces = [cached_target_face]
-
-                for fp in frame_processors:
-                    if fp.NAME == "DLC.FACE-ENHANCER":
-                        if modules.globals.fp_ui["face_enhancer"]:
-                            temp_frame = fp.process_frame(
-                                None, temp_frame, detected_faces=cached_faces
-                            )
-                    elif fp.NAME == "DLC.FACE-ENHANCER-GPEN256":
-                        if modules.globals.fp_ui.get("face_enhancer_gpen256", False):
-                            temp_frame = fp.process_frame(
-                                None, temp_frame, detected_faces=cached_faces
-                            )
-                    elif fp.NAME == "DLC.FACE-ENHANCER-GPEN512":
-                        if modules.globals.fp_ui.get("face_enhancer_gpen512", False):
-                            temp_frame = fp.process_frame(
-                                None, temp_frame, detected_faces=cached_faces
-                            )
-                    elif fp.NAME == "DLC.FACE-SWAPPER":
-                        swapped_bboxes = []
-                        if modules.globals.many_faces and cached_many_faces:
-                            result = temp_frame.copy()
-                            for t_face in cached_many_faces:
-                                result = fp.swap_face(source_image, t_face, result)
-                                if hasattr(t_face, "bbox") and t_face.bbox is not None:
-                                    swapped_bboxes.append(t_face.bbox.astype(int))
-                            temp_frame = result
-                        elif cached_target_face is not None:
-                            temp_frame = fp.swap_face(
-                                source_image, cached_target_face, temp_frame
-                            )
-                            if (
-                                hasattr(cached_target_face, "bbox")
-                                and cached_target_face.bbox is not None
-                            ):
-                                swapped_bboxes.append(cached_target_face.bbox.astype(int))
-                        temp_frame = fp.apply_post_processing(temp_frame, swapped_bboxes)
-                    else:
-                        temp_frame = fp.process_frame(source_image, temp_frame)
-            else:
-                modules.globals.target_path = None
-                for fp in frame_processors:
-                    if fp.NAME == "DLC.FACE-ENHANCER":
-                        if modules.globals.fp_ui["face_enhancer"]:
-                            temp_frame = fp.process_frame_v2(temp_frame)
-                    elif fp.NAME in ("DLC.FACE-ENHANCER-GPEN256", "DLC.FACE-ENHANCER-GPEN512"):
-                        fp_key = fp.NAME.split(".")[-1].lower().replace("-", "_")
-                        if modules.globals.fp_ui.get(fp_key, False):
-                            temp_frame = fp.process_frame_v2(temp_frame)
-                    else:
-                        temp_frame = fp.process_frame_v2(temp_frame)
-
-            current_time = time.time()
-            frame_count += 1
-            if current_time - prev_time >= fps_update_interval:
-                fps = frame_count / (current_time - prev_time)
-                frame_count = 0
-                prev_time = current_time
-
-            if modules.globals.show_fps:
-                cv2.putText(
-                    temp_frame, f"FPS: {fps:.1f}", (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+        try:
+            frame_processors = get_frame_processors_modules(modules.globals.frame_processors)
+            reset_frame_processor_temporal_state(frame_processors)
+            source_image = None
+            last_source_path = None
+            prev_time = time.time()
+            fps_update_interval = 0.5
+            frame_count = 0
+            fps = 0.0
+            det_count = 0
+            cached_target_face = None
+            cached_many_faces = None
+            face_tracker = (
+                FaceTracker(
+                    current_weight=getattr(
+                        modules.globals, "face_tracking_current_weight", 0.7
+                    ),
+                    jump_reset_ratio=getattr(
+                        modules.globals, "face_tracking_reset_ratio", 1.2
+                    ),
+                    max_missed=getattr(
+                        modules.globals, "face_tracking_max_missed", 1
+                    ),
+                    confidence_weight=getattr(
+                        modules.globals, "face_tracking_confidence_weight", 0.0
+                    ),
+                    confidence_reference=getattr(
+                        modules.globals, "face_tracking_confidence_reference", 0.75
+                    ),
+                    confidence_min_weight=getattr(
+                        modules.globals, "face_tracking_confidence_min_weight", 0.35
+                    ),
+                    min_detection_confidence=getattr(
+                        modules.globals, "face_tracking_min_detection_confidence", 0.0
+                    ),
+                    prediction_strength=getattr(
+                        modules.globals, "face_tracking_prediction_strength", 0.0
+                    ),
+                    prediction_decay=getattr(
+                        modules.globals, "face_tracking_prediction_decay", 0.5
+                    ),
                 )
+                if getattr(modules.globals, "face_tracking_enabled", True)
+                else None
+            )
+            det_interval = max(
+                1,
+                round(
+                    self._fps
+                    * getattr(modules.globals, "live_detection_interval_ratio", 0.08)
+                ),
+            )
+            metrics = self._metrics
+            if metrics is None and getattr(modules.globals, "benchmark_pipeline", False):
+                metrics = PipelineMetrics("live")
+            metrics_context = {
+                "quality_mode": getattr(modules.globals, "quality_mode", None),
+                "frame_processors": [
+                    getattr(fp, "NAME", None)
+                    or getattr(fp, "__name__", type(fp).__name__).split(".")[-1]
+                    for fp in frame_processors
+                ],
+                "camera_fps": self._fps,
+                "virtual_cam": self._virtual_cam is not None,
+                "mode": "live",
+                "live_process_latest_frame": getattr(
+                    modules.globals,
+                    "live_process_latest_frame",
+                    True,
+                ),
+                "capture_queue_maxsize": self._cq.maxsize,
+                "processed_queue_maxsize": self._pq.maxsize,
+                "execution_providers": list(modules.globals.execution_providers),
+                "execution_provider_config": provider_config_summary(
+                    modules.globals.execution_providers
+                ),
+            }
+            metrics_writer = (
+                MetricsJsonlWriter(modules.globals.benchmark_output_path)
+                if metrics
+                and getattr(modules.globals, "benchmark_output_path", None)
+                else None
+            )
 
-            try:
-                self._pq.put_nowait(temp_frame)
-            except queue.Full:
+            while not self._stop_event.is_set():
+                queue_started = time.perf_counter()
                 try:
-                    self._pq.get_nowait()
+                    if getattr(modules.globals, "live_process_latest_frame", True):
+                        frame, skipped_stale_frames = get_latest(
+                            self._cq,
+                            timeout=0.05,
+                        )
+                    else:
+                        frame = self._cq.get(timeout=0.05)
+                        skipped_stale_frames = 0
                 except queue.Empty:
-                    pass
+                    continue
+                if metrics:
+                    metrics.observe("queue_wait", time.perf_counter() - queue_started)
+                    metrics.drop_frames(
+                        "capture_stale_queue",
+                        skipped_stale_frames,
+                    )
+                    metrics.observe_queue_depth(
+                        "capture_queue_depth_after_get",
+                        self._cq.qsize(),
+                    )
+
+                temp_frame = frame
+                if modules.globals.live_mirror:
+                    temp_frame = gpu_flip(temp_frame, 1)
+
+                if not modules.globals.map_faces:
+                    if (
+                        modules.globals.source_path
+                        and modules.globals.source_path != last_source_path
+                    ):
+                        last_source_path = modules.globals.source_path
+                        source_image = _load_source_face(modules.globals.source_path)
+                        reset_frame_processor_temporal_state(frame_processors)
+
+                    det_count += 1
+                    if det_count % det_interval == 0:
+                        detect_started = time.perf_counter()
+                        if modules.globals.many_faces:
+                            if face_tracker is not None:
+                                face_tracker.reset()
+                                reset_frame_processor_temporal_state(frame_processors)
+                            cached_target_face = None
+                            cached_many_faces = detect_many_faces_fast(temp_frame)
+                        else:
+                            detected_face = detect_one_face_fast(temp_frame)
+                            if face_tracker is not None:
+                                cached_target_face = face_tracker.update(
+                                    detected_face, det_count
+                                )
+                            else:
+                                cached_target_face = detected_face
+                            cached_many_faces = None
+                        if metrics:
+                            metrics.observe(
+                                "detect_faces",
+                                time.perf_counter() - detect_started,
+                            )
+
+                    cached_faces = None
+                    if cached_many_faces:
+                        cached_faces = cached_many_faces
+                    elif cached_target_face is not None:
+                        cached_faces = [cached_target_face]
+
+                    for fp in frame_processors:
+                        processor_started = time.perf_counter()
+                        enhancer_key = enhancer_key_for_processor_name(fp.NAME)
+                        if enhancer_key is not None:
+                            if modules.globals.fp_ui.get(enhancer_key, False):
+                                temp_frame = fp.process_frame(
+                                    None, temp_frame, detected_faces=cached_faces
+                                )
+                        elif fp.NAME == "DLC.FACE-SWAPPER":
+                            if source_image is None:
+                                continue
+                            swapped_bboxes = []
+                            swapped_faces = []
+                            if modules.globals.many_faces and cached_many_faces:
+                                result = temp_frame.copy()
+                                for t_face in cached_many_faces:
+                                    result = fp.swap_face(source_image, t_face, result)
+                                    if hasattr(t_face, "bbox") and t_face.bbox is not None:
+                                        swapped_bboxes.append(t_face.bbox.astype(int))
+                                        swapped_faces.append(t_face)
+                                temp_frame = result
+                            elif cached_target_face is not None:
+                                temp_frame = fp.swap_face(
+                                    source_image, cached_target_face, temp_frame
+                                )
+                                if (
+                                    hasattr(cached_target_face, "bbox")
+                                    and cached_target_face.bbox is not None
+                                ):
+                                    swapped_bboxes.append(cached_target_face.bbox.astype(int))
+                                    swapped_faces.append(cached_target_face)
+                            temp_frame = fp.apply_post_processing(
+                                temp_frame, swapped_bboxes, swapped_faces
+                            )
+                        else:
+                            temp_frame = fp.process_frame(source_image, temp_frame)
+                        if metrics:
+                            metrics.observe(
+                                fp.NAME,
+                                time.perf_counter() - processor_started,
+                            )
+                else:
+                    modules.globals.target_path = None
+                    for fp in frame_processors:
+                        processor_started = time.perf_counter()
+                        enhancer_key = enhancer_key_for_processor_name(fp.NAME)
+                        if enhancer_key is not None:
+                            if modules.globals.fp_ui.get(enhancer_key, False):
+                                temp_frame = fp.process_frame_v2(temp_frame)
+                        else:
+                            temp_frame = fp.process_frame_v2(temp_frame)
+                        if metrics:
+                            metrics.observe(
+                                fp.NAME,
+                                time.perf_counter() - processor_started,
+                            )
+
+                current_time = time.time()
+                frame_count += 1
+                if current_time - prev_time >= fps_update_interval:
+                    fps = frame_count / (current_time - prev_time)
+                    frame_count = 0
+                    prev_time = current_time
+
+                if modules.globals.show_fps:
+                    cv2.putText(
+                        temp_frame, f"FPS: {fps:.1f}", (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                    )
+
+                if self._virtual_cam is not None:
+                    if metrics:
+                        with metrics.track("virtual_cam_send"):
+                            self._virtual_cam.send(temp_frame)
+                    else:
+                        self._virtual_cam.send(temp_frame)
+
+                if metrics:
+                    metrics.observe_queue_depth(
+                        "processed_queue_depth_before_put",
+                        self._pq.qsize(),
+                    )
                 try:
                     self._pq.put_nowait(temp_frame)
                 except queue.Full:
-                    pass
+                    try:
+                        self._pq.get_nowait()
+                        if metrics:
+                            metrics.drop_frame("processed_output_queue")
+                    except queue.Empty:
+                        pass
+                    try:
+                        self._pq.put_nowait(temp_frame)
+                    except queue.Full:
+                        pass
+                if metrics:
+                    metrics.frame_complete()
+                    if metrics.should_report(modules.globals.benchmark_log_interval):
+                        print(format_metrics(metrics), flush=True)
+                        safe_write_metrics_snapshot(
+                            metrics_writer,
+                            metrics,
+                            event="periodic",
+                            extra=metrics_context,
+                        )
+                        metrics.mark_reported()
+            if metrics:
+                print(format_metrics(metrics), flush=True)
+                safe_write_metrics_snapshot(
+                    metrics_writer,
+                    metrics,
+                    event="final",
+                    extra=metrics_context,
+                )
+        except Exception:
+            self._stop_event.set()
+            traceback.print_exc()
 
 
 class WebcamPreviewWindow(QWidget):
     def __init__(self, camera_index: int):
         super().__init__()
-        self.setWindowTitle("Live Preview")
+        self.setWindowTitle("Deep-Live-Cam Live Preview")
         self.resize(PREVIEW_DEFAULT_WIDTH, PREVIEW_DEFAULT_HEIGHT)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -1173,8 +1630,28 @@ class WebcamPreviewWindow(QWidget):
         self._image_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout.addWidget(self._image_label, 1)
 
+        self._virtual_cam: Optional[VirtualCameraSink] = None
+        self._capture_worker: Optional[_CaptureWorker] = None
+        self._processing_worker: Optional[_ProcessingWorker] = None
+        self._timer: Optional[QTimer] = None
+        self._shutdown_timer: Optional[QTimer] = None
+        self._stop_event = threading.Event()
+        self._shutdown_started = False
+        self._close_ready = False
+        capture_width = modules.globals.camera_width or PREVIEW_DEFAULT_WIDTH
+        capture_height = modules.globals.camera_height or PREVIEW_DEFAULT_HEIGHT
+        capture_fps = modules.globals.camera_fps or 60
+        if modules.globals.virtual_cam:
+            capture_width = modules.globals.camera_width or modules.globals.virtual_cam_width
+            capture_height = modules.globals.camera_height or modules.globals.virtual_cam_height
+            capture_fps = modules.globals.camera_fps or modules.globals.virtual_cam_fps
+            self._virtual_cam = VirtualCameraSink.from_globals(
+                status_callback=update_status
+            )
+            self._virtual_cam.start()
+
         self._cap = VideoCapturer(camera_index)
-        if not self._cap.start(PREVIEW_DEFAULT_WIDTH, PREVIEW_DEFAULT_HEIGHT, 60):
+        if not self._cap.start(capture_width, capture_height, capture_fps):
             update_status("Failed to start camera")
             QTimer.singleShot(0, self.close)
             return
@@ -1187,13 +1664,22 @@ class WebcamPreviewWindow(QWidget):
 
         self._capture_queue: queue.Queue = queue.Queue(maxsize=2)
         self._processed_queue: queue.Queue = queue.Queue(maxsize=2)
-        self._stop_event = threading.Event()
+        self._metrics: Optional[PipelineMetrics] = (
+            PipelineMetrics("live")
+            if getattr(modules.globals, "benchmark_pipeline", False)
+            else None
+        )
 
         self._capture_worker = _CaptureWorker(
-            self._cap, self._capture_queue, self._stop_event
+            self._cap, self._capture_queue, self._stop_event, self._metrics
         )
         self._processing_worker = _ProcessingWorker(
-            self._capture_queue, self._processed_queue, self._stop_event, camera_fps
+            self._capture_queue,
+            self._processed_queue,
+            self._stop_event,
+            camera_fps,
+            self._virtual_cam,
+            self._metrics,
         )
         self._capture_worker.start()
         self._processing_worker.start()
@@ -1216,29 +1702,89 @@ class WebcamPreviewWindow(QWidget):
         self._image_label.setPixmap(_bgr_to_qpixmap(bgr_frame))
 
     def closeEvent(self, event) -> None:
-        self._stop_event.set()
-        try:
-            self._timer.stop()
-        except Exception:
-            pass
-        for worker in (self._capture_worker, self._processing_worker):
+        if not self._close_ready and self._workers_running():
+            event.ignore()
+            self.shutdown(block=False)
+            return
+
+        self.shutdown(block=True)
+        self._finalize_shutdown()
+        event.accept()
+
+    def shutdown(self, block: bool = False) -> None:
+        if not self._shutdown_started:
+            self._shutdown_started = True
+            self._stop_event.set()
+            update_status("Stopping live preview...")
+
+            if self._timer is not None:
+                try:
+                    self._timer.stop()
+                except Exception:
+                    pass
+
             try:
-                worker.wait(2000)
+                self._cap.release()
             except Exception:
                 pass
+
+            if not block:
+                self.hide()
+                self._shutdown_timer = QTimer(self)
+                self._shutdown_timer.timeout.connect(self._finish_async_shutdown)
+                self._shutdown_timer.start(100)
+
+        if block:
+            self._wait_for_workers()
+
+    def _finish_async_shutdown(self) -> None:
+        if self._workers_running():
+            return
+        self._wait_for_workers()
+        self._finalize_shutdown()
+        self._close_ready = True
+        self.close()
+
+    def _wait_for_workers(self) -> None:
+        for worker in self._worker_threads():
+            if worker.is_alive():
+                worker.join()
+
+    def _workers_running(self) -> bool:
+        return any(worker.is_alive() for worker in self._worker_threads())
+
+    def _worker_threads(self) -> list[threading.Thread]:
+        return [
+            worker
+            for worker in (self._capture_worker, self._processing_worker)
+            if worker is not None
+        ]
+
+    def _finalize_shutdown(self) -> None:
+        self._stop_event.set()
+        try:
+            if self._timer is not None:
+                self._timer.stop()
+            if self._shutdown_timer is not None:
+                self._shutdown_timer.stop()
+        except Exception:
+            pass
         try:
             self._cap.release()
         except Exception:
             pass
+        if self._virtual_cam is not None:
+            self._virtual_cam.stop()
+            self._virtual_cam = None
         global _WEBCAM_PREVIEW
         if _WEBCAM_PREVIEW is self:
             _WEBCAM_PREVIEW = None
-        event.accept()
 
 
 def _open_webcam_preview(camera_index: int) -> None:
     global _WEBCAM_PREVIEW
     if _WEBCAM_PREVIEW is not None:
+        _WEBCAM_PREVIEW.shutdown(block=True)
         _WEBCAM_PREVIEW.close()
     _WEBCAM_PREVIEW = WebcamPreviewWindow(camera_index)
     _WEBCAM_PREVIEW.show()
@@ -1324,11 +1870,11 @@ class MapperDialog(QDialog):
         path, _f = QFileDialog.getOpenFileName(
             self, _("select an source image"),
             _RECENT_SOURCE_DIR or "",
-            "Images (*.png *.jpg *.jpeg *.gif *.bmp)",
+            IMAGE_FILE_FILTER,
         )
         if not path:
             return
-        cv2_img = cv2.imread(path)
+        cv2_img = read_image(path)
         face = get_one_face(cv2_img)
         if face is None:
             self.set_status("Face could not be detected in last upload!")
@@ -1429,11 +1975,11 @@ class LiveMapperDialog(QDialog):
         path, _f = QFileDialog.getOpenFileName(
             self, _("select an source image"),
             _RECENT_SOURCE_DIR or "",
-            "Images (*.png *.jpg *.jpeg *.gif *.bmp)",
+            IMAGE_FILE_FILTER,
         )
         if not path:
             return
-        cv2_img = cv2.imread(path)
+        cv2_img = read_image(path)
         face = get_one_face(cv2_img)
         if face is None:
             self.set_status("Face could not be detected in last upload!")

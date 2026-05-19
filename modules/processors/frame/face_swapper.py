@@ -1,3 +1,5 @@
+import copy
+from collections.abc import Mapping
 from typing import Any, List, Optional
 import cv2
 import insightface
@@ -7,14 +9,53 @@ import numpy as np
 import platform
 import modules.globals
 import modules.processors.frame.core
+from modules.compositing.color import (
+    ColorMatchStatistics,
+    LuminanceMatchStatistics,
+    blend_color_match_statistics,
+    blend_luminance_match_statistics,
+    match_color_statistics,
+    match_luminance_statistics,
+)
+from modules.compositing.masks import (
+    FeatherSettings,
+    create_aligned_face_alpha,
+    create_expression_occlusion_mask,
+    create_landmark_face_mask,
+    estimate_blur_amount,
+    estimate_edge_contrast,
+    get_adaptive_feather_settings,
+    preserve_target_edges_in_alpha,
+    refine_alpha_with_boundary_color_mismatch,
+    refine_alpha_with_landmark_mask,
+    refine_alpha_with_skin_chroma_mask,
+)
 from modules.core import update_status
+from modules.diagnostics.overlays import draw_diagnostic_overlay
+from modules.execution_providers import (
+    build_provider_config,
+    format_provider_config_summary,
+    provider_names,
+)
+from modules.expression_regions import (
+    MOUTH_OUTER_INDICES,
+    compute_mouth_region_confidence,
+)
+from modules.expression_temporal import (
+    collect_expression_snapshots,
+    expression_temporal_weight,
+)
+from modules.expression_stabilizer import blend_expression_region_landmarks
+from modules.face_pose import estimate_profile_score
 from modules.face_analyser import get_one_face, get_many_faces, default_source_face
+from modules.temporal_smoothing import blend_frame_regions
 from modules.typing import Face, Frame
 from modules.utilities import (
-    conditional_download,
     is_image,
     is_video,
+    read_image,
 )
+from modules.paths import MODELS_DIR
 from modules.cluster_analysis import find_closest_centroid
 from modules.gpu_processing import gpu_gaussian_blur, gpu_sharpen, gpu_add_weighted, gpu_resize, gpu_cvt_color
 import os
@@ -27,6 +68,28 @@ NAME = "DLC.FACE-SWAPPER"
 
 # --- START: Added for Interpolation ---
 PREVIOUS_FRAME_RESULT = None # Stores the final processed frame from the previous step
+PREVIOUS_EXPRESSION_SNAPSHOTS = {}
+COMPOSITING_COLOR_STATISTICS = {
+    "color": {},
+    "luminance": {},
+    "max_entries": 32,
+}
+COMPOSITING_ALPHA_MASKS = {
+    "alpha": {},
+    "max_entries": 32,
+}
+COMPOSITING_OCCLUSION_PRIORITY_MASKS = {
+    "mask": {},
+    "max_entries": 32,
+}
+MOUTH_MASK_GEOMETRY = {
+    "landmarks": {},
+    "max_entries": 32,
+}
+EXPRESSION_REGION_GEOMETRY = {
+    "landmarks": {},
+    "max_entries": 32,
+}
 # --- END: Added for Interpolation ---
 
 # --- START: Mac M1-M5 Optimizations ---
@@ -39,29 +102,24 @@ FRAME_SKIP_COUNTER = 0
 ADAPTIVE_QUALITY = True
 # --- END: Mac M1-M5 Optimizations ---
 
-abs_dir = os.path.dirname(os.path.abspath(__file__))
-models_dir = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(abs_dir))), "models"
-)
+models_dir = MODELS_DIR
 
 def pre_check() -> bool:
-    # Use models_dir instead of abs_dir to save to the correct location
-    download_directory_path = models_dir
-    
-    # Make sure the models directory exists, catch permission errors if they occur
     try:
-        os.makedirs(download_directory_path, exist_ok=True)
+        os.makedirs(models_dir, exist_ok=True)
     except OSError as e:
-        logging.error(f"Failed to create directory {download_directory_path} due to permission error: {e}")
+        logging.error(f"Failed to create directory {models_dir} due to permission error: {e}")
         return False
-    
-    # Use the direct download URL from Hugging Face (FP32 model for broad GPU compatibility)
-    conditional_download(
-        download_directory_path,
-        [
-            "https://huggingface.co/hacksider/deep-live-cam/resolve/main/inswapper_128.onnx"
-        ],
-    )
+
+    fp16_path = os.path.join(models_dir, "inswapper_128_fp16.onnx")
+    fp32_path = os.path.join(models_dir, "inswapper_128.onnx")
+    if not os.path.exists(fp16_path) and not os.path.exists(fp32_path):
+        update_status(
+            f"Required model not found in {models_dir}. "
+            "Run DeepLiveCamStudioCLI.exe --download-models after reviewing model licenses.",
+            NAME,
+        )
+        return False
     return True
 
 
@@ -108,30 +166,32 @@ def get_face_swapper() -> Any:
 
             update_status(f"Loading face swapper model from: {model_path}", NAME)
             try:
-                providers_config = []
-                for p in modules.globals.execution_providers:
-                    if p == "CoreMLExecutionProvider" and IS_APPLE_SILICON:
-                        # Enhanced CoreML configuration for M1-M5
-                        providers_config.append((
-                            "CoreMLExecutionProvider",
-                            {
-                                "ModelFormat": "MLProgram",
-                                "MLComputeUnits": "ALL",  # Use Neural Engine + GPU + CPU
-                                "SpecializationStrategy": "FastPrediction",
-                                "AllowLowPrecisionAccumulationOnGPU": 1,
-                                "EnableOnSubgraphs": 1,
-                            }
-                        ))
-                    elif p == "CUDAExecutionProvider":
-                        # Use bare provider — ONNX Runtime defaults are
-                        # fastest on modern GPUs (Blackwell/sm_120).
-                        providers_config.append(p)
-                    else:
-                        providers_config.append(p)
+                providers_config = build_provider_config(
+                    modules.globals.execution_providers,
+                    is_apple_silicon=IS_APPLE_SILICON,
+                )
+                update_status(
+                    f"Face swapper requested providers: "
+                    f"{provider_names(providers_config)}",
+                    NAME,
+                )
+                update_status(
+                    f"Face swapper provider config: "
+                    f"{format_provider_config_summary(providers_config)}",
+                    NAME,
+                )
                 FACE_SWAPPER = insightface.model_zoo.get_model(
                     model_path,
                     providers=providers_config,
                 )
+                try:
+                    active_providers = FACE_SWAPPER.session.get_providers()
+                    update_status(
+                        f"Face swapper active providers: {active_providers}",
+                        NAME,
+                    )
+                except Exception:
+                    pass
                 # Set up CUDA graph session for faster inference
                 if _HAS_TORCH_CUDA and any(
                     p == "CUDAExecutionProvider" or
@@ -157,30 +217,499 @@ except ImportError:
 
 # Cache for paste-back
 _paste_cache = {
-    'soft_alpha': None,  # feathered alpha mask in aligned-face space
-    'alpha_size': 0,
+    'soft_alpha': {},  # keyed by aligned size and adaptive feather settings
+    'max_alpha_entries': 16,
 }
 
 
-def _get_soft_alpha(size: int) -> np.ndarray:
+def _get_soft_alpha(size: int, settings: FeatherSettings) -> np.ndarray:
     """Feathered alpha template in aligned-face space, cached.
 
-    The legacy paste-back eroded and Gaussian-blurred the warped mask in
-    output coordinates with kernels scaled to the output face size, which
-    made the per-frame cost quartic in face linear size. Doing the same
-    erode+blur once in aligned space and then warping the *soft* mask
-    per-frame gives a visually equivalent feather at O(crop_area) cost —
-    the feather radius scales naturally with the affine transform.
+    Keeping the mask in aligned space lets us adapt the feather profile while
+    preserving an O(crop_area) paste-back path.
     """
-    if _paste_cache['alpha_size'] != size:
-        k_erode = max(size // 10, 3)
-        k_blur = max(size // 20, 3)
-        mask = np.full((size, size), 255, dtype=np.uint8)
-        mask = cv2.erode(mask, np.ones((k_erode, k_erode), np.uint8), iterations=1)
-        mask = cv2.GaussianBlur(mask, (2 * k_blur + 1, 2 * k_blur + 1), 0)
-        _paste_cache['soft_alpha'] = mask  # uint8 [0, 255] — blended via cv2 SIMD ops
-        _paste_cache['alpha_size'] = size
-    return _paste_cache['soft_alpha']
+    key = settings.cache_key(size)
+    cache = _paste_cache['soft_alpha']
+    if key not in cache:
+        if len(cache) >= _paste_cache['max_alpha_entries']:
+            cache.pop(next(iter(cache)))
+        cache[key] = create_aligned_face_alpha(size, settings)
+    return cache[key]
+
+
+def reset_compositing_temporal_state() -> None:
+    """Clear per-track compositing temporal history."""
+    _reset_compositing_color_temporal_state()
+    _reset_compositing_alpha_temporal_state()
+    _reset_occlusion_priority_temporal_state()
+    _reset_mouth_mask_temporal_state()
+    _reset_expression_region_temporal_state()
+
+
+def _reset_compositing_color_temporal_state() -> None:
+    COMPOSITING_COLOR_STATISTICS["color"].clear()
+    COMPOSITING_COLOR_STATISTICS["luminance"].clear()
+
+
+def _reset_compositing_alpha_temporal_state() -> None:
+    COMPOSITING_ALPHA_MASKS["alpha"].clear()
+
+
+def _reset_occlusion_priority_temporal_state() -> None:
+    COMPOSITING_OCCLUSION_PRIORITY_MASKS["mask"].clear()
+
+
+def _reset_mouth_mask_temporal_state() -> None:
+    MOUTH_MASK_GEOMETRY["landmarks"].clear()
+
+
+def _reset_expression_region_temporal_state() -> None:
+    EXPRESSION_REGION_GEOMETRY["landmarks"].clear()
+
+
+def _compositing_temporal_key(face: Face | Mapping | None) -> str | None:
+    tracking_id = _face_value(face, "tracking_id", None)
+    if tracking_id is None:
+        return None
+    try:
+        return f"track:{int(tracking_id)}"
+    except (TypeError, ValueError):
+        return f"track:{tracking_id}"
+
+
+def _compositing_temporal_strength() -> float:
+    strength = getattr(
+        modules.globals,
+        "compositing_color_temporal_smoothing",
+        0.0,
+    )
+    try:
+        return float(np.clip(strength or 0.0, 0.0, 1.0))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _compositing_alpha_temporal_strength() -> float:
+    strength = getattr(
+        modules.globals,
+        "compositing_alpha_temporal_smoothing",
+        0.0,
+    )
+    try:
+        return float(np.clip(strength or 0.0, 0.0, 1.0))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _motion_adjusted_compositing_temporal_strength(
+    base_weight: float,
+    face: Face | Mapping | None,
+) -> float:
+    weight = float(np.clip(base_weight, 0.0, 1.0))
+    if weight <= 0.0:
+        return 0.0
+    if _tracking_should_reset_temporal_state(face):
+        return 0.0
+
+    reduction = float(
+        np.clip(
+            getattr(
+                modules.globals,
+                "compositing_color_temporal_motion_reduction",
+                0.0,
+            )
+            or 0.0,
+            0.0,
+            1.0,
+        )
+    )
+    if reduction <= 0.0:
+        return weight
+
+    motion = _tracking_motion_amount(face)
+    low_threshold = max(
+        0.0,
+        float(
+            getattr(
+                modules.globals,
+                "compositing_color_temporal_motion_threshold",
+                0.08,
+            )
+            or 0.0
+        ),
+    )
+    high_threshold = max(
+        low_threshold,
+        float(
+            getattr(
+                modules.globals,
+                "compositing_color_temporal_high_motion_threshold",
+                0.35,
+            )
+            or low_threshold
+        ),
+    )
+    if motion <= low_threshold:
+        return weight
+    if motion >= high_threshold:
+        amount = 1.0
+    else:
+        amount = (motion - low_threshold) / max(high_threshold - low_threshold, 1e-6)
+    return float(np.clip(weight * (1.0 - reduction * amount), 0.0, 1.0))
+
+
+def _motion_adjusted_compositing_alpha_temporal_strength(
+    base_weight: float,
+    face: Face | Mapping | None,
+) -> float:
+    weight = float(np.clip(base_weight, 0.0, 1.0))
+    if weight <= 0.0:
+        return 0.0
+    if _tracking_should_reset_temporal_state(face):
+        return 0.0
+
+    reduction = float(
+        np.clip(
+            getattr(
+                modules.globals,
+                "compositing_alpha_temporal_motion_reduction",
+                0.0,
+            )
+            or 0.0,
+            0.0,
+            1.0,
+        )
+    )
+    if reduction <= 0.0:
+        return weight
+
+    motion = _tracking_motion_amount(face)
+    low_threshold = max(
+        0.0,
+        float(
+            getattr(
+                modules.globals,
+                "compositing_alpha_temporal_motion_threshold",
+                0.08,
+            )
+            or 0.0
+        ),
+    )
+    high_threshold = max(
+        low_threshold,
+        float(
+            getattr(
+                modules.globals,
+                "compositing_alpha_temporal_high_motion_threshold",
+                0.35,
+            )
+            or low_threshold
+        ),
+    )
+    if motion <= low_threshold:
+        return weight
+    if motion >= high_threshold:
+        amount = 1.0
+    else:
+        amount = (motion - low_threshold) / max(high_threshold - low_threshold, 1e-6)
+    return float(np.clip(weight * (1.0 - reduction * amount), 0.0, 1.0))
+
+
+def _remember_compositing_statistics(
+    store: dict[str, ColorMatchStatistics | LuminanceMatchStatistics],
+    key: str,
+    value: ColorMatchStatistics | LuminanceMatchStatistics,
+) -> None:
+    max_entries = int(COMPOSITING_COLOR_STATISTICS.get("max_entries", 32))
+    if key not in store and len(store) >= max_entries:
+        store.pop(next(iter(store)))
+    store[key] = value
+
+
+def _remember_compositing_alpha(key: str, alpha: np.ndarray) -> None:
+    store = COMPOSITING_ALPHA_MASKS["alpha"]
+    max_entries = int(COMPOSITING_ALPHA_MASKS.get("max_entries", 32))
+    if key not in store and len(store) >= max_entries:
+        store.pop(next(iter(store)))
+    store[key] = alpha.copy()
+
+
+def _remember_occlusion_priority_mask(key: str, mask: np.ndarray) -> None:
+    store = COMPOSITING_OCCLUSION_PRIORITY_MASKS["mask"]
+    max_entries = int(COMPOSITING_OCCLUSION_PRIORITY_MASKS.get("max_entries", 32))
+    if key not in store and len(store) >= max_entries:
+        store.pop(next(iter(store)))
+    store[key] = mask.copy()
+
+
+def _occlusion_priority_temporal_strength(face: Face | Mapping | None) -> float:
+    strength = float(
+        getattr(
+            modules.globals,
+            "compositing_occlusion_region_temporal_smoothing",
+            0.0,
+        )
+        or 0.0
+    )
+    strength = float(np.clip(strength, 0.0, 1.0))
+    if strength <= 0.0:
+        return 0.0
+
+    reduction = float(
+        getattr(
+            modules.globals,
+            "compositing_occlusion_region_temporal_motion_reduction",
+            0.0,
+        )
+        or 0.0
+    )
+    reduction = float(np.clip(reduction, 0.0, 1.0))
+    if reduction <= 0.0:
+        return strength
+
+    motion = _tracking_motion_amount(face)
+    return float(np.clip(strength * (1.0 - reduction * motion), 0.0, 1.0))
+
+
+def _smooth_occlusion_priority_mask(
+    priority_mask: np.ndarray | None,
+    face: Face | Mapping | None,
+) -> np.ndarray | None:
+    if priority_mask is None:
+        return None
+
+    track_key = _compositing_temporal_key(face)
+    strength = _occlusion_priority_temporal_strength(face)
+    if track_key is None or strength <= 0.0:
+        return priority_mask
+
+    store = COMPOSITING_OCCLUSION_PRIORITY_MASKS["mask"]
+    if _tracking_should_reset_temporal_state(face):
+        store.pop(track_key, None)
+        return priority_mask
+
+    previous = store.get(track_key)
+    if (
+        previous is None
+        or previous.shape != priority_mask.shape
+        or previous.dtype != priority_mask.dtype
+    ):
+        _remember_occlusion_priority_mask(track_key, priority_mask)
+        return priority_mask
+
+    smoothed = cv2.addWeighted(previous, strength, priority_mask, 1.0 - strength, 0)
+    _remember_occlusion_priority_mask(track_key, smoothed)
+    return smoothed
+
+
+def _remember_mouth_mask_landmarks(key: str, landmarks: np.ndarray) -> None:
+    store = MOUTH_MASK_GEOMETRY["landmarks"]
+    max_entries = int(MOUTH_MASK_GEOMETRY.get("max_entries", 32))
+    if key not in store and len(store) >= max_entries:
+        store.pop(next(iter(store)))
+    store[key] = landmarks.astype(np.float32, copy=True)
+
+
+def _mouth_mask_temporal_strength(face: Face | Mapping | None) -> float:
+    strength = float(
+        getattr(modules.globals, "mouth_mask_temporal_smoothing", 0.0) or 0.0
+    )
+    strength = float(np.clip(strength, 0.0, 1.0))
+    if strength <= 0.0:
+        return 0.0
+
+    reduction = float(
+        getattr(modules.globals, "mouth_mask_temporal_motion_reduction", 0.0)
+        or 0.0
+    )
+    reduction = float(np.clip(reduction, 0.0, 1.0))
+    if reduction <= 0.0:
+        return strength
+
+    motion = _tracking_motion_amount(face)
+    return float(np.clip(strength * (1.0 - reduction * motion), 0.0, 1.0))
+
+
+def _smooth_mouth_mask_landmarks(
+    face: Face | Mapping | None,
+    landmarks: np.ndarray,
+) -> np.ndarray:
+    track_key = _compositing_temporal_key(face)
+    strength = _mouth_mask_temporal_strength(face)
+    if track_key is None or strength <= 0.0:
+        return landmarks
+
+    store = MOUTH_MASK_GEOMETRY["landmarks"]
+    if _tracking_should_reset_temporal_state(face):
+        store.pop(track_key, None)
+        return landmarks
+
+    previous = store.get(track_key)
+    if (
+        previous is None
+        or previous.shape != landmarks.shape
+        or not np.all(np.isfinite(previous))
+    ):
+        _remember_mouth_mask_landmarks(track_key, landmarks)
+        return landmarks
+
+    smoothed = previous * strength + landmarks.astype(np.float32) * (1.0 - strength)
+    _remember_mouth_mask_landmarks(track_key, smoothed)
+    return smoothed.astype(np.float32, copy=False)
+
+
+def _remember_expression_region_landmarks(key: str, landmarks: np.ndarray) -> None:
+    store = EXPRESSION_REGION_GEOMETRY["landmarks"]
+    max_entries = int(EXPRESSION_REGION_GEOMETRY.get("max_entries", 32))
+    if key not in store and len(store) >= max_entries:
+        store.pop(next(iter(store)))
+    store[key] = landmarks.astype(np.float32, copy=True)
+
+
+def _expression_region_temporal_strength(face: Face | Mapping | None) -> float:
+    strength = float(
+        getattr(modules.globals, "expression_region_temporal_smoothing", 0.0)
+        or 0.0
+    )
+    strength = float(np.clip(strength, 0.0, 1.0))
+    if strength <= 0.0:
+        return 0.0
+
+    reduction = float(
+        getattr(
+            modules.globals,
+            "expression_region_temporal_motion_reduction",
+            0.0,
+        )
+        or 0.0
+    )
+    reduction = float(np.clip(reduction, 0.0, 1.0))
+    if reduction <= 0.0:
+        return strength
+
+    motion = _tracking_motion_amount(face)
+    return float(np.clip(strength * (1.0 - reduction * motion), 0.0, 1.0))
+
+
+def _stabilized_expression_faces(
+    faces: Optional[List[Face]] | None,
+) -> Optional[List[Face | Mapping]]:
+    if not faces:
+        return faces
+    return [_stabilized_expression_face(face) for face in faces]
+
+
+def _stabilized_expression_face(face: Face | Mapping | None) -> Face | Mapping | None:
+    track_key = _compositing_temporal_key(face)
+    landmarks = _face_array(face, "landmark_2d_106")
+    strength = _expression_region_temporal_strength(face)
+    if track_key is None or landmarks is None or strength <= 0.0:
+        return face
+
+    store = EXPRESSION_REGION_GEOMETRY["landmarks"]
+    if _tracking_should_reset_temporal_state(face):
+        store.pop(track_key, None)
+        return face
+
+    previous = store.get(track_key)
+    if (
+        previous is None
+        or previous.shape != landmarks.shape
+        or not np.all(np.isfinite(previous))
+    ):
+        _remember_expression_region_landmarks(track_key, landmarks)
+        return face
+
+    smoothed = blend_expression_region_landmarks(
+        previous,
+        landmarks,
+        history_weight=strength,
+    )
+    _remember_expression_region_landmarks(track_key, smoothed)
+    return _copy_face_with_landmarks(face, smoothed)
+
+
+def _copy_face_with_landmarks(
+    face: Face | Mapping | None,
+    landmarks: np.ndarray,
+) -> Face | Mapping | None:
+    if face is None:
+        return None
+    if isinstance(face, Mapping):
+        cloned = dict(face)
+        cloned["landmark_2d_106"] = landmarks.astype(np.float32, copy=True)
+        return cloned
+
+    try:
+        cloned = copy.copy(face)
+        setattr(cloned, "landmark_2d_106", landmarks.astype(np.float32, copy=True))
+        return cloned
+    except Exception:
+        return face
+
+
+def _smooth_compositing_alpha(
+    alpha_crop: np.ndarray,
+    track_key: str | None,
+    history_weight: float,
+) -> np.ndarray:
+    weight = float(np.clip(history_weight, 0.0, 1.0))
+    if track_key is None or weight <= 0.0:
+        return alpha_crop
+
+    store = COMPOSITING_ALPHA_MASKS["alpha"]
+    previous = store.get(track_key)
+    if (
+        previous is None
+        or previous.shape != alpha_crop.shape
+        or previous.dtype != alpha_crop.dtype
+    ):
+        _remember_compositing_alpha(track_key, alpha_crop)
+        return alpha_crop
+
+    smoothed = cv2.addWeighted(previous, weight, alpha_crop, 1.0 - weight, 0)
+    _remember_compositing_alpha(track_key, smoothed)
+    return smoothed
+
+
+def _color_statistics_transform(
+    track_key: str | None,
+    history_weight: float,
+):
+    if track_key is None or history_weight <= 0.0:
+        return None
+
+    def transform(current: ColorMatchStatistics) -> ColorMatchStatistics:
+        store = COMPOSITING_COLOR_STATISTICS["color"]
+        smoothed = blend_color_match_statistics(
+            store.get(track_key),
+            current,
+            history_weight,
+        )
+        _remember_compositing_statistics(store, track_key, smoothed)
+        return smoothed
+
+    return transform
+
+
+def _luminance_statistics_transform(
+    track_key: str | None,
+    history_weight: float,
+):
+    if track_key is None or history_weight <= 0.0:
+        return None
+
+    def transform(current: LuminanceMatchStatistics) -> LuminanceMatchStatistics:
+        store = COMPOSITING_COLOR_STATISTICS["luminance"]
+        smoothed = blend_luminance_match_statistics(
+            store.get(track_key),
+            current,
+            history_weight,
+        )
+        _remember_compositing_statistics(store, track_key, smoothed)
+        return smoothed
+
+    return transform
 
 # CUDA graph swap session cache
 _cuda_graph_session = {
@@ -235,7 +764,10 @@ def _init_cuda_graph_session(model_path: str, swapper):
     """
     import onnxruntime as ort
     try:
-        providers = [('CUDAExecutionProvider', {'enable_cuda_graph': '1'})]
+        providers = build_provider_config(
+            ["CUDAExecutionProvider"],
+            enable_cuda_graph=True,
+        )
         sess = ort.InferenceSession(model_path, providers=providers)
 
         # Pre-allocate GPU buffers with correct shapes
@@ -287,7 +819,13 @@ def _cuda_graph_swap_inference(blob: np.ndarray, latent: np.ndarray) -> np.ndarr
         return cg['io_binding'].get_outputs()[0].numpy()
 
 
-def _fast_paste_back(target_img: Frame, bgr_fake: np.ndarray, aimg: np.ndarray, M: np.ndarray) -> Frame:
+def _fast_paste_back(
+    target_img: Frame,
+    bgr_fake: np.ndarray,
+    aimg: np.ndarray,
+    M: np.ndarray,
+    target_face: Face | None = None,
+) -> Frame:
     """Paste bgr_fake back onto target_img via the inverse affine of M.
 
     Restricts work to the face bbox in output coordinates and warps a
@@ -325,11 +863,305 @@ def _fast_paste_back(target_img: Frame, bgr_fake: np.ndarray, aimg: np.ndarray, 
     IM_crop[1, 2] -= y1p
     crop_w, crop_h = x2p - x1p, y2p - y1p
 
-    soft_alpha = _get_soft_alpha(face_h)
+    target_crop = target_img[y1p:y2p, x1p:x2p]
+    profile_amount = estimate_profile_score(target_face)
+    feather_settings = get_adaptive_feather_settings(
+        face_size=face_h,
+        crop_shape=target_crop.shape,
+        frame_shape=target_img.shape,
+        edge_contrast=estimate_edge_contrast(target_crop),
+        blur_amount=estimate_blur_amount(target_crop),
+        base_erode_ratio=getattr(
+            modules.globals,
+            "compositing_mask_erode_ratio",
+            0.10,
+        ),
+        base_blur_ratio=getattr(
+            modules.globals,
+            "compositing_mask_blur_ratio",
+            0.05,
+        ),
+        scale_strength=getattr(
+            modules.globals,
+            "compositing_mask_scale_strength",
+            0.35,
+        ),
+        edge_strength=getattr(
+            modules.globals,
+            "compositing_mask_edge_strength",
+            0.35,
+        ),
+        blur_strength=getattr(
+            modules.globals,
+            "compositing_mask_motion_blur_strength",
+            0.0,
+        ),
+        motion_amount=_tracking_motion_amount(target_face),
+        motion_strength=getattr(
+            modules.globals,
+            "compositing_mask_motion_strength",
+            0.0,
+        ),
+        profile_amount=profile_amount,
+        profile_strength=getattr(
+            modules.globals,
+            "compositing_mask_profile_strength",
+            0.0,
+        ),
+    )
+    soft_alpha = _get_soft_alpha(face_h, feather_settings)
     bgr_fake_crop = cv2.warpAffine(bgr_fake, IM_crop, (crop_w, crop_h), borderMode=cv2.BORDER_REPLICATE)
     alpha_crop = cv2.warpAffine(soft_alpha, IM_crop, (crop_w, crop_h), borderValue=0)
+    alpha_crop = refine_alpha_with_landmark_mask(
+        alpha_crop,
+        target_face,
+        target_img.shape,
+        (x1p, y1p, x2p, y2p),
+        strength=getattr(
+            modules.globals,
+            "compositing_landmark_mask_strength",
+            0.0,
+        ),
+        dilation_ratio=getattr(
+            modules.globals,
+            "compositing_landmark_mask_dilation_ratio",
+            0.025,
+        ),
+        feather_ratio=getattr(
+            modules.globals,
+            "compositing_landmark_mask_feather_ratio",
+            0.018,
+        ),
+        profile_amount=profile_amount,
+        profile_taper_ratio=getattr(
+            modules.globals,
+            "compositing_landmark_mask_profile_taper",
+            0.0,
+        ),
+    )
+    alpha_crop = refine_alpha_with_skin_chroma_mask(
+        alpha_crop,
+        target_crop,
+        strength=getattr(
+            modules.globals,
+            "compositing_skin_mask_strength",
+            0.0,
+        ),
+        chroma_threshold=getattr(
+            modules.globals,
+            "compositing_skin_mask_chroma_threshold",
+            1.8,
+        ),
+        max_reduction=getattr(
+            modules.globals,
+            "compositing_skin_mask_max_reduction",
+            0.45,
+        ),
+        blur_ratio=getattr(
+            modules.globals,
+            "compositing_skin_mask_blur_ratio",
+            0.015,
+        ),
+        luma_threshold=getattr(
+            modules.globals,
+            "compositing_skin_mask_luma_threshold",
+            0.0,
+        ),
+        luma_max_reduction=getattr(
+            modules.globals,
+            "compositing_skin_mask_luma_max_reduction",
+            0.0,
+        ),
+    )
+    occlusion_priority_mask = create_expression_occlusion_mask(
+        target_face,
+        target_img.shape,
+        (x1p, y1p, x2p, y2p),
+        mouth_strength=getattr(
+            modules.globals,
+            "compositing_occlusion_mouth_region_strength",
+            0.0,
+        ),
+        eye_strength=getattr(
+            modules.globals,
+            "compositing_occlusion_eye_region_strength",
+            0.0,
+        ),
+        feather_ratio=getattr(
+            modules.globals,
+            "compositing_occlusion_region_feather_ratio",
+            0.018,
+        ),
+        mouth_min_confidence=getattr(
+            modules.globals,
+            "expression_mouth_min_confidence",
+            0.0,
+        ),
+        eye_min_confidence=getattr(
+            modules.globals,
+            "expression_eye_min_confidence",
+            0.0,
+        ),
+    )
+    occlusion_priority_mask = _smooth_occlusion_priority_mask(
+        occlusion_priority_mask,
+        target_face,
+    )
+    alpha_crop = preserve_target_edges_in_alpha(
+        alpha_crop,
+        target_crop,
+        strength=getattr(
+            modules.globals,
+            "compositing_occlusion_edge_strength",
+            0.0,
+        ),
+        edge_threshold=getattr(
+            modules.globals,
+            "compositing_occlusion_edge_threshold",
+            0.35,
+        ),
+        max_reduction=getattr(
+            modules.globals,
+            "compositing_occlusion_edge_max_reduction",
+            0.55,
+        ),
+        blur_ratio=getattr(
+            modules.globals,
+            "compositing_occlusion_edge_blur_ratio",
+            0.015,
+        ),
+        min_contrast=getattr(
+            modules.globals,
+            "compositing_occlusion_edge_min_contrast",
+            24.0,
+        ),
+        detail_strength=getattr(
+            modules.globals,
+            "compositing_occlusion_detail_strength",
+            0.0,
+        ),
+        detail_threshold=getattr(
+            modules.globals,
+            "compositing_occlusion_detail_threshold",
+            0.12,
+        ),
+        priority_mask=occlusion_priority_mask,
+        priority_strength=getattr(
+            modules.globals,
+            "compositing_occlusion_region_boost",
+            0.0,
+        ),
+    )
+    temporal_alpha_base_strength = _compositing_alpha_temporal_strength()
+    temporal_alpha_strength = _motion_adjusted_compositing_alpha_temporal_strength(
+        temporal_alpha_base_strength,
+        target_face,
+    )
+    temporal_alpha_key = _compositing_temporal_key(target_face)
+    if temporal_alpha_base_strength <= 0.0 or _tracking_should_reset_temporal_state(
+        target_face
+    ):
+        _reset_compositing_alpha_temporal_state()
+    alpha_crop = _smooth_compositing_alpha(
+        alpha_crop,
+        temporal_alpha_key,
+        temporal_alpha_strength,
+    )
 
-    target_crop = target_img[y1p:y2p, x1p:x2p]
+    temporal_color_base_strength = _compositing_temporal_strength()
+    temporal_color_strength = _motion_adjusted_compositing_temporal_strength(
+        temporal_color_base_strength,
+        target_face,
+    )
+    temporal_color_key = _compositing_temporal_key(target_face)
+    if temporal_color_base_strength <= 0.0 or _tracking_should_reset_temporal_state(
+        target_face
+    ):
+        _reset_compositing_color_temporal_state()
+
+    color_match_strength = getattr(
+        modules.globals, "compositing_color_match_strength", 0.0
+    )
+    if color_match_strength > 0.0:
+        bgr_fake_crop = match_color_statistics(
+            bgr_fake_crop,
+            target_crop,
+            alpha_crop,
+            strength=color_match_strength,
+            trim_percentile=getattr(
+                modules.globals,
+                "compositing_color_match_trim_percentile",
+                0.0,
+            ),
+            chroma_trim_percentile=getattr(
+                modules.globals,
+                "compositing_color_chroma_trim_percentile",
+                0.0,
+            ),
+            statistics_transform=_color_statistics_transform(
+                temporal_color_key,
+                temporal_color_strength,
+            ),
+        )
+    lighting_match_strength = getattr(
+        modules.globals, "compositing_lighting_match_strength", 0.0
+    )
+    if lighting_match_strength > 0.0:
+        bgr_fake_crop = match_luminance_statistics(
+            bgr_fake_crop,
+            target_crop,
+            alpha_crop,
+            strength=lighting_match_strength,
+            contrast_strength=getattr(
+                modules.globals,
+                "compositing_lighting_contrast_strength",
+                0.35,
+            ),
+            max_mean_shift=getattr(
+                modules.globals,
+                "compositing_lighting_max_shift",
+                12.0,
+            ),
+            trim_percentile=getattr(
+                modules.globals,
+                "compositing_color_match_trim_percentile",
+                0.0,
+            ),
+            statistics_transform=_luminance_statistics_transform(
+                temporal_color_key,
+                temporal_color_strength,
+            ),
+        )
+    alpha_crop = refine_alpha_with_boundary_color_mismatch(
+        alpha_crop,
+        bgr_fake_crop,
+        target_crop,
+        strength=getattr(
+            modules.globals,
+            "compositing_boundary_mismatch_strength",
+            0.0,
+        ),
+        color_threshold=getattr(
+            modules.globals,
+            "compositing_boundary_mismatch_threshold",
+            0.18,
+        ),
+        max_reduction=getattr(
+            modules.globals,
+            "compositing_boundary_mismatch_max_reduction",
+            0.45,
+        ),
+        band_ratio=getattr(
+            modules.globals,
+            "compositing_boundary_mismatch_band_ratio",
+            0.035,
+        ),
+        blur_ratio=getattr(
+            modules.globals,
+            "compositing_boundary_mismatch_blur_ratio",
+            0.012,
+        ),
+    )
 
     if _HAS_TORCH_CUDA:
         # Scale alpha to [0, 1] on device — cheaper to upload uint8 than float.
@@ -403,7 +1235,13 @@ def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
         _face_size = face_swapper.input_size[0]
         _aimg_dummy = np.empty((_face_size, _face_size, 3), dtype=np.uint8)
 
-        swapped_frame = _fast_paste_back(temp_frame, bgr_fake, _aimg_dummy, M)
+        swapped_frame = _fast_paste_back(
+            temp_frame,
+            bgr_fake,
+            _aimg_dummy,
+            M,
+            target_face,
+        )
 
     except Exception as e:
         print(f"Error during face swap: {e}")
@@ -510,16 +1348,27 @@ def get_faces_optimized(frame: Frame, use_cache: bool = True) -> Optional[List[F
 # --- END: Mac M1-M5 Optimized Face Detection ---
 
 # --- START: Helper function for interpolation and sharpening ---
-def apply_post_processing(current_frame: Frame, swapped_face_bboxes: List[np.ndarray]) -> Frame:
-    """Applies sharpening and interpolation with Apple Silicon optimizations."""
-    global PREVIOUS_FRAME_RESULT
+def apply_post_processing(
+    current_frame: Frame,
+    swapped_face_bboxes: List[np.ndarray],
+    swapped_faces: Optional[List[Face]] = None,
+) -> Frame:
+    """Apply face-region sharpening and temporal smoothing."""
+    global PREVIOUS_FRAME_RESULT, PREVIOUS_EXPRESSION_SNAPSHOTS
 
     sharpness_value = getattr(modules.globals, "sharpness", 0.0)
     enable_interpolation = getattr(modules.globals, "enable_interpolation", False)
+    interpolation_weight = getattr(modules.globals, "interpolation_weight", 0.2)
+    interpolation_active = (
+        enable_interpolation
+        and 0.0 < interpolation_weight < 1.0
+        and bool(swapped_face_bboxes)
+    )
 
     # Skip copy when no post-processing is active
-    if sharpness_value <= 0.0 and not enable_interpolation:
+    if sharpness_value <= 0.0 and not interpolation_active:
         PREVIOUS_FRAME_RESULT = None
+        PREVIOUS_EXPRESSION_SNAPSHOTS = {}
         return current_frame
 
     processed_frame = current_frame.copy()
@@ -528,7 +1377,7 @@ def apply_post_processing(current_frame: Frame, swapped_face_bboxes: List[np.nda
     sharpness_value = getattr(modules.globals, "sharpness", 0.0)
     if sharpness_value > 0.0 and swapped_face_bboxes:
         height, width = processed_frame.shape[:2]
-        for bbox in swapped_face_bboxes:
+        for face_index, bbox in enumerate(swapped_face_bboxes):
             # Ensure bbox is iterable and has 4 elements
             if not hasattr(bbox, '__iter__') or len(bbox) != 4:
                 # print(f"Warning: Invalid bbox format for sharpening: {bbox}") # Debug
@@ -551,34 +1400,73 @@ def apply_post_processing(current_frame: Frame, swapped_face_bboxes: List[np.nda
 
             # Apply sharpening (GPU-accelerated when CUDA OpenCV is available)
             try:
+                face = _face_at_index(swapped_faces, face_index)
+                effective_sharpness = _adjusted_sharpness_strength(
+                    sharpness_value,
+                    face_region,
+                    face,
+                )
+                if effective_sharpness <= 0.0:
+                    continue
                 sigma = 2 if IS_APPLE_SILICON else 3
-                sharpened_region = gpu_sharpen(face_region, strength=sharpness_value, sigma=sigma)
+                sharpened_region = gpu_sharpen(
+                    face_region,
+                    strength=effective_sharpness,
+                    sigma=sigma,
+                )
                 processed_frame[y1:y2, x1:x2] = sharpened_region
             except cv2.error:
                 pass
 
 
-    # 2. Apply Interpolation (if enabled)
-    enable_interpolation = getattr(modules.globals, "enable_interpolation", False)
-    interpolation_weight = getattr(modules.globals, "interpolation_weight", 0.2)
-
     final_frame = processed_frame # Start with the current (potentially sharpened) frame
 
-    if enable_interpolation and 0 < interpolation_weight < 1:
+    if interpolation_active:
+        stabilized_faces = _stabilized_expression_faces(swapped_faces)
+        effective_interpolation_weight = _expression_adjusted_interpolation_weight(
+            interpolation_weight,
+            stabilized_faces,
+        )
+        effective_interpolation_weight = _motion_adjusted_interpolation_weight(
+            effective_interpolation_weight,
+            swapped_faces,
+        )
         if PREVIOUS_FRAME_RESULT is not None and PREVIOUS_FRAME_RESULT.shape == processed_frame.shape and PREVIOUS_FRAME_RESULT.dtype == processed_frame.dtype:
-            # Perform interpolation
             try:
-                 final_frame = gpu_add_weighted(
-                    PREVIOUS_FRAME_RESULT, 1.0 - interpolation_weight,
-                    processed_frame, interpolation_weight,
-                    0
-                 )
-                 # Ensure final frame is uint8
-                 final_frame = np.clip(final_frame, 0, 255).astype(np.uint8)
-            except cv2.error as interp_e:
-                 # print(f"Warning: OpenCV error during interpolation: {interp_e}") # Debug
-                 final_frame = processed_frame # Use current frame if interpolation fails
-                 PREVIOUS_FRAME_RESULT = None # Reset state if error occurs
+                final_frame = blend_frame_regions(
+                    PREVIOUS_FRAME_RESULT,
+                    processed_frame,
+                    swapped_face_bboxes,
+                    current_weight=effective_interpolation_weight,
+                    expansion_ratio=getattr(
+                        modules.globals,
+                        "temporal_smoothing_region_expansion",
+                        0.18,
+                    ),
+                    feather_ratio=getattr(
+                        modules.globals,
+                        "temporal_smoothing_feather_ratio",
+                        0.18,
+                    ),
+                    masks=_temporal_smoothing_masks(swapped_faces, processed_frame),
+                    mask_strength=getattr(
+                        modules.globals,
+                        "temporal_smoothing_mask_strength",
+                        0.0,
+                    ),
+                    local_current_weight_masks=_temporal_expression_response_masks(
+                        stabilized_faces,
+                        processed_frame,
+                    ),
+                    local_current_weight_boost=getattr(
+                        modules.globals,
+                        "temporal_smoothing_expression_region_boost",
+                        0.0,
+                    ),
+                )
+            except Exception:
+                # Keep live/video processing moving if temporal smoothing fails.
+                final_frame = processed_frame
 
             # Update the state for the next frame *with the interpolated result*
             PREVIOUS_FRAME_RESULT = final_frame.copy()
@@ -589,12 +1477,354 @@ def apply_post_processing(current_frame: Frame, swapped_face_bboxes: List[np.nda
                 pass
             PREVIOUS_FRAME_RESULT = processed_frame.copy()
     else:
-         # Interpolation is off or weight is invalid — no need to cache
-         PREVIOUS_FRAME_RESULT = None
+        # Interpolation is off or weight is invalid — no need to cache
+        PREVIOUS_FRAME_RESULT = None
+        PREVIOUS_EXPRESSION_SNAPSHOTS = {}
 
 
-    return final_frame
+    return _apply_diagnostic_overlay(final_frame, swapped_face_bboxes, swapped_faces)
 # --- END: Helper function for interpolation and sharpening ---
+
+
+def _face_at_index(
+    faces: Optional[List[Face]] | None,
+    index: int,
+) -> Face | Mapping | None:
+    if not faces or index < 0 or index >= len(faces):
+        return None
+    return faces[index]
+
+
+def _adjusted_sharpness_strength(
+    base_strength: float,
+    face_region: np.ndarray,
+    face: Face | Mapping | None = None,
+) -> float:
+    strength = max(0.0, float(base_strength or 0.0))
+    if strength <= 0.0:
+        return 0.0
+
+    motion_reduction = float(
+        np.clip(
+            getattr(
+                modules.globals,
+                "postprocess_sharpness_motion_reduction",
+                0.0,
+            )
+            or 0.0,
+            0.0,
+            1.0,
+        )
+    )
+    blur_reduction = float(
+        np.clip(
+            getattr(
+                modules.globals,
+                "postprocess_sharpness_blur_reduction",
+                0.0,
+            )
+            or 0.0,
+            0.0,
+            1.0,
+        )
+    )
+    if motion_reduction <= 0.0 and blur_reduction <= 0.0:
+        return strength
+
+    motion_amount = _tracking_motion_amount(face)
+    blur_amount = estimate_blur_amount(face_region) if blur_reduction > 0.0 else 0.0
+    motion_factor = 1.0 - motion_reduction * motion_amount
+    blur_factor = 1.0 - blur_reduction * blur_amount
+    return float(np.clip(strength * motion_factor * blur_factor, 0.0, strength))
+
+
+def _expression_adjusted_interpolation_weight(
+    base_weight: float,
+    swapped_faces: Optional[List[Face]] = None,
+) -> float:
+    global PREVIOUS_EXPRESSION_SNAPSHOTS
+
+    if not getattr(modules.globals, "expression_temporal_smoothing", False):
+        PREVIOUS_EXPRESSION_SNAPSHOTS = {}
+        return base_weight
+
+    current_snapshots = collect_expression_snapshots(swapped_faces or [])
+    adjusted_weight = expression_temporal_weight(
+        base_weight,
+        PREVIOUS_EXPRESSION_SNAPSHOTS,
+        current_snapshots,
+        stable_threshold=getattr(
+            modules.globals,
+            "expression_temporal_motion_threshold",
+            0.035,
+        ),
+        high_motion_threshold=getattr(
+            modules.globals,
+            "expression_temporal_high_motion_threshold",
+            0.09,
+        ),
+        stable_weight_multiplier=getattr(
+            modules.globals,
+            "expression_temporal_stable_weight_multiplier",
+            0.86,
+        ),
+        motion_weight_boost=getattr(
+            modules.globals,
+            "expression_temporal_motion_weight_boost",
+            0.22,
+        ),
+        unilateral_eye_motion_scale=getattr(
+            modules.globals,
+            "expression_temporal_unilateral_eye_motion_scale",
+            1.0,
+        ),
+        mouth_min_confidence=getattr(
+            modules.globals,
+            "expression_mouth_min_confidence",
+            0.25,
+        ),
+        eye_min_confidence=getattr(
+            modules.globals,
+            "expression_eye_min_confidence",
+            0.25,
+        ),
+    )
+    PREVIOUS_EXPRESSION_SNAPSHOTS = current_snapshots
+    return adjusted_weight
+
+
+def _temporal_smoothing_masks(
+    swapped_faces: Optional[List[Face]] = None,
+    frame: Frame | None = None,
+) -> List[np.ndarray | None] | None:
+    strength = getattr(modules.globals, "temporal_smoothing_mask_strength", 0.0)
+    if strength <= 0.0 or frame is None or not swapped_faces:
+        return None
+
+    masks: List[np.ndarray | None] = []
+    for face in swapped_faces:
+        masks.append(
+            create_landmark_face_mask(
+                face,
+                frame.shape,
+                dilation_ratio=getattr(
+                    modules.globals,
+                    "compositing_landmark_mask_dilation_ratio",
+                    0.025,
+                ),
+                feather_ratio=getattr(
+                    modules.globals,
+                    "compositing_landmark_mask_feather_ratio",
+                    0.018,
+                ),
+                profile_amount=estimate_profile_score(face),
+                profile_taper_ratio=getattr(
+                    modules.globals,
+                    "compositing_landmark_mask_profile_taper",
+                    0.0,
+                ),
+            )
+        )
+    return masks
+
+
+def _temporal_expression_response_masks(
+    swapped_faces: Optional[List[Face]] | None,
+    frame: Frame,
+) -> list[np.ndarray | None] | None:
+    boost = float(
+        getattr(modules.globals, "temporal_smoothing_expression_region_boost", 0.0)
+        or 0.0
+    )
+    if boost <= 0.0:
+        return None
+
+    frame_h, frame_w = frame.shape[:2]
+    masks: list[np.ndarray | None] = []
+    for face in swapped_faces or []:
+        masks.append(
+            create_expression_occlusion_mask(
+                face,
+                frame.shape,
+                (0, 0, frame_w, frame_h),
+                mouth_strength=getattr(
+                    modules.globals,
+                    "temporal_smoothing_expression_mouth_strength",
+                    0.0,
+                ),
+                eye_strength=getattr(
+                    modules.globals,
+                    "temporal_smoothing_expression_eye_strength",
+                    0.0,
+                ),
+                feather_ratio=getattr(
+                    modules.globals,
+                    "temporal_smoothing_expression_feather_ratio",
+                    0.018,
+                ),
+                mouth_min_confidence=getattr(
+                    modules.globals,
+                    "expression_mouth_min_confidence",
+                    0.0,
+                ),
+                eye_min_confidence=getattr(
+                    modules.globals,
+                    "expression_eye_min_confidence",
+                    0.0,
+                ),
+            )
+        )
+    return masks
+
+
+def _motion_adjusted_interpolation_weight(
+    base_weight: float,
+    swapped_faces: Optional[List[Face]] = None,
+) -> float:
+    boost = float(
+        getattr(modules.globals, "temporal_smoothing_motion_weight_boost", 0.0)
+        or 0.0
+    )
+    if boost <= 0.0:
+        return base_weight
+
+    motion_amounts = [
+        _tracking_motion_amount(face)
+        for face in (swapped_faces or [])
+        if face is not None
+    ]
+    if not motion_amounts:
+        return base_weight
+
+    motion = max(motion_amounts)
+    low_threshold = max(
+        0.0,
+        float(
+            getattr(modules.globals, "temporal_smoothing_motion_threshold", 0.08)
+            or 0.0
+        ),
+    )
+    high_threshold = max(
+        low_threshold,
+        float(
+            getattr(
+                modules.globals,
+                "temporal_smoothing_high_motion_threshold",
+                0.35,
+            )
+            or low_threshold
+        ),
+    )
+    if motion <= low_threshold:
+        return base_weight
+
+    if motion >= high_threshold:
+        amount = 1.0
+    else:
+        amount = (motion - low_threshold) / max(high_threshold - low_threshold, 1e-6)
+    return float(np.clip(float(base_weight) + boost * amount, 0.08, 0.90))
+
+
+def _tracking_motion_amount(face: Face | None) -> float:
+    if face is None:
+        return 0.0
+    raw_motion_amount = _face_value(face, "tracking_motion_amount", 0.0)
+    try:
+        return float(np.clip(raw_motion_amount, 0.0, 1.0))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _tracking_missed_frames(face: Face | Mapping | None) -> int:
+    raw_missed = _face_value(face, "tracking_missed_frames", 0)
+    try:
+        return max(0, int(raw_missed))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _tracking_prediction_active(face: Face | Mapping | None) -> bool:
+    return bool(_face_value(face, "tracking_prediction_active", False))
+
+
+def _tracking_should_reset_temporal_state(face: Face | Mapping | None) -> bool:
+    return _tracking_missed_frames(face) > 0 and not _tracking_prediction_active(face)
+
+
+def _face_value(face: Face | Mapping | None, attr: str, default: Any = None) -> Any:
+    if isinstance(face, Mapping) and attr in face:
+        return face[attr]
+    return getattr(face, attr, default)
+
+
+def _face_array(face: Face | Mapping | None, attr: str) -> np.ndarray | None:
+    value = _face_value(face, attr, None)
+    if value is None:
+        return None
+    try:
+        array = np.asarray(value, dtype=np.float32)
+    except (TypeError, ValueError):
+        return None
+    if array.size == 0 or not np.all(np.isfinite(array)):
+        return None
+    return array
+
+
+def _face_bbox(face: Face | Mapping | None) -> np.ndarray | None:
+    bbox = _face_array(face, "bbox")
+    if bbox is None:
+        return None
+    bbox = bbox.reshape(-1)
+    if bbox.size < 4:
+        return None
+    x1, y1, x2, y2 = bbox[:4]
+    left, right = sorted((float(x1), float(x2)))
+    top, bottom = sorted((float(y1), float(y2)))
+    if right <= left or bottom <= top:
+        return None
+    return np.array([left, top, right, bottom], dtype=np.float32)
+
+
+def _record_swapped_face(
+    face: Face | Mapping | None,
+    swapped_face_bboxes: List[np.ndarray],
+    swapped_faces: List[Face | Mapping],
+) -> None:
+    bbox = _face_bbox(face)
+    if bbox is None:
+        return
+    swapped_face_bboxes.append(bbox.astype(int))
+    swapped_faces.append(face)
+
+
+def _apply_diagnostic_overlay(
+    frame: Frame,
+    swapped_face_bboxes: List[np.ndarray],
+    swapped_faces: Optional[List[Face]] = None,
+) -> Frame:
+    if not getattr(modules.globals, "diagnostic_overlay", False):
+        return frame
+
+    layers = list(getattr(
+        modules.globals,
+        "diagnostic_overlay_layers",
+        ["bbox", "kps", "profile"],
+    ))
+    faces = [face for face in (swapped_faces or []) if face is not None]
+    if not faces and swapped_face_bboxes:
+        faces = [{"bbox": bbox} for bbox in swapped_face_bboxes]
+
+    masks = None
+    if "mask" in layers and faces:
+        masks = [create_face_mask(face, frame) for face in faces]
+
+    return draw_diagnostic_overlay(
+        frame,
+        faces,
+        layers=layers,
+        profile_name=getattr(modules.globals, "quality_mode", None),
+        masks=masks,
+    )
 
 
 def process_frame(source_face: Face, temp_frame: Frame, target_face: Face = None) -> Frame:
@@ -612,6 +1842,7 @@ def process_frame(source_face: Face, temp_frame: Frame, target_face: Face = None
 
     processed_frame = temp_frame
     swapped_face_bboxes = []
+    swapped_faces = []
 
     if modules.globals.many_faces:
         many_faces = get_many_faces(processed_frame)
@@ -619,18 +1850,16 @@ def process_frame(source_face: Face, temp_frame: Frame, target_face: Face = None
             current_swap_target = processed_frame.copy()
             for face in many_faces:
                 current_swap_target = swap_face(source_face, face, current_swap_target)
-                if face is not None and hasattr(face, "bbox") and face.bbox is not None:
-                    swapped_face_bboxes.append(face.bbox.astype(int))
+                _record_swapped_face(face, swapped_face_bboxes, swapped_faces)
             processed_frame = current_swap_target
     else:
         if target_face is None:
             target_face = get_one_face(processed_frame)
         if target_face:
             processed_frame = swap_face(source_face, target_face, processed_frame)
-            if hasattr(target_face, "bbox") and target_face.bbox is not None:
-                swapped_face_bboxes.append(target_face.bbox.astype(int))
+            _record_swapped_face(target_face, swapped_face_bboxes, swapped_faces)
 
-    final_frame = apply_post_processing(processed_frame, swapped_face_bboxes)
+    final_frame = apply_post_processing(processed_frame, swapped_face_bboxes, swapped_faces)
     return final_frame
 
 
@@ -645,6 +1874,7 @@ def process_frame_v2(temp_frame: Frame, temp_frame_path: str = "") -> Frame:
 
     processed_frame = temp_frame # Start with the input frame
     swapped_face_bboxes = [] # Keep track of where swaps happened
+    swapped_faces = []
 
     # Determine source/target pairs based on mode
     source_target_pairs = []
@@ -748,13 +1978,12 @@ def process_frame_v2(temp_frame: Frame, temp_frame_path: str = "") -> Frame:
     for source_face, target_face in source_target_pairs:
         if source_face and target_face:
             current_swap_target = swap_face(source_face, target_face, current_swap_target)
-            if target_face is not None and hasattr(target_face, "bbox") and target_face.bbox is not None:
-                swapped_face_bboxes.append(target_face.bbox.astype(int))
+            _record_swapped_face(target_face, swapped_face_bboxes, swapped_faces)
     processed_frame = current_swap_target # Assign final result
 
 
     # Apply sharpening and interpolation
-    final_frame = apply_post_processing(processed_frame, swapped_face_bboxes)
+    final_frame = apply_post_processing(processed_frame, swapped_face_bboxes, swapped_faces)
 
     return final_frame
 
@@ -779,7 +2008,7 @@ def process_frames(
             # Log the error but allow proceeding; subsequent check will stop processing.
         else:
             try:
-                source_img = cv2.imread(source_path)
+                source_img = read_image(source_path)
                 if source_img is None:
                     # Specific error for file reading failure
                     update_status(f"Error reading source image file {source_path}. Please check the path and file integrity.", NAME)
@@ -885,7 +2114,7 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
 
     # Read target first
     try:
-        target_frame = cv2.imread(target_path)
+        target_frame = read_image(target_path)
         if target_frame is None:
             update_status(f"Error: Could not read target image: {target_path}", NAME)
             return
@@ -904,7 +2133,7 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
 
         else: # Simple mode
             try:
-                source_img = cv2.imread(source_path)
+                source_img = read_image(source_path)
                 if source_img is None:
                     update_status(f"Error: Could not read source image: {source_path}", NAME)
                     return
@@ -977,10 +2206,18 @@ def create_lower_mouth_mask(
         # print("Warning: Invalid or insufficient landmarks for mouth mask.")
         return mask, mouth_cutout, mouth_box, lower_lip_polygon
 
+    mouth_min_confidence = float(
+        getattr(modules.globals, "expression_mouth_min_confidence", 0.0) or 0.0
+    )
+    if mouth_min_confidence > 0.0:
+        mouth_confidence = compute_mouth_region_confidence(face)
+        if mouth_confidence < mouth_min_confidence:
+            return mask, mouth_cutout, mouth_box, lower_lip_polygon
+
     try: # Wrap main logic in try-except
         # Use outer mouth landmarks (52-71) to capture the full mouth area
         # This covers both upper and lower lips for proper mouth preservation
-        lower_lip_order = list(range(52, 72))
+        lower_lip_order = list(MOUTH_OUTER_INDICES)
 
         # Check if all indices are valid for the loaded landmarks (already partially done by < 106 check)
         if max(lower_lip_order) >= landmarks.shape[0]:
@@ -1018,7 +2255,10 @@ def create_lower_mouth_mask(
             # print("Warning: Non-finite values detected after expanding landmarks.")
             return mask, mouth_cutout, mouth_box, lower_lip_polygon
 
-        expanded_landmarks = expanded_landmarks.astype(np.int32)
+        expanded_landmarks = _smooth_mouth_mask_landmarks(
+            face,
+            expanded_landmarks,
+        ).astype(np.int32)
 
         min_x, min_y = np.min(expanded_landmarks, axis=0)
         max_x, max_y = np.max(expanded_landmarks, axis=0)
@@ -1244,13 +2484,8 @@ def create_face_mask(face: Face, frame: Frame) -> np.ndarray:
 
     mask = np.zeros(frame.shape[:2], dtype=np.uint8) # Start with uint8
 
-    # Validate inputs
-    if face is None or not hasattr(face, 'landmark_2d_106'):
-        # print("Warning: Invalid face or frame for create_face_mask.")
-        return mask # Return empty mask
-
-    landmarks = face.landmark_2d_106
-    if landmarks is None or not isinstance(landmarks, np.ndarray) or landmarks.shape[0] < 106:
+    landmarks = _face_array(face, "landmark_2d_106")
+    if landmarks is None or landmarks.shape[0] < 106:
         # print("Warning: Invalid or insufficient landmarks for face mask.")
         return mask # Return empty mask
 

@@ -41,6 +41,7 @@ def _install_import_stubs():
         extract_frames=lambda path: None,
         clean_temp=lambda path: None,
         get_temp_frame_paths=lambda path: [],
+        read_image=lambda path: None,
     )
 
 
