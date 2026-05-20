@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ctypes
+from datetime import datetime
 import importlib
 import os
 import sys
@@ -36,10 +37,21 @@ def prepare_desktop_environment(root: Path | None = None) -> Path:
 def redirect_desktop_output(log_path: Path) -> TextIO:
     log_path.parent.mkdir(parents=True, exist_ok=True)
     stream = log_path.open("a", encoding="utf-8", buffering=1)
-    print("\n--- Deep Live Cam Studio desktop launch ---", file=stream)
+    print(
+        f"\n--- Deep Live Cam Studio desktop launch "
+        f"{datetime.now().isoformat(timespec='seconds')} ---",
+        file=stream,
+    )
     sys.stdout = stream
     sys.stderr = stream
     return stream
+
+
+def log_startup_step(message: str) -> None:
+    print(
+        f"[desktop-launch] {datetime.now().isoformat(timespec='seconds')} {message}",
+        flush=True,
+    )
 
 
 def launch() -> None:
@@ -48,8 +60,14 @@ def launch() -> None:
     redirect_desktop_output(log_path)
 
     try:
+        log_startup_step(f"executable={sys.executable}")
+        log_startup_step(f"install_root={root}")
+        log_startup_step(f"argv={sys.argv}")
+        log_startup_step("importing run module")
         run_module = importlib.import_module("run")
+        log_startup_step("starting core.run")
         run_module.core.run()
+        log_startup_step("core.run returned")
     except Exception as exc:  # pragma: no cover - defensive desktop UX path
         traceback.print_exc()
         _show_error_dialog(log_path, exc)

@@ -1,6 +1,6 @@
 # Uses ONNX Runtime for GFPGAN face enhancement (no torch/gfpgan dependency)
 
-from typing import Any, List
+from typing import Any, List, Optional
 import cv2
 import threading
 import numpy as np
@@ -26,6 +26,8 @@ THREAD_LOCK = threading.Lock()
 NAME = "DLC.FACE-ENHANCER"
 MODEL_FILE = "gfpgan-1024.onnx"
 MODEL_UNAVAILABLE_REASON = None
+_TORCH = None
+_HAS_TORCH_CUDA: Optional[bool] = None
 
 models_dir = MODELS_DIR
 
@@ -163,13 +165,31 @@ def _align_face(
     return aligned_face, affine_matrix
 
 
-_HAS_TORCH_CUDA = False
-try:
-    import torch
-    if torch.cuda.is_available():
-        _HAS_TORCH_CUDA = True
-except ImportError:
-    pass
+def _torch_module():
+    global _TORCH
+    if _TORCH is not None:
+        return _TORCH
+    try:
+        import torch
+    except Exception:
+        return None
+    _TORCH = torch
+    return _TORCH
+
+
+def _has_torch_cuda() -> bool:
+    global _HAS_TORCH_CUDA
+    if isinstance(_HAS_TORCH_CUDA, bool):
+        return _HAS_TORCH_CUDA
+    torch = _torch_module()
+    if torch is None:
+        _HAS_TORCH_CUDA = False
+        return False
+    try:
+        _HAS_TORCH_CUDA = bool(torch.cuda.is_available())
+    except Exception:
+        _HAS_TORCH_CUDA = False
+    return _HAS_TORCH_CUDA
 
 # Cache the feathered mask — it's the same for every call at a given size
 _enhancer_cache: dict = {'mask': None, 'mask_size': 0}
@@ -238,7 +258,8 @@ def _paste_back(
 
     target_crop = frame[y1p:y2p, x1p:x2p]
 
-    if _HAS_TORCH_CUDA:
+    torch = _torch_module() if _has_torch_cuda() else None
+    if torch is not None:
         # Upload uint8 alpha — smaller transfer, scale on device.
         mask_t = torch.from_numpy(inv_mask_crop).cuda().float().mul_(1.0 / 255.0).unsqueeze(2)
         enhanced_t = torch.from_numpy(inv_restored_crop).float().cuda()

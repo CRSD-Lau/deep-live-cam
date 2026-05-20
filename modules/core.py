@@ -10,20 +10,9 @@ import platform
 import signal
 import shutil
 import argparse
-try:
-    import torch
-    HAS_TORCH = True
-except ImportError:
-    HAS_TORCH = False
-try:
-    import tensorflow
-    HAS_TENSORFLOW = True
-except ImportError:
-    HAS_TENSORFLOW = False
 
 import modules.globals
 import modules.metadata
-import modules.ui as ui
 from modules.enhancement_registry import ENHANCER_KEYS
 from modules.execution_providers import (
     encode_providers,
@@ -31,19 +20,14 @@ from modules.execution_providers import (
     supported_provider_aliases,
 )
 from modules.quality_profiles import QUALITY_MODE_NAMES, apply_quality_profile
-from modules.processors.frame.core import get_frame_processors_modules, process_video_in_memory
 from modules.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
 from modules.diagnostics.overlays import parse_overlay_layers
 from modules.visual_qa import parse_frame_selection
 
 FRAME_PROCESSOR_CHOICES = ("face_swapper",) + ENHANCER_KEYS
 
-if HAS_TORCH and 'ROCMExecutionProvider' in modules.globals.execution_providers:
-    del torch
-
 warnings.filterwarnings('ignore', category=FutureWarning, module='insightface')
-if HAS_TORCH:
-    warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
+warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
 
 
 def parse_args() -> None:
@@ -239,11 +223,8 @@ def suggest_execution_threads(execution_providers: list[str] | None = None) -> i
 
 
 def limit_resources() -> None:
-    # prevent tensorflow memory leak
-    if HAS_TENSORFLOW:
-        gpus = tensorflow.config.experimental.list_physical_devices('GPU')
-        for gpu in gpus:
-            tensorflow.config.experimental.set_memory_growth(gpu, True)
+    if modules.globals.nsfw_filter:
+        _configure_tensorflow_memory_growth()
     # limit memory usage
     if modules.globals.max_memory:
         memory = modules.globals.max_memory * 1024 ** 3
@@ -259,8 +240,35 @@ def limit_resources() -> None:
 
 
 def release_resources() -> None:
-    if 'CUDAExecutionProvider' in modules.globals.execution_providers and HAS_TORCH:
-        torch.cuda.empty_cache()
+    if 'CUDAExecutionProvider' in modules.globals.execution_providers:
+        torch = _try_import_torch()
+        if torch is not None:
+            try:
+                torch.cuda.empty_cache()
+            except Exception:
+                pass
+
+
+def _try_import_torch():
+    try:
+        import torch
+        return torch
+    except Exception:
+        return None
+
+
+def _configure_tensorflow_memory_growth() -> None:
+    try:
+        import tensorflow
+    except Exception:
+        return
+
+    try:
+        gpus = tensorflow.config.experimental.list_physical_devices('GPU')
+        for gpu in gpus:
+            tensorflow.config.experimental.set_memory_growth(gpu, True)
+    except Exception:
+        pass
 
 
 def pre_check() -> bool:
@@ -283,11 +291,17 @@ def pre_check() -> bool:
 def update_status(message: str, scope: str = 'DLC.CORE') -> None:
     print(f'[{scope}] {message}')
     if not modules.globals.headless:
+        import modules.ui as ui
         ui.update_status(message)
 
 def start() -> None:
     """Start processing with performance monitoring."""
     import time
+    import modules.ui as ui
+    from modules.processors.frame.core import (
+        get_frame_processors_modules,
+        process_video_in_memory,
+    )
     
     start_time = time.time()
     
@@ -417,9 +431,12 @@ def run() -> None:
         raise SystemExit(download_models(assume_yes=modules.globals.assume_yes))
     if not pre_check():
         return
-    for frame_processor in get_frame_processors_modules(modules.globals.frame_processors):
-        if not frame_processor.pre_check():
-            return
+    if modules.globals.headless:
+        from modules.processors.frame.core import get_frame_processors_modules
+
+        for frame_processor in get_frame_processors_modules(modules.globals.frame_processors):
+            if not frame_processor.pre_check():
+                return
     # Pre-load face analyser in main thread before GUI starts
     #from modules.face_analyser import get_face_analyser
     #get_face_analyser()
@@ -427,5 +444,7 @@ def run() -> None:
     if modules.globals.headless:
         start()
     else:
+        import modules.ui as ui
+
         window = ui.init(start, destroy, modules.globals.lang)
         window.mainloop()

@@ -65,16 +65,6 @@ from modules.enhancement_registry import (
     get_enhancer_choices,
 )
 from modules.execution_providers import provider_config_summary
-from modules.face_analyser import (
-    add_blank_map,
-    detect_many_faces_fast,
-    detect_one_face_fast,
-    get_one_face,
-    get_unique_faces_from_target_image,
-    get_unique_faces_from_target_video,
-    has_valid_map,
-    simplify_maps,
-)
 from modules.gettext import LanguageManager
 from modules.gpu_processing import gpu_cvt_color, gpu_flip, gpu_resize
 from modules.live_queue import get_latest, put_latest
@@ -83,10 +73,6 @@ from modules.pipeline_metrics import (
     PipelineMetrics,
     format_metrics,
     safe_write_metrics_snapshot,
-)
-from modules.processors.frame.core import (
-    get_frame_processors_modules,
-    reset_frame_processor_temporal_state,
 )
 from modules.quality_profiles import (
     QUALITY_MODE_NAMES,
@@ -567,6 +553,8 @@ def check_and_ignore_nsfw(target, destroy: Optional[Callable] = None) -> bool:
 
 
 def _load_source_face(source_path: str | None):
+    from modules.face_analyser import get_one_face
+
     if not source_path:
         return None
 
@@ -1304,6 +1292,11 @@ class MainWindow(QMainWindow):
         profile = apply_quality_profile(mode_name, modules.globals)
         self._sync_quality_controls()
         if _WEBCAM_PREVIEW is not None and _WEBCAM_PREVIEW.isVisible():
+            from modules.processors.frame.core import (
+                get_frame_processors_modules,
+                reset_frame_processor_temporal_state,
+            )
+
             reset_frame_processor_temporal_state(
                 get_frame_processors_modules(modules.globals.frame_processors)
             )
@@ -1376,6 +1369,11 @@ class MainWindow(QMainWindow):
             update_status("Please complete pop-up or close it.")
             return
         if modules.globals.map_faces:
+            from modules.face_analyser import (
+                get_unique_faces_from_target_image,
+                get_unique_faces_from_target_video,
+            )
+
             modules.globals.source_target_map = []
             if is_image(modules.globals.target_path):
                 update_status("Getting unique faces")
@@ -1486,6 +1484,8 @@ def _update_tumbler(var: str, value: bool) -> None:
     # If we're currently in a live preview, refresh frame processors so
     # toggling enhancers takes effect immediately.
     if _WEBCAM_PREVIEW is not None and _WEBCAM_PREVIEW.isVisible():
+        from modules.processors.frame.core import get_frame_processors_modules
+
         get_frame_processors_modules(modules.globals.frame_processors)
 
 
@@ -1602,6 +1602,12 @@ class _ProcessingWorker(threading.Thread):
 
     def run(self) -> None:
         try:
+            from modules.face_analyser import detect_many_faces_fast, detect_one_face_fast
+            from modules.processors.frame.core import (
+                get_frame_processors_modules,
+                reset_frame_processor_temporal_state,
+            )
+
             frame_processors = get_frame_processors_modules(modules.globals.frame_processors)
             reset_frame_processor_temporal_state(frame_processors)
             source_image = None
@@ -2120,6 +2126,8 @@ class MapperDialog(QDialog):
         self._scroll.setWidget(body)
 
     def _select_source(self, row: int) -> None:
+        from modules.face_analyser import get_one_face
+
         path, _f = QFileDialog.getOpenFileName(
             self, _("select an source image"),
             _RECENT_SOURCE_DIR or "",
@@ -2140,6 +2148,8 @@ class MapperDialog(QDialog):
         self._rebuild()
 
     def _on_submit(self) -> None:
+        from modules.face_analyser import has_valid_map
+
         if has_valid_map():
             self.accept()
             _MAIN._select_output_and_start()
@@ -2225,6 +2235,8 @@ class LiveMapperDialog(QDialog):
         self._scroll.setWidget(body)
 
     def _select_face(self, row: int, kind: str) -> None:
+        from modules.face_analyser import get_one_face
+
         path, _f = QFileDialog.getOpenFileName(
             self, _("select an source image"),
             _RECENT_SOURCE_DIR or "",
@@ -2245,6 +2257,8 @@ class LiveMapperDialog(QDialog):
         self._rebuild()
 
     def _on_add(self) -> None:
+        from modules.face_analyser import add_blank_map
+
         add_blank_map()
         self._rebuild()
         self.set_status("Please provide mapping!")
@@ -2257,6 +2271,8 @@ class LiveMapperDialog(QDialog):
         self.set_status("All mappings cleared!")
 
     def _on_submit(self) -> None:
+        from modules.face_analyser import has_valid_map, simplify_maps
+
         if has_valid_map():
             simplify_maps()
             self.set_status("Mappings successfully submitted!")

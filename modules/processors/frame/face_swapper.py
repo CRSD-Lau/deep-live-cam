@@ -66,6 +66,8 @@ import time
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
 NAME = "DLC.FACE-SWAPPER"
+_TORCH = None
+_HAS_TORCH_CUDA: Optional[bool] = None
 
 # --- START: Added for Interpolation ---
 PREVIOUS_FRAME_RESULT = None # Stores the final processed frame from the previous step
@@ -150,7 +152,7 @@ def get_face_swapper() -> Any:
             # older GPUs (e.g. GTX 16xx) where FP16 can produce NaN.
             fp32_path = os.path.join(models_dir, "inswapper_128.onnx")
             fp16_path = os.path.join(models_dir, "inswapper_128_fp16.onnx")
-            use_fp16 = _HAS_TORCH_CUDA and os.path.exists(fp16_path)
+            use_fp16 = _has_torch_cuda() and os.path.exists(fp16_path)
             if use_fp16:
                 model_path = fp16_path
             elif os.path.exists(fp32_path):
@@ -194,7 +196,7 @@ def get_face_swapper() -> Any:
                 except Exception:
                     pass
                 # Set up CUDA graph session for faster inference
-                if _HAS_TORCH_CUDA and any(
+                if _has_torch_cuda() and any(
                     p == "CUDAExecutionProvider" or
                     (isinstance(p, tuple) and p[0] == "CUDAExecutionProvider")
                     for p in providers_config
@@ -208,13 +210,31 @@ def get_face_swapper() -> Any:
     return FACE_SWAPPER
 
 
-_HAS_TORCH_CUDA = False
-try:
-    import torch
-    if torch.cuda.is_available():
-        _HAS_TORCH_CUDA = True
-except ImportError:
-    pass
+def _torch_module():
+    global _TORCH
+    if _TORCH is not None:
+        return _TORCH
+    try:
+        import torch
+    except Exception:
+        return None
+    _TORCH = torch
+    return _TORCH
+
+
+def _has_torch_cuda() -> bool:
+    global _HAS_TORCH_CUDA
+    if isinstance(_HAS_TORCH_CUDA, bool):
+        return _HAS_TORCH_CUDA
+    torch = _torch_module()
+    if torch is None:
+        _HAS_TORCH_CUDA = False
+        return False
+    try:
+        _HAS_TORCH_CUDA = bool(torch.cuda.is_available())
+    except Exception:
+        _HAS_TORCH_CUDA = False
+    return _HAS_TORCH_CUDA
 
 # Cache for paste-back
 _paste_cache = {
@@ -1193,7 +1213,8 @@ def _fast_paste_back(
         ),
     )
 
-    if _HAS_TORCH_CUDA:
+    torch = _torch_module() if _has_torch_cuda() else None
+    if torch is not None:
         # Scale alpha to [0, 1] on device — cheaper to upload uint8 than float.
         mask_t = torch.from_numpy(alpha_crop).cuda().float().mul_(1.0 / 255.0).unsqueeze(2)
         fake_t = torch.from_numpy(bgr_fake_crop).float().cuda()

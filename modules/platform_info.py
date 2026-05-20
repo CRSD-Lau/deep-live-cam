@@ -1,7 +1,7 @@
 """Centralized platform + accelerator detection.
 
 Imported once at startup to expose typed flags the rest of the codebase
-can branch on without re-querying `platform`, `torch.cuda`, or
+can branch on without re-querying `platform` or
 `onnxruntime.get_available_providers()` repeatedly.
 
 The banner printed by :func:`print_banner` is the single user-facing
@@ -19,14 +19,6 @@ IS_LINUX: bool = _platform.system() == "Linux"
 IS_APPLE_SILICON: bool = IS_MACOS and _platform.machine() == "arm64"
 
 
-def _detect_torch_cuda() -> bool:
-    try:
-        import torch  # noqa: WPS433 — local import, avoid hard dep at module load
-        return bool(torch.cuda.is_available())
-    except Exception:
-        return False
-
-
 def _detect_onnx_providers() -> List[str]:
     try:
         import onnxruntime
@@ -35,7 +27,6 @@ def _detect_onnx_providers() -> List[str]:
         return []
 
 
-HAS_TORCH_CUDA: bool = _detect_torch_cuda()
 ONNX_PROVIDERS: List[str] = _detect_onnx_providers()
 HAS_CUDA_PROVIDER: bool = "CUDAExecutionProvider" in ONNX_PROVIDERS
 HAS_COREML_PROVIDER: bool = "CoreMLExecutionProvider" in ONNX_PROVIDERS
