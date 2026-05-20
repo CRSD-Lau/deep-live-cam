@@ -10,12 +10,12 @@ distribution context. The release verifier only treats this file as passed when
 
 ## Artifact Under Review
 
-- Installer: `DeepLiveCamStudio-2.1.7-x64-setup.exe`
-- Installer SHA-256: `07DAD2B8A589BC79712B18A5A544469FDC483150A81EA55654531FECE5339FA5`
-- Source commit/tag: see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`
+- Installer: `DeepLiveCamStudio-2.1.9-x64-setup.exe`
+- Installer SHA-256: `8BF83FC52B74AEE9875A1CD95F39BC5663AC74CAD3EC3184966B64900B0CA907`
+- Source commit/tag: see `build/windows/release-assets/2.1.9/RELEASE_ASSETS.md`
 - Reviewer: Neil Mitchell
-- Date: 2026-05-19
-- Intended distribution context: GitHub Release for DeepLiveCamStudio 2.1.7.
+- Date: 2026-05-20
+- Intended distribution context: GitHub Release for DeepLiveCamStudio 2.1.9.
 
 ## Required Review Items
 
@@ -40,7 +40,7 @@ links here.
 
 ### Review Signoff
 
-- 2026-05-19: Neil Mitchell confirmed all required legal/compliance review items are acceptable for the intended distribution context.
+- 2026-05-20: 2.1.9 legal evidence was regenerated for the exact installer and Git-ref source archive; the release keeps model redistribution excluded and does not add model weights or external assets.
 
 ### Automated Evidence Packet
 
@@ -69,9 +69,10 @@ is reported by `tools/summarize_manual_release_gates.py`.
 Automated evidence helper for the reviewer packet:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.1.7
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.1.9
 ```
 
 Attach or summarize the generated
 `build\windows\manual-evidence\legal-review\*.md` file, then complete the
 reviewer decisions above before changing this file to `Status: PASS`.
+

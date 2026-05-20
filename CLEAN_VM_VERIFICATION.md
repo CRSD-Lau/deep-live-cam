@@ -10,11 +10,11 @@ unchecked `- [ ]` checklist rows remain.
 
 ## Artifact Under Test
 
-- Installer: `DeepLiveCamStudio-2.1.7-x64-setup.exe`
-- Installer SHA-256: `07DAD2B8A589BC79712B18A5A544469FDC483150A81EA55654531FECE5339FA5`
-- Source commit/tag: see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`
+- Installer: `DeepLiveCamStudio-2.1.9-x64-setup.exe`
+- Installer SHA-256: `8BF83FC52B74AEE9875A1CD95F39BC5663AC74CAD3EC3184966B64900B0CA907`
+- Source commit/tag: see `build/windows/release-assets/2.1.9/RELEASE_ASSETS.md`
 - Tester: Neil Mitchell
-- Date: 2026-05-19
+- Date: 2026-05-20
 - Windows edition/build:
 - Admin rights used for install: no
 
@@ -37,14 +37,14 @@ Record command output, screenshots, VM snapshot name, or tester notes here.
 
 ### Manual Signoff
 
-- 2026-05-19: Neil Mitchell confirmed all required clean Windows VM checks pass for the release candidate.
+- 2026-05-20: 2.1.9 installer install/uninstall behavior was rechecked with the automated subset below; no installer-flow checklist item changed from the previously signed release candidate.
 
 ### Automated Subset Evidence
 
-- 2026-05-19T20:09:24Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.7` completed with `Installer smoke test passed`.
-- Installer under test: `build\windows\installer\DeepLiveCamStudio-2.1.7-x64-setup.exe`.
-- Installer SHA-256 observed by the helper: `07DAD2B8A589BC79712B18A5A544469FDC483150A81EA55654531FECE5339FA5`.
-- Generated local evidence packet: `build\windows\manual-evidence\clean-vm\clean-vm-2.1.7-20260519-170924.md`.
+- 2026-05-20T04:35:50Z on `DESKTOP-NEIL` / Windows 11 Pro build `26200`: `build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.9` completed with `Installer smoke test passed`.
+- Installer under test: `build\windows\installer\DeepLiveCamStudio-2.1.9-x64-setup.exe`.
+- Installer SHA-256 observed by the helper: `8BF83FC52B74AEE9875A1CD95F39BC5663AC74CAD3EC3184966B64900B0CA907`.
+- Generated local evidence packet: `build\windows\manual-evidence\clean-vm\clean-vm-2.1.9-20260520-013550.md`.
 - Release upload copy: `CLEAN_VM_AUTOMATED_EVIDENCE.md`.
 - Covered repeatable subset: silent per-user install, required installed files, forbidden model/checkpoint scan, CLI `--version`, silent uninstall, and user-model sentinel preservation.
 - Still requires manual tester confirmation before `Status: PASS`: fresh Windows VM context, Start menu shortcut, optional desktop shortcut, model-download consent text, missing-model messaging, and interactive uninstall prompt.
@@ -52,9 +52,10 @@ Record command output, screenshots, VM snapshot name, or tester notes here.
 Automated evidence helper for the repeatable subset:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.7
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.9
 ```
 
 Attach or summarize the generated `build\windows\manual-evidence\clean-vm\*.md`
 and `*.log` files, then complete the remaining interactive checks before
 changing this file to `Status: PASS`.
+
