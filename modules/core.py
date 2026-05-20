@@ -55,7 +55,6 @@ def parse_args() -> None:
     program.add_argument('--diagnostic-overlay-layers', help='comma-separated overlay layers: bbox,kps,landmarks,mouth,eyes,mask,profile,all', dest='diagnostic_overlay_layers', default='bbox,kps,profile')
     program.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264', choices=['libx264', 'libx265', 'libvpx-vp9'])
     program.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18, choices=range(52), metavar='[0-51]')
-    program.add_argument('-l', '--lang', help='Ui language', default="en")
     program.add_argument('--live-mirror', help='The live camera display as you see it in the front-facing camera frame', dest='live_mirror', action='store_true', default=False)
     program.add_argument('--live-resizable', help='The live camera frame is resizable', dest='live_resizable', action='store_true', default=False)
     program.add_argument('--camera-width', help='live camera capture width; overrides the virtual camera width for processing', dest='camera_width', type=positive_int)
@@ -133,8 +132,6 @@ def parse_args() -> None:
         if args.execution_threads is not None
         else suggest_execution_threads(modules.globals.execution_providers)
     )
-    modules.globals.lang = args.lang
-
     #for ENHANCER tumblers:
     for enhancer_key in ENHANCER_KEYS:
         modules.globals.fp_ui[enhancer_key] = enhancer_key in args.frame_processor
@@ -446,5 +443,5 @@ def run() -> None:
     else:
         import modules.ui as ui
 
-        window = ui.init(start, destroy, modules.globals.lang)
+        window = ui.init(start, destroy)
         window.mainloop()

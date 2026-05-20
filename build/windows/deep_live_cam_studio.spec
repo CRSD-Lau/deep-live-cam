@@ -59,8 +59,6 @@ datas += collect_data_files("insightface")
 datas += collect_data_files("cv2")
 datas += existing_datas(
     [
-        ("locales", "locales"),
-        ("media", "media"),
         ("Logo.png", "."),
         ("modules/ui.json", "modules"),
     ]

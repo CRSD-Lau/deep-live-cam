@@ -1,7 +1,7 @@
 """PySide6 UI for Deep-Live-Cam.
 
 Public API kept stable for the rest of the codebase:
-    init(start, destroy, lang) -> _Window
+    init(start, destroy) -> _Window
         Returned object has .mainloop() that core.py calls.
     update_status(text)
         Thread-safe; routed through Qt signal when called off-UI.
@@ -65,7 +65,6 @@ from modules.enhancement_registry import (
     get_enhancer_choices,
 )
 from modules.execution_providers import provider_config_summary
-from modules.gettext import LanguageManager
 from modules.gpu_processing import gpu_cvt_color, gpu_flip, gpu_resize
 from modules.live_queue import get_latest, put_latest
 from modules.pipeline_metrics import (
@@ -316,15 +315,12 @@ _PREVIEW: Optional["PreviewWindow"] = None
 _WEBCAM_PREVIEW: Optional["WebcamPreviewWindow"] = None
 _MAPPER: Optional["MapperDialog"] = None
 _LIVE_MAPPER: Optional["LiveMapperDialog"] = None
-_LANG: Optional[LanguageManager] = None
 _BRIDGE: Optional["_UIBridge"] = None
 
 
 def _(text: str) -> str:
-    """Translate via LanguageManager; falls back to identity."""
-    if _LANG is None:
-        return text
-    return _LANG._(text)
+    """Return UI text."""
+    return text
 
 
 def _destroy_without_quit(destroy_cb: Callable) -> None:
@@ -2321,12 +2317,9 @@ class _Window:
         self._app.exec()
 
 
-def init(
-    start: Callable[[], None], destroy: Callable[[], None], lang: str
-) -> _Window:
-    global _APP, _MAIN, _PREVIEW, _LANG, _BRIDGE
+def init(start: Callable[[], None], destroy: Callable[[], None]) -> _Window:
+    global _APP, _MAIN, _PREVIEW, _BRIDGE
 
-    _LANG = LanguageManager(lang)
     if QApplication.instance() is None:
         _APP = QApplication(sys.argv)
     else:
