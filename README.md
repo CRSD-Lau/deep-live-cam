@@ -1,62 +1,70 @@
-# Deep Live Cam Studio 2.1.9
+<p align="center">
+  <img src="Logo.png" width="112" alt="Deep Live Cam Studio logo">
+</p>
 
-Deep Live Cam Studio is a Windows-focused build of Deep-Live-Cam with a packaged desktop installer, CUDA-enabled runtime support, explicit model download/verification, OBS virtual-camera workflow support, and release compliance tooling.
+<h1 align="center">Deep Live Cam Studio</h1>
 
-This repository is the working source for the Windows Studio build published by CRSD-Lau. It is based on the upstream [hacksider/Deep-Live-Cam](https://github.com/hacksider/Deep-Live-Cam) project, with the Windows packaging and release work documented below.
+<p align="center">
+  Windows-focused Deep-Live-Cam build with a packaged installer, in-app model setup, CUDA runtime support, and OBS virtual-camera workflow docs.
+</p>
+
+<p align="center">
+  <a href="https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.9">
+    <img src="https://img.shields.io/badge/release-2.1.9-2f80ed" alt="Release 2.1.9">
+  </a>
+  <img src="https://img.shields.io/badge/platform-Windows%20x64-4353ff" alt="Windows x64">
+  <img src="https://img.shields.io/badge/license-AGPL--3.0-111827" alt="AGPL-3.0">
+  <img src="https://img.shields.io/badge/models-user%20download-f59e0b" alt="Models downloaded by user">
+</p>
+
+<p align="center">
+  <a href="#download">Download</a> ·
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#model-setup">Models</a> ·
+  <a href="#obs-and-virtual-camera">OBS</a> ·
+  <a href="#build-from-source">Build</a> ·
+  <a href="#license-and-compliance">Compliance</a>
+</p>
 
 ![Deep Live Cam Studio main window](docs/images/deep-live-cam-studio-main.png)
 
-## Quick Start For Windows Users
+> [!IMPORTANT]
+> Download the Windows installer from the GitHub Release page, not from the green **Code** button. Source archives are for developers and do not install the app.
 
-This is the normal setup path for someone who just wants to run the app:
+> [!WARNING]
+> The installer does not include face-swap model files. After installing, open the app and click **Set Up Models** so you can review model sources, license notes, and checksums before download.
 
-1. Download the installer:
-   [DeepLiveCamStudio-2.1.9-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.9/DeepLiveCamStudio-2.1.9-x64-setup.exe)
-2. Run the installer.
-3. If Windows SmartScreen appears, choose **More info** and then **Run anyway** only if the installer came from the release link above.
-4. Open **Deep Live Cam Studio** from the Windows Start Menu.
-5. Click **Set Up Models** in the app header and follow the prompts.
+<details>
+<summary>Table of contents</summary>
 
-That is enough for the installed app and required face-swap model setup.
+- [Download](#download)
+- [Quick Start](#quick-start)
+- [What The Installer Includes](#what-the-installer-includes)
+- [Latest Release](#latest-release)
+- [Install And Update](#install-and-update)
+- [Windows Runtime Notes](#windows-runtime-notes)
+- [Model Setup](#model-setup)
+- [Usage](#usage)
+- [OBS And Virtual Camera](#obs-and-virtual-camera)
+- [Build From Source](#build-from-source)
+- [Build The Windows Installer](#build-the-windows-installer)
+- [Signing](#signing)
+- [Release Process](#release-process)
+- [Safety And Responsible Use](#safety-and-responsible-use)
+- [Upstream Attribution](#upstream-attribution)
+- [License And Compliance](#license-and-compliance)
 
-Model setup is built into the Studio window. You do not need to search Windows for a separate model downloader shortcut.
+</details>
 
-![Zoomed view of the Set Up Models button in the app header](docs/images/set-up-models-header-highlight.png)
+## Download
 
-For video files, `ffmpeg` and `ffprobe` are also needed. Install them with:
+Current release:
 
-```powershell
-winget install Gyan.FFmpeg
-```
+[Deep Live Cam Studio 2.1.9](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.9)
 
-![Windows PowerShell winget install FFmpeg walkthrough](docs/images/ffmpeg-winget-install-windows.gif)
+Direct installer:
 
-Then close and reopen Deep Live Cam Studio. OBS Virtual Camera is optional and only needed if you want to send the live output into Discord, Zoom, Teams, OBS, or similar apps.
-
-## What The Installer Includes
-
-Included:
-
-- Deep Live Cam Studio desktop app.
-- Start Menu shortcut for the app.
-- Packaged Python runtime and app dependencies.
-- CUDA 12/cuDNN 9 runtime DLLs for NVIDIA GPU acceleration.
-
-Not included:
-
-- Face-swap model/checkpoint files. Use **Set Up Models** in the app after install.
-- `ffmpeg` and `ffprobe`, which are needed for video-file processing and audio restore.
-- OBS Virtual Camera, which is optional.
-
-## Download The App
-
-If you only want to install Deep Live Cam Studio, do not use the green **Code** button. The source `.zip` files are for developers. Download the Windows installer from the latest GitHub Release:
-
-[Download DeepLiveCamStudio-2.1.9-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.9/DeepLiveCamStudio-2.1.9-x64-setup.exe)
-
-Or open the full release page:
-
-[Deep Live Cam Studio 2.1.9 release](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.9)
+[DeepLiveCamStudio-2.1.9-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.9/DeepLiveCamStudio-2.1.9-x64-setup.exe)
 
 On the release page, expand **Assets** and choose:
 
@@ -64,64 +72,51 @@ On the release page, expand **Assets** and choose:
 DeepLiveCamStudio-2.1.9-x64-setup.exe
 ```
 
-Run the installer after it downloads. Windows may show a Microsoft Defender SmartScreen warning because the public installer is not signed by a paid code-signing certificate. Choose **More info** and then **Run anyway** only if you downloaded it from the release link above.
+Windows may show Microsoft Defender SmartScreen because the public installer is not signed by a paid code-signing certificate. Choose **More info** and then **Run anyway** only if the file came from the release link above.
 
-After installing, launch **Deep Live Cam Studio** from the Start Menu. The app installs here by default:
+## Quick Start
 
-```text
-%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.1.9
-```
+1. Download `DeepLiveCamStudio-2.1.9-x64-setup.exe` from the release page.
+2. Run the installer.
+3. Open **Deep Live Cam Studio** from the Windows Start Menu.
+4. Click **Set Up Models** in the app header.
+5. Follow the model source, license, and checksum prompts.
 
-The installer does not include model/checkpoint files. After first install, open **Deep Live Cam Studio** and click **Set Up Models** in the app header. If you prefer the terminal, open one in the installed app folder and run:
+That is enough for the installed app and required face-swap model setup.
+
+![Zoomed view of the Set Up Models button in the app header](docs/images/set-up-models-header-highlight.png)
+
+For video files, install `ffmpeg` and `ffprobe`:
 
 ```powershell
-DeepLiveCamStudioCLI.exe --download-models
+winget install Gyan.FFmpeg
 ```
 
-The downloader shows model sources, license notes, and checksums before installing model files.
+![Windows PowerShell winget install FFmpeg walkthrough](docs/images/ffmpeg-winget-install-windows.gif)
 
-## What We Added
+Close and reopen Deep Live Cam Studio after installing FFmpeg. OBS Virtual Camera is optional and only needed when sending live output into Discord, Zoom, Teams, OBS, or similar apps.
 
-- Windows x64 per-user installer built with PyInstaller and Inno Setup.
-- Versioned install path under `%LOCALAPPDATA%\Programs\DeepLiveCamStudio\<version>`.
-- Desktop/Start Menu app launcher for `DeepLiveCamStudio.exe`.
-- Separate CLI entry point, `DeepLiveCamStudioCLI.exe`, for diagnostics, model setup, and batch processing.
-- In-app **Set Up Models** flow with source URLs, license notes, and SHA-256 checks before download.
-- User model storage under `%LOCALAPPDATA%\DeepLiveCamStudio\models`, preserved during uninstall.
-- CUDA 12/cuDNN 9 runtime DLL bundling for `onnxruntime-gpu` in packaged Windows builds.
-- Startup DLL registration for frozen PyInstaller installs so CUDA sessions load correctly.
-- OBS Virtual Camera and direct virtual-camera workflow documentation.
-- Packaged runtime, installer, clean-VM, OBS, and release-artifact verification scripts.
-- Windows bundle manifest and third-party license evidence for release review.
-- Optional Authenticode signing support and local self-signing support for test builds.
+## What The Installer Includes
+
+| Included | Not Included |
+| --- | --- |
+| Deep Live Cam Studio desktop app | Face-swap model/checkpoint files |
+| Start Menu shortcut | `ffmpeg` and `ffprobe` |
+| Packaged Python runtime and app dependencies | OBS Virtual Camera |
+| CUDA 12/cuDNN 9 runtime DLLs for NVIDIA GPU acceleration | Paid code-signing reputation |
+| CLI helper for diagnostics and model setup | Redistribution permission for third-party model files |
 
 ## Latest Release
 
-Current release page:
+Version `2.1.9` includes:
 
-[Deep Live Cam Studio 2.1.9](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.9)
-
-What changed in 2.1.9:
-
-- Added the default-on extended subject blend mask for smoother hairline, neck, shoulder, and upper-chest compositing.
-- Reworked the extended subject matte with layered soft falloff so mask wings are cleaner and less hull-like.
-- Added a **Show subject mask** preview overlay and a visible **Extended subject mask** control for troubleshooting.
-- Fixed BGRA/alpha-channel preview frames before face detection and swap-model inference.
-- Preserved existing face, mouth, eye, eyebrow, compliance, and model-download behavior.
-
-Direct installer download:
-
-[DeepLiveCamStudio-2.1.9-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.1.9/DeepLiveCamStudio-2.1.9-x64-setup.exe)
-
-The release asset name is:
-
-```text
-DeepLiveCamStudio-2.1.9-x64-setup.exe
-```
+- Default-on extended subject blend mask for smoother hairline, neck, shoulder, and upper-chest compositing.
+- Reworked extended subject matte with layered soft falloff.
+- **Show subject mask** preview overlay and visible **Extended subject mask** control.
+- BGRA/alpha-channel preview frame fix before face detection and swap-model inference.
+- Preserved face, mouth, eye, eyebrow, compliance, and model-download behavior.
 
 ## Install And Update
-
-Install the latest release by downloading and running `DeepLiveCamStudio-2.1.9-x64-setup.exe` from the GitHub Release page.
 
 Default install path:
 
@@ -135,23 +130,23 @@ Model storage:
 %LOCALAPPDATA%\DeepLiveCamStudio\models
 ```
 
-Updates install into a new versioned folder. You do not need to uninstall the previous version first. Once the new version is working, you can remove older versions from Windows Installed Apps.
+Updates install into a new versioned folder. You do not need to uninstall the previous version first. Once the new version is working, older versions can be removed from Windows Installed Apps.
 
 ## Windows Runtime Notes
 
 - CUDA acceleration requires compatible NVIDIA drivers.
-- The Windows installer bundles the CUDA 12/cuDNN 9 runtime DLLs needed by `onnxruntime-gpu`.
+- The installer bundles the CUDA 12/cuDNN 9 runtime DLLs needed by `onnxruntime-gpu`.
 - If CUDA is unavailable, the app can fall back to CPU or DirectML where supported.
-- `ffmpeg` and `ffprobe` are required for video processing and audio restore. They are not bundled by default.
+- `ffmpeg` and `ffprobe` are required for video processing and audio restore.
 - OBS Virtual Camera is optional and must be installed/configured through OBS.
 - Desktop launch logs are written to `%LOCALAPPDATA%\DeepLiveCamStudio\logs`.
 - UI switch state is written to `%LOCALAPPDATA%\DeepLiveCamStudio\switch_states.json`.
 
 ## Model Setup
 
-From an installed build:
+From the installed app, click **Set Up Models** in the header.
 
-From the installed app, click **Set Up Models** in the header. For terminal setup, open a shell in the installed app folder and run:
+For terminal setup, open a shell in the installed app folder and run:
 
 ```powershell
 DeepLiveCamStudioCLI.exe --download-models
@@ -165,7 +160,8 @@ python run.py --download-models
 
 Use `DLC_MODELS_DIR` to point the app at a different reviewed model folder.
 
-Do not upload model binaries to GitHub Releases unless redistribution rights are confirmed for each model file.
+> [!CAUTION]
+> Do not upload model binaries to GitHub Releases unless redistribution rights are confirmed for every model file.
 
 ## Usage
 
@@ -264,7 +260,7 @@ Package the installer:
 powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.9
 ```
 
-The installer output is:
+Installer output:
 
 ```text
 build\windows\installer\DeepLiveCamStudio-2.1.9-x64-setup.exe
