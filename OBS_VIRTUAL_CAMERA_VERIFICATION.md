@@ -11,7 +11,7 @@ remain.
 ## Artifact Under Test
 
 - Installer: `DeepLiveCamStudio-2.1.9-x64-setup.exe`
-- Installer SHA-256: `8BF83FC52B74AEE9875A1CD95F39BC5663AC74CAD3EC3184966B64900B0CA907`
+- Installer SHA-256: `EFF4D46727AD8157A0527AAC30797B6BDB030E83002483C98CBA617029CC1F0A`
 - Source commit/tag: see `build/windows/release-assets/2.1.9/RELEASE_ASSETS.md`
 - Tester: Neil Mitchell
 - Date: 2026-05-20
