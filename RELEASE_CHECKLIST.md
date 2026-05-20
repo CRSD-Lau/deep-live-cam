@@ -5,6 +5,8 @@ Use this checklist for every Windows installer release.
 ## Build
 
 - [ ] Confirm working tree contains only intentional release changes.
+- [ ] For any public user-facing installer fix after a release is published, bump `AppVersion` to the next patch version before publishing, unless there is an explicit same-version hotfix decision recorded in the release notes.
+- [ ] If a same-version hotfix is unavoidable, confirm the GitHub Release installer asset, installer `.sha256`, corresponding source archive, source `.sha256`, source manifest, `RELEASE_ASSETS.md`, and `SHA256SUMS.txt` are all replaced and re-verified after upload.
 - [ ] Confirm no model/checkpoint files are staged or included in `dist\DeepLiveCamStudio`.
 - [ ] Commit generated release evidence before source packaging, including `LICENSES/PYTHON_DEPENDENCIES.md`, `LICENSES/WINDOWS_BUNDLE_MANIFEST.md`, and `LICENSES/THIRD_PARTY_LICENSES/`.
 - [ ] Review `RELEASE_SOURCE_PREP.md` and resolve mixed-scope dirty worktree changes before tagging.
@@ -102,6 +104,8 @@ Use this checklist for every Windows installer release.
 
 - [ ] Attach installer `.exe`.
 - [ ] Attach installer `.sha256`.
+- [ ] After upload, verify the live GitHub Release installer asset digest matches the local installer SHA-256; do not rely only on the local file or branch commit.
+- [ ] Download the installer from the public release page on a separate machine or browser session and confirm it installs the expected `DeepLiveCamStudio.exe` hash.
 - [ ] Attach or link source archive for the exact release.
 - [ ] Attach source archive `.sha256`.
 - [ ] Attach source archive `.manifest.md`.
