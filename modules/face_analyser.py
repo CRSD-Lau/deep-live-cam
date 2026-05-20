@@ -132,7 +132,8 @@ def _analyse_faces(frame: Frame) -> list:
     landmark_2d_106 model when only face_swapper is active (saves ~1ms
     per face and avoids an unnecessary ONNX session call).
     """
-    if frame is None or not hasattr(frame, "shape"):
+    frame = _normalize_analysis_frame(frame)
+    if frame is None:
         return []
 
     fa = get_face_analyser()
@@ -191,6 +192,9 @@ def detect_one_face_fast(frame: Frame) -> Any:
     ~10ms vs ~16ms for full get_one_face() at 1080p.
     """
     from insightface.app.common import Face
+    frame = _normalize_analysis_frame(frame)
+    if frame is None:
+        return None
     fa = get_face_analyser()
     bboxes, kpss = fa.det_model.detect(frame, max_num=0, metric='default')
     if bboxes.shape[0] == 0:
@@ -202,12 +206,37 @@ def detect_one_face_fast(frame: Frame) -> Any:
 def detect_many_faces_fast(frame: Frame) -> Any:
     """Detection-only multi-face — skips landmark and recognition."""
     from insightface.app.common import Face
+    frame = _normalize_analysis_frame(frame)
+    if frame is None:
+        return None
     fa = get_face_analyser()
     bboxes, kpss = fa.det_model.detect(frame, max_num=0, metric='default')
     if bboxes.shape[0] == 0:
         return None
     return [Face(bbox=bboxes[i, :4], kps=kpss[i], det_score=bboxes[i, 4])
             for i in range(bboxes.shape[0])]
+
+
+def _normalize_analysis_frame(frame: Frame) -> np.ndarray | None:
+    if frame is None or not hasattr(frame, "shape"):
+        return None
+    try:
+        array = np.asarray(frame)
+    except (TypeError, ValueError):
+        return None
+    if array.size == 0:
+        return None
+    if array.ndim == 2:
+        return cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
+    if array.ndim != 3:
+        return None
+    if array.shape[2] == 3:
+        return array
+    if array.shape[2] == 4:
+        return cv2.cvtColor(array, cv2.COLOR_BGRA2BGR)
+    if array.shape[2] == 1:
+        return cv2.cvtColor(array[:, :, 0], cv2.COLOR_GRAY2BGR)
+    return None
 
 
 def has_valid_map() -> bool:

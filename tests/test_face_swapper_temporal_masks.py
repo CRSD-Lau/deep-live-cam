@@ -69,6 +69,39 @@ def test_temporal_smoothing_masks_bypasses_when_strength_disabled(monkeypatch):
     )
 
 
+def test_subject_mask_overlay_applies_without_other_post_processing(monkeypatch):
+    captured = {}
+    mask = np.zeros((12, 12), dtype=np.uint8)
+    mask[3:9, 3:9] = 255
+    face = {"bbox": np.array([3.0, 3.0, 9.0, 9.0], dtype=np.float32)}
+
+    monkeypatch.setattr(modules.globals, "sharpness", 0.0)
+    monkeypatch.setattr(modules.globals, "enable_interpolation", False)
+    monkeypatch.setattr(modules.globals, "diagnostic_overlay", False)
+    monkeypatch.setattr(modules.globals, "compositing_show_subject_mask", True)
+    monkeypatch.setattr(face_swapper, "create_face_mask", lambda *_args: mask)
+
+    def fake_overlay(frame, faces, **kwargs):
+        captured["faces"] = faces
+        captured["layers"] = kwargs["layers"]
+        captured["masks"] = kwargs["masks"]
+        return frame + 1
+
+    monkeypatch.setattr(face_swapper, "draw_diagnostic_overlay", fake_overlay)
+
+    current = np.zeros((12, 12, 3), dtype=np.uint8)
+    result = face_swapper.apply_post_processing(
+        current,
+        [np.array([3, 3, 9, 9])],
+        [face],
+    )
+
+    assert result[0, 0, 0] == 1
+    assert captured["faces"] == [face]
+    assert captured["layers"] == ["mask"]
+    assert captured["masks"] == [mask]
+
+
 def test_temporal_expression_response_masks_passes_region_controls(monkeypatch):
     captured = {}
     response_mask = np.full((12, 12), 255, dtype=np.uint8)

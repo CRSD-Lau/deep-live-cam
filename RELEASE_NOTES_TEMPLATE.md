@@ -1,11 +1,11 @@
-# Deep Live Cam Studio 2.1.8 Windows Release
+# Deep Live Cam Studio 2.1.9 Windows Release
 
 This release packages a modified build of Deep-Live-Cam for Windows x64.
 
 ## Downloads
 
-- Windows installer: `DeepLiveCamStudio-2.1.8-x64-setup.exe`
-- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.1.8-x64-setup.exe.sha256`
+- Windows installer: `DeepLiveCamStudio-2.1.9-x64-setup.exe`
+- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.1.9-x64-setup.exe.sha256`
 - Corresponding source archive: listed in the uploaded `RELEASE_ASSETS.md`
 - Source archive SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and source `.zip.sha256` sidecar
 - Source ref: listed in the uploaded `RELEASE_ASSETS.md` and source `.manifest.md`
@@ -19,7 +19,7 @@ Attach the source archive listed above to the GitHub Release, or link the exact 
 The source archive must be produced from the release Git ref with:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.8 -GitRef HEAD
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.9 -GitRef HEAD
 ```
 
 This release preserves attribution to the original project:
@@ -50,11 +50,10 @@ Downloaded models are stored under:
 - Start menu shortcut and optional desktop shortcut.
 - Clean uninstall of app files; user model data is preserved during silent uninstall and interactive uninstall asks before removing models.
 - WebP and AVIF source-image upload support.
-- Cleaner Studio UI media controls with the unreliable Random face action removed.
-- Responsive restored-window layout for the header, media slots, and render controls.
-- Fixed Start Live so it sends frames to OBS Virtual Camera instead of only opening the preview window.
-- Fixed the Studio Exit button so it stops child windows, cleans up, and closes the app reliably.
-- Dependency security refresh for ONNX, Pillow, and Protobuf; see `SECURITY_REVIEW.md`.
+- Default-on extended subject blend mask for smoother hairline, neck, shoulder, and upper-chest compositing.
+- Layered extended subject matte with soft falloff to reduce hard mask edges around hair and shoulders.
+- New Studio controls for extended subject masking and subject-mask preview overlay.
+- Fixed alpha-channel preview frames before face detection and swap-model inference.
 - Packaged runtime preflight and installer smoke tests are included under `build/windows`.
 
 ## Known Requirements

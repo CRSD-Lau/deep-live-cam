@@ -76,6 +76,7 @@ def test_fast_paste_back_passes_motion_blur_to_adaptive_feather(monkeypatch):
     monkeypatch.setattr(modules.globals, "compositing_color_match_strength", 0.0)
     monkeypatch.setattr(modules.globals, "compositing_lighting_match_strength", 0.0)
     monkeypatch.setattr(modules.globals, "compositing_occlusion_edge_strength", 0.0)
+    monkeypatch.setattr(modules.globals, "compositing_extended_subject_mask", False)
 
     target = np.full((12, 12, 3), 160, dtype=np.uint8)
     fake = np.full((4, 4, 3), 40, dtype=np.uint8)
@@ -405,6 +406,7 @@ def test_fast_paste_back_passes_skin_chroma_mask_controls(monkeypatch):
     monkeypatch.setattr(modules.globals, "compositing_color_match_strength", 0.0)
     monkeypatch.setattr(modules.globals, "compositing_lighting_match_strength", 0.0)
     monkeypatch.setattr(modules.globals, "compositing_occlusion_edge_strength", 0.0)
+    monkeypatch.setattr(modules.globals, "compositing_extended_subject_mask", False)
 
     target = np.full((12, 12, 3), 160, dtype=np.uint8)
     fake = np.full((4, 4, 3), 40, dtype=np.uint8)
@@ -589,6 +591,7 @@ def test_fast_paste_back_passes_profile_taper_to_landmark_refinement(monkeypatch
     monkeypatch.setattr(modules.globals, "compositing_color_match_strength", 0.0)
     monkeypatch.setattr(modules.globals, "compositing_lighting_match_strength", 0.0)
     monkeypatch.setattr(modules.globals, "compositing_occlusion_edge_strength", 0.0)
+    monkeypatch.setattr(modules.globals, "compositing_extended_subject_mask", False)
 
     target = np.full((12, 12, 3), 160, dtype=np.uint8)
     fake = np.full((4, 4, 3), 40, dtype=np.uint8)
@@ -611,3 +614,47 @@ def test_fast_paste_back_passes_profile_taper_to_landmark_refinement(monkeypatch
     assert captured["strength"] == 0.5
     assert captured["profile_amount"] > 0.8
     assert captured["profile_taper_ratio"] == 0.25
+
+
+def test_fast_paste_back_uses_extended_subject_mask_strength_by_default(monkeypatch):
+    captured = {}
+
+    def fake_refine(alpha_crop, _face, _frame_shape, _crop_bounds, **kwargs):
+        captured.update(kwargs)
+        return alpha_crop
+
+    monkeypatch.setattr(
+        face_swapper,
+        "get_adaptive_feather_settings",
+        lambda **_kwargs: face_swapper.FeatherSettings(
+            erode_ratio=0.1,
+            blur_ratio=0.05,
+        ),
+    )
+    monkeypatch.setattr(
+        face_swapper,
+        "_get_soft_alpha",
+        lambda size, _settings: np.full((size, size), 255, dtype=np.uint8),
+    )
+    monkeypatch.setattr(face_swapper, "refine_alpha_with_landmark_mask", fake_refine)
+    monkeypatch.setattr(face_swapper, "_HAS_TORCH_CUDA", False)
+    monkeypatch.setattr(modules.globals, "compositing_landmark_mask_strength", 0.0)
+    monkeypatch.setattr(modules.globals, "compositing_extended_subject_mask", True)
+    monkeypatch.setattr(modules.globals, "compositing_color_match_strength", 0.0)
+    monkeypatch.setattr(modules.globals, "compositing_lighting_match_strength", 0.0)
+    monkeypatch.setattr(modules.globals, "compositing_occlusion_edge_strength", 0.0)
+
+    target = np.full((12, 12, 3), 160, dtype=np.uint8)
+    fake = np.full((4, 4, 3), 40, dtype=np.uint8)
+    matrix = np.array([[1.0, 0.0, -4.0], [0.0, 1.0, -4.0]], dtype=np.float32)
+
+    face_swapper._fast_paste_back(
+        target.copy(),
+        fake,
+        fake,
+        matrix,
+        target_face=SimpleNamespace(),
+    )
+
+    assert captured["extended_subject"] is True
+    assert captured["strength"] == 1.0

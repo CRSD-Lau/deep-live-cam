@@ -21,6 +21,7 @@ from modules.compositing.masks import (
     FeatherSettings,
     create_aligned_face_alpha,
     create_expression_occlusion_mask,
+    create_extended_subject_mask,
     create_landmark_face_mask,
     estimate_blur_amount,
     estimate_edge_contrast,
@@ -912,16 +913,24 @@ def _fast_paste_back(
     soft_alpha = _get_soft_alpha(face_h, feather_settings)
     bgr_fake_crop = cv2.warpAffine(bgr_fake, IM_crop, (crop_w, crop_h), borderMode=cv2.BORDER_REPLICATE)
     alpha_crop = cv2.warpAffine(soft_alpha, IM_crop, (crop_w, crop_h), borderValue=0)
+    extended_subject_enabled = getattr(
+        modules.globals,
+        "compositing_extended_subject_mask",
+        False,
+    )
+    landmark_mask_strength = getattr(
+        modules.globals,
+        "compositing_landmark_mask_strength",
+        0.0,
+    )
+    if extended_subject_enabled:
+        landmark_mask_strength = max(float(landmark_mask_strength or 0.0), 1.0)
     alpha_crop = refine_alpha_with_landmark_mask(
         alpha_crop,
         target_face,
         target_img.shape,
         (x1p, y1p, x2p, y2p),
-        strength=getattr(
-            modules.globals,
-            "compositing_landmark_mask_strength",
-            0.0,
-        ),
+        strength=landmark_mask_strength,
         dilation_ratio=getattr(
             modules.globals,
             "compositing_landmark_mask_dilation_ratio",
@@ -937,6 +946,27 @@ def _fast_paste_back(
             modules.globals,
             "compositing_landmark_mask_profile_taper",
             0.0,
+        ),
+        extended_subject=extended_subject_enabled,
+        hairline_ratio=getattr(
+            modules.globals,
+            "compositing_extended_subject_hairline_ratio",
+            0.32,
+        ),
+        side_ratio=getattr(
+            modules.globals,
+            "compositing_extended_subject_side_ratio",
+            0.24,
+        ),
+        shoulder_ratio=getattr(
+            modules.globals,
+            "compositing_extended_subject_shoulder_ratio",
+            0.48,
+        ),
+        chest_ratio=getattr(
+            modules.globals,
+            "compositing_extended_subject_chest_ratio",
+            0.58,
         ),
     )
     alpha_crop = refine_alpha_with_skin_chroma_mask(
@@ -1195,6 +1225,11 @@ def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
     if not hasattr(source_face, 'normed_embedding') or source_face.normed_embedding is None:
         return temp_frame
 
+    normalized_frame = _normalize_bgr_frame(temp_frame)
+    if normalized_frame is None:
+        return temp_frame
+    temp_frame = normalized_frame
+
     # _fast_paste_back writes in-place on the GPU path.  Only copy when
     # mouth_mask or opacity < 1 need an unmodified original.
     opacity = getattr(modules.globals, "opacity", 1.0)
@@ -1311,6 +1346,28 @@ def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
     return final_swapped_frame.astype(np.uint8)
 
 
+def _normalize_bgr_frame(frame: Frame) -> np.ndarray | None:
+    if frame is None or not hasattr(frame, "shape"):
+        return None
+    try:
+        array = np.asarray(frame)
+    except (TypeError, ValueError):
+        return None
+    if array.size == 0:
+        return None
+    if array.ndim == 2:
+        return cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
+    if array.ndim != 3:
+        return None
+    if array.shape[2] == 3:
+        return array
+    if array.shape[2] == 4:
+        return cv2.cvtColor(array, cv2.COLOR_BGRA2BGR)
+    if array.shape[2] == 1:
+        return cv2.cvtColor(array[:, :, 0], cv2.COLOR_GRAY2BGR)
+    return None
+
+
 # --- START: Mac M1-M5 Optimized Face Detection ---
 def get_faces_optimized(frame: Frame, use_cache: bool = True) -> Optional[List[Face]]:
     """Optimized face detection for live mode on Apple Silicon"""
@@ -1369,7 +1426,11 @@ def apply_post_processing(
     if sharpness_value <= 0.0 and not interpolation_active:
         PREVIOUS_FRAME_RESULT = None
         PREVIOUS_EXPRESSION_SNAPSHOTS = {}
-        return current_frame
+        return _apply_diagnostic_overlay(
+            current_frame,
+            swapped_face_bboxes,
+            swapped_faces,
+        )
 
     processed_frame = current_frame.copy()
 
@@ -1623,6 +1684,31 @@ def _temporal_smoothing_masks(
                     "compositing_landmark_mask_profile_taper",
                     0.0,
                 ),
+                extended_subject=getattr(
+                    modules.globals,
+                    "compositing_extended_subject_mask",
+                    False,
+                ),
+                hairline_ratio=getattr(
+                    modules.globals,
+                    "compositing_extended_subject_hairline_ratio",
+                    0.32,
+                ),
+                side_ratio=getattr(
+                    modules.globals,
+                    "compositing_extended_subject_side_ratio",
+                    0.24,
+                ),
+                shoulder_ratio=getattr(
+                    modules.globals,
+                    "compositing_extended_subject_shoulder_ratio",
+                    0.48,
+                ),
+                chest_ratio=getattr(
+                    modules.globals,
+                    "compositing_extended_subject_chest_ratio",
+                    0.58,
+                ),
             )
         )
     return masks
@@ -1802,14 +1888,26 @@ def _apply_diagnostic_overlay(
     swapped_face_bboxes: List[np.ndarray],
     swapped_faces: Optional[List[Face]] = None,
 ) -> Frame:
-    if not getattr(modules.globals, "diagnostic_overlay", False):
+    diagnostic_enabled = getattr(modules.globals, "diagnostic_overlay", False)
+    subject_mask_enabled = getattr(
+        modules.globals,
+        "compositing_show_subject_mask",
+        False,
+    )
+    if not diagnostic_enabled and not subject_mask_enabled:
         return frame
 
-    layers = list(getattr(
-        modules.globals,
-        "diagnostic_overlay_layers",
-        ["bbox", "kps", "profile"],
-    ))
+    layers = (
+        list(getattr(
+            modules.globals,
+            "diagnostic_overlay_layers",
+            ["bbox", "kps", "profile"],
+        ))
+        if diagnostic_enabled
+        else []
+    )
+    if subject_mask_enabled and "mask" not in layers:
+        layers.append("mask")
     faces = [face for face in (swapped_faces or []) if face is not None]
     if not faces and swapped_face_bboxes:
         faces = [{"bbox": bbox} for bbox in swapped_face_bboxes]
@@ -2477,7 +2575,16 @@ def apply_mouth_area(
     return frame
 
 
-def create_face_mask(face: Face, frame: Frame) -> np.ndarray:
+def create_face_mask(
+    face: Face,
+    frame: Frame,
+    *,
+    extended_subject: bool | None = None,
+    hairline_ratio: float | None = None,
+    side_ratio: float | None = None,
+    shoulder_ratio: float | None = None,
+    chest_ratio: float | None = None,
+) -> np.ndarray:
     """Creates a feathered mask covering the whole face area based on landmarks."""
     if frame is None or not hasattr(frame, "shape") or len(frame.shape) < 2:
         return np.zeros((0, 0), dtype=np.uint8)
@@ -2500,6 +2607,12 @@ def create_face_mask(face: Face, frame: Frame) -> np.ndarray:
         # Use standard face outline landmarks (0-32)
         # Use standard face outline (0-32)
         face_outline = landmarks_int[0:33]
+        if extended_subject is None:
+            extended_subject = getattr(
+                modules.globals,
+                "compositing_extended_subject_mask",
+                False,
+            )
 
         # Estimate forehead points to ensure mask covers the whole face (including forehead)
         # This is critical for Poisson blending to work correctly on the forehead
@@ -2545,6 +2658,55 @@ def create_face_mask(face: Face, frame: Frame) -> np.ndarray:
         except Exception as hull_e:
              print(f"Error creating convex hull for face mask: {hull_e}")
              return mask # Return empty mask on error
+
+        if extended_subject:
+            face_bbox = _face_bbox(face)
+            mask, _points = create_extended_subject_mask(
+                face_outline.astype(np.float32),
+                bbox=(
+                    tuple(float(value) for value in face_bbox.tolist())
+                    if face_bbox is not None
+                    else None
+                ),
+                frame_shape=frame.shape,
+                base_mask=mask,
+                hairline_ratio=(
+                    getattr(
+                        modules.globals,
+                        "compositing_extended_subject_hairline_ratio",
+                        0.32,
+                    )
+                    if hairline_ratio is None
+                    else hairline_ratio
+                ),
+                side_ratio=(
+                    getattr(
+                        modules.globals,
+                        "compositing_extended_subject_side_ratio",
+                        0.24,
+                    )
+                    if side_ratio is None
+                    else side_ratio
+                ),
+                shoulder_ratio=(
+                    getattr(
+                        modules.globals,
+                        "compositing_extended_subject_shoulder_ratio",
+                        0.48,
+                    )
+                    if shoulder_ratio is None
+                    else shoulder_ratio
+                ),
+                chest_ratio=(
+                    getattr(
+                        modules.globals,
+                        "compositing_extended_subject_chest_ratio",
+                        0.58,
+                    )
+                    if chest_ratio is None
+                    else chest_ratio
+                ),
+            )
 
 
         # Apply Gaussian blur to feather the mask edges (GPU-accelerated when available)

@@ -452,6 +452,8 @@ def save_switch_states():
         "mouth_mask_size": modules.globals.mouth_mask_size,
         "mouth_mask_temporal_smoothing": modules.globals.mouth_mask_temporal_smoothing,
         "mouth_mask_temporal_motion_reduction": modules.globals.mouth_mask_temporal_motion_reduction,
+        "compositing_extended_subject_mask": modules.globals.compositing_extended_subject_mask,
+        "compositing_show_subject_mask": modules.globals.compositing_show_subject_mask,
         "opacity": modules.globals.opacity,
         "sharpness": modules.globals.sharpness,
         "enable_interpolation": modules.globals.enable_interpolation,
@@ -500,6 +502,14 @@ def load_switch_states():
             modules.globals.fp_ui = saved_fp_ui
         modules.globals.show_fps = state.get("show_fps", False)
         modules.globals.show_mouth_mask_box = False
+        modules.globals.compositing_extended_subject_mask = state.get(
+            "compositing_extended_subject_mask",
+            True,
+        )
+        modules.globals.compositing_show_subject_mask = state.get(
+            "compositing_show_subject_mask",
+            False,
+        )
         modules.globals.opacity = state.get("opacity", 1.0)
         restore_quality_profile_runtime_state(modules.globals, state)
         modules.globals.mouth_mask = modules.globals.mouth_mask_size > 0
@@ -927,6 +937,16 @@ class MainWindow(QMainWindow):
                                  "Fix blue/green color cast from some webcams")
         self.sw_show_fps = make("show_fps", "Show FPS",
                                 "Display frames-per-second counter on the live preview")
+        self.sw_extended_subject_mask = make(
+            "compositing_extended_subject_mask",
+            "Extended subject mask",
+            "Expand blending into hairline, neck, shoulders, and upper chest",
+        )
+        self.sw_subject_mask_overlay = make(
+            "compositing_show_subject_mask",
+            "Show subject mask",
+            "Overlay the active subject blend mask on preview/live output",
+        )
 
         # Map faces is special — closes mapper when toggled off.
         self.sw_map_faces = _Switch(_("Map faces"), modules.globals.map_faces,
@@ -939,6 +959,7 @@ class MainWindow(QMainWindow):
             self.sw_keep_frames, self.sw_many_faces,
             self.sw_map_faces, self.sw_show_fps,
             self.sw_poisson, self.sw_color_fix,
+            self.sw_extended_subject_mask, self.sw_subject_mask_overlay,
         ]
         for i, w in enumerate(items):
             grid.addWidget(w, i // 2, i % 2)

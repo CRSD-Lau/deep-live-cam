@@ -253,6 +253,62 @@ def test_create_landmark_face_mask_tapers_far_side_for_profile_faces():
     assert tapered[50, 58] == frontal[50, 58]
 
 
+def test_create_landmark_face_mask_opt_in_extended_subject_covers_upper_body_without_far_background():
+    face = _synthetic_face()
+
+    baseline = create_landmark_face_mask(
+        face,
+        (128, 128, 3),
+        dilation_ratio=0.0,
+        feather_ratio=0.0,
+        forehead_ratio=0.0,
+    )
+    extended = create_landmark_face_mask(
+        face,
+        (128, 128, 3),
+        dilation_ratio=0.0,
+        feather_ratio=0.0,
+        forehead_ratio=0.0,
+        extended_subject=True,
+    )
+
+    assert baseline is not None
+    assert extended is not None
+    assert baseline[48, 48] == 255
+    assert extended[48, 48] == 255
+    assert baseline[96, 48] == 0
+    assert extended[96, 48] == 255
+    assert extended[92, 24] >= 225
+    assert extended[92, 72] >= 225
+    assert 40 <= extended[96, 8] <= 180
+    assert extended[96, 4] == 0
+    assert extended[96, 120] == 0
+
+
+def test_create_landmark_face_mask_extended_subject_has_graduated_hair_and_shoulder_wings():
+    face = _synthetic_face()
+
+    extended = create_landmark_face_mask(
+        face,
+        (128, 128, 3),
+        dilation_ratio=0.0,
+        feather_ratio=0.0,
+        forehead_ratio=0.0,
+        extended_subject=True,
+        shoulder_ratio=0.48,
+        chest_ratio=0.55,
+    )
+
+    assert extended is not None
+    assert extended[48, 48] == 255
+    assert extended[96, 48] == 255
+    assert 40 <= extended[18, 24] <= 220
+    assert 40 <= extended[96, 12] <= 220
+    assert 40 <= extended[96, 86] <= 220
+    assert extended[96, 4] == 0
+    assert extended[96, 120] == 0
+
+
 def test_refine_alpha_with_landmark_mask_constrains_crop():
     face = _synthetic_face()
     alpha = np.full((96, 96), 255, dtype=np.uint8)
@@ -270,6 +326,37 @@ def test_refine_alpha_with_landmark_mask_constrains_crop():
     assert refined[48, 48] == 255
     assert refined[5, 5] == 0
     assert alpha[5, 5] == 255
+
+
+def test_refine_alpha_with_landmark_mask_opt_in_expands_alpha_to_subject_region():
+    face = _synthetic_face()
+    alpha = np.zeros((128, 128), dtype=np.uint8)
+    alpha[40:70, 36:60] = 255
+
+    baseline = refine_alpha_with_landmark_mask(
+        alpha,
+        face,
+        (128, 128, 3),
+        (0, 0, 128, 128),
+        strength=1.0,
+        dilation_ratio=0.0,
+        feather_ratio=0.0,
+    )
+    extended = refine_alpha_with_landmark_mask(
+        alpha,
+        face,
+        (128, 128, 3),
+        (0, 0, 128, 128),
+        strength=1.0,
+        dilation_ratio=0.0,
+        feather_ratio=0.0,
+        extended_subject=True,
+    )
+
+    assert baseline[96, 48] == 0
+    assert extended[96, 48] == 255
+    assert 40 <= extended[96, 8] <= 180
+    assert extended[96, 4] == 0
 
 
 def test_refine_alpha_with_landmark_mask_bypasses_missing_landmarks():

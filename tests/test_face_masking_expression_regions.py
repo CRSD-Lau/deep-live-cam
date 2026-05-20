@@ -76,6 +76,28 @@ def test_create_face_mask_accepts_outline_only_short_landmarks():
     assert mask.dtype == np.uint8
 
 
+def test_create_face_mask_opt_in_extended_subject_covers_shoulders_without_far_background(
+    monkeypatch,
+):
+    monkeypatch.setattr(face_masking, "gpu_gaussian_blur", lambda src, *_args: src)
+    face = SimpleNamespace(landmark_2d_106=_outline_landmarks(33))
+
+    baseline = face_masking.create_face_mask(face, _blank_frame())
+    extended = face_masking.create_face_mask(
+        face,
+        _blank_frame(),
+        extended_subject=True,
+    )
+
+    assert baseline[88, 50] == 0
+    assert extended[88, 50] == 255
+    assert extended[84, 28] == 255
+    assert extended[84, 72] == 255
+    assert 40 <= extended[88, 8] <= 180
+    assert extended[88, 0] == 0
+    assert extended[88, 118] == 0
+
+
 def test_create_eyes_mask_returns_default_for_short_landmarks():
     face = SimpleNamespace(landmark_2d_106=np.zeros((80, 2), dtype=np.float32))
 

@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.1.8",
+    [string]$AppVersion = "2.1.9",
     [string]$InstallerPath = "",
     [string]$SourceArchivePath = "",
     [string]$EvidenceDir = ""

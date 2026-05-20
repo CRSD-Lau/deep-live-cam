@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from modules.typing import Face, Frame
 import modules.globals
+from modules.compositing.masks import create_extended_subject_mask
 from modules.expression_regions import (
     LEFT_EYE_INDICES,
     LEFT_EYEBROW_INDICES,
@@ -40,7 +41,16 @@ def apply_color_transfer(source, target):
     result_bgr = cv2.cvtColor(result_lab, cv2.COLOR_LAB2BGR)
     return np.clip(result_bgr * 255.0, 0, 255).astype(np.uint8)
 
-def create_face_mask(face: Face, frame: Frame) -> np.ndarray:
+def create_face_mask(
+    face: Face,
+    frame: Frame,
+    *,
+    extended_subject: bool = False,
+    hairline_ratio: float = 0.32,
+    side_ratio: float = 0.24,
+    shoulder_ratio: float = 0.48,
+    chest_ratio: float = 0.58,
+) -> np.ndarray:
     mask = np.zeros(frame.shape[:2], dtype=np.uint8)
     landmarks = face.landmark_2d_106
     if landmarks is not None:
@@ -73,6 +83,17 @@ def create_face_mask(face: Face, frame: Frame) -> np.ndarray:
 
         # Fill the padded convex hull
         cv2.fillConvexPoly(mask, hull_padded, 255)
+        if extended_subject:
+            mask, _points = create_extended_subject_mask(
+                face_outline.astype(np.float32),
+                bbox=None,
+                frame_shape=frame.shape,
+                base_mask=mask,
+                hairline_ratio=hairline_ratio,
+                side_ratio=side_ratio,
+                shoulder_ratio=shoulder_ratio,
+                chest_ratio=chest_ratio,
+            )
 
         # Smooth the mask edges (GPU-accelerated when available)
         mask = gpu_gaussian_blur(mask, (5, 5), 3)

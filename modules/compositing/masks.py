@@ -166,6 +166,11 @@ def create_landmark_face_mask(
     forehead_ratio: float = 0.18,
     profile_amount: float = 0.0,
     profile_taper_ratio: float = 0.0,
+    extended_subject: bool = False,
+    hairline_ratio: float = 0.32,
+    side_ratio: float = 0.24,
+    shoulder_ratio: float = 0.48,
+    chest_ratio: float = 0.58,
 ) -> np.ndarray | None:
     """Create a soft full-frame face mask from 106-point landmarks."""
     landmarks = _face_array(face, "landmark_2d_106")
@@ -206,6 +211,18 @@ def create_landmark_face_mask(
     mask = np.zeros((frame_h, frame_w), dtype=np.uint8)
     cv2.fillConvexPoly(mask, hull, 255)
 
+    if extended_subject:
+        mask, points = create_extended_subject_mask(
+            points,
+            bbox=bbox,
+            frame_shape=frame_shape,
+            base_mask=mask,
+            hairline_ratio=hairline_ratio,
+            side_ratio=side_ratio,
+            shoulder_ratio=shoulder_ratio,
+            chest_ratio=chest_ratio,
+        )
+
     face_span = _face_span(points)
     dilation_px = int(round(face_span * max(0.0, float(dilation_ratio))))
     if dilation_px > 0:
@@ -241,6 +258,11 @@ def refine_alpha_with_landmark_mask(
     feather_ratio: float = 0.018,
     profile_amount: float = 0.0,
     profile_taper_ratio: float = 0.0,
+    extended_subject: bool = False,
+    hairline_ratio: float = 0.32,
+    side_ratio: float = 0.24,
+    shoulder_ratio: float = 0.48,
+    chest_ratio: float = 0.58,
 ) -> np.ndarray:
     """Constrain a paste-back alpha crop with a landmark-derived face mask."""
     strength = float(np.clip(strength, 0.0, 1.0))
@@ -254,6 +276,11 @@ def refine_alpha_with_landmark_mask(
         feather_ratio=feather_ratio,
         profile_amount=profile_amount,
         profile_taper_ratio=profile_taper_ratio,
+        extended_subject=extended_subject,
+        hairline_ratio=hairline_ratio,
+        side_ratio=side_ratio,
+        shoulder_ratio=shoulder_ratio,
+        chest_ratio=chest_ratio,
     )
     if landmark_mask is None:
         return alpha_crop
@@ -263,10 +290,164 @@ def refine_alpha_with_landmark_mask(
     if mask_crop.shape[:2] != alpha_crop.shape[:2]:
         return alpha_crop
 
-    constrained = np.minimum(alpha_crop, mask_crop.astype(np.uint8))
+    mask_crop = mask_crop.astype(np.uint8)
+    refined_target = mask_crop if extended_subject else np.minimum(alpha_crop, mask_crop)
     if strength >= 1.0:
-        return constrained
-    return cv2.addWeighted(alpha_crop, 1.0 - strength, constrained, strength, 0)
+        return refined_target
+    return cv2.addWeighted(alpha_crop, 1.0 - strength, refined_target, strength, 0)
+
+
+def extend_subject_mask_points(
+    points: np.ndarray,
+    *,
+    bbox: tuple[float, float, float, float] | None,
+    frame_shape: tuple[int, int] | tuple[int, int, int],
+    hairline_ratio: float = 0.32,
+    side_ratio: float = 0.24,
+    shoulder_ratio: float = 0.48,
+    chest_ratio: float = 0.58,
+) -> np.ndarray:
+    """Add conservative upper-subject support points around face landmarks."""
+    point_array = np.asarray(points, dtype=np.float32)
+    if point_array.ndim != 2 or point_array.shape[1] < 2 or point_array.shape[0] < 3:
+        return point_array
+
+    if bbox is None:
+        left, top = point_array[:, :2].min(axis=0)
+        right, bottom = point_array[:, :2].max(axis=0)
+        bbox = (float(left), float(top), float(right), float(bottom))
+
+    frame_h, frame_w = frame_shape[:2]
+    if frame_h <= 0 or frame_w <= 0:
+        return point_array
+
+    left, top, right, bottom = bbox
+    width = max(float(right - left), 1.0)
+    height = max(float(bottom - top), 1.0)
+    center_x = (float(left) + float(right)) * 0.5
+
+    hair = float(np.clip(hairline_ratio, 0.0, 0.60))
+    side = float(np.clip(side_ratio, 0.0, 0.45))
+    shoulder = float(np.clip(shoulder_ratio, 0.0, 0.65))
+    chest = float(np.clip(chest_ratio, 0.0, 0.75))
+
+    extra = np.array(
+        [
+            [left - width * side, top + height * 0.20],
+            [left + width * 0.12, top - height * hair],
+            [center_x, top - height * (hair * 1.12)],
+            [right - width * 0.12, top - height * hair],
+            [right + width * side, top + height * 0.20],
+            [left - width * side, top + height * 0.52],
+            [right + width * side, top + height * 0.52],
+            [left + width * 0.32, bottom + height * 0.20],
+            [right - width * 0.32, bottom + height * 0.20],
+            [left - width * shoulder, bottom + height * (chest * 0.55)],
+            [right + width * shoulder, bottom + height * (chest * 0.55)],
+            [left - width * (shoulder * 0.70), bottom + height * chest],
+            [center_x, bottom + height * chest],
+            [right + width * (shoulder * 0.70), bottom + height * chest],
+        ],
+        dtype=np.float32,
+    )
+    extra[:, 0] = np.clip(extra[:, 0], 0, frame_w - 1)
+    extra[:, 1] = np.clip(extra[:, 1], 0, frame_h - 1)
+    return np.vstack([point_array[:, :2], extra])
+
+
+def create_extended_subject_mask(
+    points: np.ndarray,
+    *,
+    bbox: tuple[float, float, float, float] | None,
+    frame_shape: tuple[int, int] | tuple[int, int, int],
+    base_mask: np.ndarray | None = None,
+    hairline_ratio: float = 0.32,
+    side_ratio: float = 0.24,
+    shoulder_ratio: float = 0.48,
+    chest_ratio: float = 0.58,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Build a layered upper-subject matte with soft support-region falloff."""
+    point_array = np.asarray(points, dtype=np.float32)
+    frame_h, frame_w = frame_shape[:2]
+    if base_mask is None or base_mask.shape[:2] != (frame_h, frame_w):
+        base_mask = np.zeros((frame_h, frame_w), dtype=np.uint8)
+        if point_array.ndim == 2 and point_array.shape[0] >= 3:
+            hull = cv2.convexHull(point_array[:, :2].astype(np.int32))
+            if hull is not None and len(hull) >= 3:
+                cv2.fillConvexPoly(base_mask, hull, 255)
+
+    extended_points = extend_subject_mask_points(
+        point_array,
+        bbox=bbox,
+        frame_shape=frame_shape,
+        hairline_ratio=hairline_ratio,
+        side_ratio=side_ratio,
+        shoulder_ratio=shoulder_ratio,
+        chest_ratio=chest_ratio,
+    )
+    if bbox is None:
+        left, top = point_array[:, :2].min(axis=0)
+        right, bottom = point_array[:, :2].max(axis=0)
+    else:
+        left, top, right, bottom = bbox
+    width = max(float(right - left), 1.0)
+    height = max(float(bottom - top), 1.0)
+    center_x = (float(left) + float(right)) * 0.5
+
+    hair = float(np.clip(hairline_ratio, 0.0, 0.60))
+    side = float(np.clip(side_ratio, 0.0, 0.45))
+    shoulder = float(np.clip(shoulder_ratio, 0.0, 0.65))
+    chest = float(np.clip(chest_ratio, 0.0, 0.75))
+
+    support = np.zeros((frame_h, frame_w), dtype=np.uint8)
+    core = np.zeros((frame_h, frame_w), dtype=np.uint8)
+    hair_poly = np.array(
+        [
+            [left - width * (side * 1.25), top + height * 0.26],
+            [left + width * 0.04, top - height * hair],
+            [center_x, top - height * (hair * 1.18)],
+            [right - width * 0.04, top - height * hair],
+            [right + width * (side * 1.25), top + height * 0.26],
+            [right + width * (side * 0.55), top + height * 0.52],
+            [left - width * (side * 0.55), top + height * 0.52],
+        ],
+        dtype=np.float32,
+    )
+    neck_shoulders_poly = np.array(
+        [
+            [left + width * 0.28, bottom - height * 0.06],
+            [right - width * 0.28, bottom - height * 0.06],
+            [right + width * shoulder, bottom + height * (chest * 0.52)],
+            [right + width * (shoulder * 0.64), bottom + height * chest],
+            [center_x, bottom + height * (chest * 1.04)],
+            [left - width * (shoulder * 0.64), bottom + height * chest],
+            [left - width * shoulder, bottom + height * (chest * 0.52)],
+        ],
+        dtype=np.float32,
+    )
+    for polygon in (hair_poly, neck_shoulders_poly):
+        polygon[:, 0] = np.clip(polygon[:, 0], 0, frame_w - 1)
+        polygon[:, 1] = np.clip(polygon[:, 1], 0, frame_h - 1)
+        cv2.fillPoly(support, [polygon.astype(np.int32)], 255)
+
+    neck_chest_core = np.array(
+        [
+            [left + width * 0.34, bottom - height * 0.04],
+            [right - width * 0.34, bottom - height * 0.04],
+            [right - width * 0.18, bottom + height * (chest * 0.82)],
+            [center_x, bottom + height * (chest * 0.96)],
+            [left + width * 0.18, bottom + height * (chest * 0.82)],
+        ],
+        dtype=np.float32,
+    )
+    neck_chest_core[:, 0] = np.clip(neck_chest_core[:, 0], 0, frame_w - 1)
+    neck_chest_core[:, 1] = np.clip(neck_chest_core[:, 1], 0, frame_h - 1)
+    cv2.fillPoly(core, [neck_chest_core.astype(np.int32)], 255)
+
+    falloff_px = max(3.0, max(width, height) * 0.16)
+    support_alpha = _interior_falloff_mask(support, falloff_px=falloff_px)
+    combined = np.maximum(np.maximum(base_mask.astype(np.uint8), support_alpha), core)
+    return combined, extended_points
 
 
 def refine_alpha_with_skin_chroma_mask(
@@ -712,6 +893,20 @@ def _priority_mask_to_unit(
     if np.issubdtype(priority.dtype, np.floating) and not np.all(np.isfinite(priority)):
         return None
     return _alpha_to_unit_float(priority)
+
+
+def _interior_falloff_mask(mask: np.ndarray, *, falloff_px: float) -> np.ndarray:
+    if mask is None or mask.ndim != 2 or mask.size == 0:
+        return np.zeros((0, 0), dtype=np.uint8)
+    binary = (mask > 0).astype(np.uint8)
+    if not np.any(binary):
+        return np.zeros_like(mask, dtype=np.uint8)
+    try:
+        distance = cv2.distanceTransform(binary, cv2.DIST_L2, 3)
+    except cv2.error:
+        return mask.astype(np.uint8, copy=False)
+    alpha = np.clip(distance / max(float(falloff_px), 1.0), 0.0, 1.0) * 255.0
+    return alpha.astype(np.uint8)
 
 
 def _alpha_boundary_band(
