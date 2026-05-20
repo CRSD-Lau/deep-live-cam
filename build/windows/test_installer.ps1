@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.1.7",
+    [string]$AppVersion = "2.1.8",
     [string]$InstallerPath = "",
     [string]$InstallDir = "",
     [switch]$KeepInstall

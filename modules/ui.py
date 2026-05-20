@@ -10,6 +10,7 @@ Public API kept stable for the rest of the codebase:
 
 from __future__ import annotations
 
+import inspect
 import os
 import platform
 import queue
@@ -338,6 +339,26 @@ def _(text: str) -> str:
     if _LANG is None:
         return text
     return _LANG._(text)
+
+
+def _destroy_without_quit(destroy_cb: Callable) -> None:
+    accepts_to_quit = False
+    try:
+        signature = inspect.signature(destroy_cb)
+        accepts_to_quit = (
+            "to_quit" in signature.parameters
+            or any(param.kind == inspect.Parameter.VAR_KEYWORD for param in signature.parameters.values())
+        )
+    except (TypeError, ValueError):
+        accepts_to_quit = False
+
+    try:
+        if accepts_to_quit:
+            destroy_cb(to_quit=False)
+        else:
+            destroy_cb()
+    except SystemExit:
+        pass
 
 
 # Preserve original cwd state for file dialogs.
@@ -700,6 +721,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(ROOT_WIDTH, ROOT_HEIGHT)
         self.resize(ROOT_WIDTH, ROOT_HEIGHT)
         self._model_download_running = False
+        self._exit_requested = False
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -1013,7 +1035,7 @@ class MainWindow(QMainWindow):
         self.btn_destroy = QPushButton(_("Exit"))
         self.btn_destroy.setObjectName("danger")
         self.btn_destroy.setToolTip(_("Stop processing and close the application"))
-        self.btn_destroy.clicked.connect(lambda: self._destroy_cb())
+        self.btn_destroy.clicked.connect(self._on_exit)
 
         self.btn_preview = QPushButton(_("Preview"))
         self.btn_preview.setObjectName("secondary")
@@ -1400,13 +1422,41 @@ class MainWindow(QMainWindow):
             modules.globals.source_target_map = []
             _open_live_mapper_dialog(camera_index, modules.globals.source_target_map)
 
-    def closeEvent(self, event):
-        # Treat OS-level close as Destroy click
+    def _shutdown_child_windows(self, block: bool = False) -> None:
+        global _PREVIEW, _WEBCAM_PREVIEW
         if _WEBCAM_PREVIEW is not None:
-            _WEBCAM_PREVIEW.shutdown(block=True)
+            _WEBCAM_PREVIEW.shutdown(block=block)
             _WEBCAM_PREVIEW.close()
-        self._destroy_cb()
+            _WEBCAM_PREVIEW = None
+        if _PREVIEW is not None:
+            _PREVIEW.close()
+            _PREVIEW = None
+        close_mapper_window()
+
+    def _finish_exit(self) -> None:
+        self.close()
+        app = QApplication.instance()
+        if app is not None:
+            app.quit()
+
+    def _on_exit(self) -> None:
+        if self._exit_requested:
+            return
+        self._exit_requested = True
+        update_status("Closing Deep Live Cam Studio...")
+        self._shutdown_child_windows(block=True)
+        _destroy_without_quit(self._destroy_cb)
+        QTimer.singleShot(0, self._finish_exit)
+
+    def closeEvent(self, event):
+        if not self._exit_requested:
+            self._exit_requested = True
+            self._shutdown_child_windows(block=True)
+            _destroy_without_quit(self._destroy_cb)
         event.accept()
+        app = QApplication.instance()
+        if app is not None:
+            QTimer.singleShot(0, app.quit)
 
 
 def _update_tumbler(var: str, value: bool) -> None:
