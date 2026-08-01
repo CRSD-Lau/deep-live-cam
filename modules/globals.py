@@ -59,11 +59,14 @@ virtual_cam_fps: int = 30
 # System Configuration
 max_memory: int | None = None        # Memory limit in GB? (Needs clarification)
 execution_providers: List[str] = []  # e.g., ['CUDAExecutionProvider', 'CPUExecutionProvider']
+requested_execution_providers: List[str] = []
+directml_device_id: int = 0
 execution_threads: int | None = None # Number of threads for CPU execution
 headless: bool | None = None         # Run without UI?
 log_level: str = "error"             # Logging level (e.g., 'debug', 'info', 'warning', 'error')
 download_models: bool = False
 assume_yes: bool = False
+check_execution_provider: bool = False
 benchmark_pipeline: bool = False
 benchmark_log_interval: float = 5.0
 benchmark_output_path: str | None = None

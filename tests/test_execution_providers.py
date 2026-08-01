@@ -5,7 +5,17 @@ from types import SimpleNamespace
 
 
 def load_execution_providers(monkeypatch, available):
-    fake_ort = SimpleNamespace(get_available_providers=lambda: list(available))
+    class FakeSessionOptions:
+        enable_mem_pattern = True
+        execution_mode = None
+        graph_optimization_level = None
+
+    fake_ort = SimpleNamespace(
+        get_available_providers=lambda: list(available),
+        SessionOptions=FakeSessionOptions,
+        GraphOptimizationLevel=SimpleNamespace(ORT_ENABLE_ALL="all"),
+        ExecutionMode=SimpleNamespace(ORT_SEQUENTIAL="sequential"),
+    )
     monkeypatch.setitem(sys.modules, "onnxruntime", fake_ort)
 
     module_path = (
@@ -54,6 +64,58 @@ def test_directml_alias_resolves_dml_provider(monkeypatch):
     resolved = providers.resolve_execution_providers(["directml"], logger=None)
 
     assert resolved == ["DmlExecutionProvider", "CPUExecutionProvider"]
+
+
+def test_directml_config_selects_windows_adapter(monkeypatch):
+    providers = load_execution_providers(
+        monkeypatch,
+        ["DmlExecutionProvider", "CPUExecutionProvider"],
+    )
+
+    config = providers.build_provider_config(
+        ["DmlExecutionProvider", "CPUExecutionProvider"],
+        directml_device_id=1,
+    )
+
+    assert config == [
+        ("DmlExecutionProvider", {"device_id": "1"}),
+        "CPUExecutionProvider",
+    ]
+
+
+def test_directml_session_options_disable_unsupported_modes(monkeypatch):
+    providers = load_execution_providers(
+        monkeypatch,
+        ["DmlExecutionProvider", "CPUExecutionProvider"],
+    )
+
+    options = providers.build_session_options(["DmlExecutionProvider"])
+
+    assert options.enable_mem_pattern is False
+    assert options.execution_mode == "sequential"
+    assert options.graph_optimization_level == "all"
+
+
+def test_missing_requested_provider_detects_cpu_fallback(monkeypatch):
+    providers = load_execution_providers(monkeypatch, ["CPUExecutionProvider"])
+
+    missing = providers.missing_requested_providers(
+        ["directml"],
+        ["CPUExecutionProvider"],
+    )
+
+    assert missing == ["DmlExecutionProvider"]
+
+
+def test_missing_requested_provider_rejects_unknown_alias(monkeypatch):
+    providers = load_execution_providers(monkeypatch, ["CPUExecutionProvider"])
+
+    missing = providers.missing_requested_providers(
+        ["not-a-provider"],
+        ["CPUExecutionProvider"],
+    )
+
+    assert missing == ["not-a-provider"]
 
 
 def test_tensorrt_request_adds_cuda_and_cpu_fallbacks(monkeypatch):

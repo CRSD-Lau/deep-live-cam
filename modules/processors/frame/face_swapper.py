@@ -35,6 +35,7 @@ from modules.core import update_status
 from modules.diagnostics.overlays import draw_diagnostic_overlay
 from modules.execution_providers import (
     build_provider_config,
+    build_session_options,
     format_provider_config_summary,
     provider_names,
 )
@@ -172,6 +173,9 @@ def get_face_swapper() -> Any:
                 providers_config = build_provider_config(
                     modules.globals.execution_providers,
                     is_apple_silicon=IS_APPLE_SILICON,
+                    directml_device_id=getattr(
+                        modules.globals, "directml_device_id", 0
+                    ),
                 )
                 update_status(
                     f"Face swapper requested providers: "
@@ -186,6 +190,7 @@ def get_face_swapper() -> Any:
                 FACE_SWAPPER = insightface.model_zoo.get_model(
                     model_path,
                     providers=providers_config,
+                    sess_options=build_session_options(providers_config),
                 )
                 try:
                     active_providers = FACE_SWAPPER.session.get_providers()

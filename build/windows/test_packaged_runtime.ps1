@@ -1,12 +1,16 @@
 param(
-    [string]$DistDir = ""
+    [string]$DistDir = "",
+    [ValidateSet("Cuda", "DirectML")]
+    [string]$Accelerator = "Cuda",
+    [switch]$RequireAccelerator
 )
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 
 if (-not $DistDir) {
-    $DistDir = Join-Path $RepoRoot "dist\DeepLiveCamStudio"
+    $BundleName = if ($Accelerator -eq "DirectML") { "DeepLiveCamStudio-DirectML" } else { "DeepLiveCamStudio" }
+    $DistDir = Join-Path $RepoRoot "dist\$BundleName"
 }
 
 if (-not (Test-Path $DistDir)) {
@@ -20,6 +24,12 @@ if (-not (Test-Path $Cli)) {
 }
 if (-not (Test-Path $Gui)) {
     throw "Missing packaged GUI executable: $Gui"
+}
+
+$OnnxRuntimeLicense = if ($Accelerator -eq "DirectML") {
+    "LICENSES\THIRD_PARTY_LICENSES\onnxruntime-directml-1.23.0\package\LICENSE"
+} else {
+    "LICENSES\THIRD_PARTY_LICENSES\onnxruntime-gpu-1.23.2\package\LICENSE"
 }
 
 $RequiredFiles = @(
@@ -40,7 +50,7 @@ $RequiredFiles = @(
     "LICENSES\PYTHON_DEPENDENCIES.md",
     "LICENSES\THIRD_PARTY_LICENSES\README.md",
     "LICENSES\THIRD_PARTY_LICENSES\tensorflow-2.19.1\package\THIRD_PARTY_NOTICES.txt",
-    "LICENSES\THIRD_PARTY_LICENSES\onnxruntime-gpu-1.23.2\package\LICENSE",
+    $OnnxRuntimeLicense,
     "LICENSES\THIRD_PARTY_LICENSES\opencv-python-4.10.0.84\package\LICENSE-3RD-PARTY.txt",
     "LICENSES\THIRD_PARTY_LICENSES\onnx-1.21.0\licenses\LICENSE",
     "LICENSES\THIRD_PARTY_LICENSES\opennsfw2-0.10.2\LICENSE",
@@ -52,6 +62,9 @@ $RequiredFiles = @(
     "LICENSES\THIRD_PARTY_LICENSES\easydict-1.13\LICENSE",
     "LICENSES\WINDOWS_BUNDLE_MANIFEST.md"
 )
+if ($Accelerator -eq "DirectML") {
+    $RequiredFiles += "docs\DIRECTML_TESTING.md"
+}
 
 foreach ($RelativePath in $RequiredFiles) {
     $Path = Join-Path $DistDir $RelativePath
@@ -125,6 +138,21 @@ foreach ($RelativePath in $RequiredCodecFiles) {
 & $Cli --version
 if ($LASTEXITCODE -ne 0) {
     throw "Packaged CLI --version failed with exit code $LASTEXITCODE."
+}
+
+if ($Accelerator -eq "DirectML") {
+    $DirectMLRuntime = Get-ChildItem -LiteralPath $DistDir -Recurse -File -Filter "DirectML.dll" -ErrorAction SilentlyContinue
+    if (-not $DirectMLRuntime) {
+        throw "Packaged DirectML build does not contain DirectML.dll."
+    }
+}
+
+if ($RequireAccelerator) {
+    $ProviderAlias = if ($Accelerator -eq "DirectML") { "directml" } else { "cuda" }
+    & $Cli --execution-provider $ProviderAlias --check-execution-provider
+    if ($LASTEXITCODE -ne 0) {
+        throw "Packaged $Accelerator provider probe failed with exit code $LASTEXITCODE."
+    }
 }
 
 $SmokeAppData = Join-Path $env:TEMP ("DeepLiveCamStudio-runtime-preflight-" + [guid]::NewGuid().ToString("N"))

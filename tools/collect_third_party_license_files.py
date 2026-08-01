@@ -9,10 +9,9 @@ import sys
 from importlib import metadata
 from pathlib import Path
 
-HIGH_ATTENTION_PACKAGES = (
+BASE_HIGH_ATTENTION_PACKAGES = (
     "tensorflow",
     "opencv-python",
-    "onnxruntime-gpu",
     "onnx",
     "opennsfw2",
     "PySide6",
@@ -28,6 +27,7 @@ PACKAGE_NOTICE_FILES = {
     "tensorflow": ("tensorflow/THIRD_PARTY_NOTICES.txt",),
     "opencv-python": ("cv2/LICENSE.txt", "cv2/LICENSE-3RD-PARTY.txt"),
     "onnxruntime-gpu": ("onnxruntime/LICENSE",),
+    "onnxruntime-directml": ("onnxruntime/LICENSE",),
 }
 
 LICENSE_NAME_PREFIXES = ("license", "copying", "notice", "third_party")
@@ -43,11 +43,23 @@ def is_notice_file(path: Path) -> bool:
     return name in {item.lower() for item in ALWAYS_COPY} or name.startswith(LICENSE_NAME_PREFIXES)
 
 
-def collect(output: Path) -> list[Path]:
+def high_attention_packages(onnxruntime_package: str) -> tuple[str, ...]:
+    return (
+        BASE_HIGH_ATTENTION_PACKAGES[:2]
+        + (onnxruntime_package,)
+        + BASE_HIGH_ATTENTION_PACKAGES[2:]
+    )
+
+
+def collect(
+    output: Path,
+    onnxruntime_package: str = "onnxruntime-gpu",
+) -> list[Path]:
     output.mkdir(parents=True, exist_ok=True)
     copied: list[Path] = []
+    packages = high_attention_packages(onnxruntime_package)
 
-    for package in HIGH_ATTENTION_PACKAGES:
+    for package in packages:
         dist = metadata.distribution(package)
         name = dist.metadata["Name"]
         version = dist.version
@@ -96,7 +108,7 @@ def collect(output: Path) -> list[Path]:
         "## Included Packages",
         "",
     ]
-    for package in HIGH_ATTENTION_PACKAGES:
+    for package in packages:
         dist = metadata.distribution(package)
         lines.append(f"- `{dist.metadata['Name']}` `{dist.version}`")
     lines.append("")
@@ -108,10 +120,16 @@ def collect(output: Path) -> list[Path]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Collect high-attention third-party license files.")
     parser.add_argument("--output", default="LICENSES/THIRD_PARTY_LICENSES", help="Destination folder.")
+    parser.add_argument(
+        "--onnxruntime-package",
+        choices=("onnxruntime-gpu", "onnxruntime-directml"),
+        default="onnxruntime-gpu",
+        help="Installed ONNX Runtime distribution to collect.",
+    )
     args = parser.parse_args()
 
     try:
-        copied = collect(Path(args.output))
+        copied = collect(Path(args.output), args.onnxruntime_package)
     except Exception as exc:
         print(f"Failed to collect third-party license files: {exc}", file=sys.stderr)
         return 1

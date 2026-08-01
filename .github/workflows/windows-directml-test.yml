@@ -1,0 +1,40 @@
+name: Windows DirectML Test Build
+
+on:
+  push:
+    branches:
+      - codex/amd-directml-test
+  workflow_dispatch:
+
+jobs:
+  build-directml:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-directml.txt
+
+      - name: Build DirectML portable bundle
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Python python -Accelerator DirectML
+
+      - name: Validate portable bundle structure
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File build\windows\test_packaged_runtime.ps1 -Accelerator DirectML
+
+      - name: Upload DirectML test bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeepLiveCamStudio-DirectML-${{ github.sha }}
+          path: dist/DeepLiveCamStudio-DirectML/**
+          if-no-files-found: error
+          retention-days: 14

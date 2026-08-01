@@ -1,10 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+import sys
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 ROOT = Path(SPECPATH).parents[1]
+ACCELERATOR = os.environ.get("DLC_BUILD_ACCELERATOR", "cuda").lower()
+BUNDLE_NAME = os.environ.get("DLC_BUNDLE_NAME", "DeepLiveCamStudio")
 
 
 def existing_datas(paths):
@@ -22,7 +26,10 @@ def cuda_runtime_binaries():
     We intentionally keep the Python torch package excluded, but its wheel
     carries the CUDA runtime DLLs that onnxruntime-gpu needs at inference time.
     """
-    torch_lib = ROOT / "venv" / "Lib" / "site-packages" / "torch" / "lib"
+    if ACCELERATOR != "cuda":
+        return []
+
+    torch_lib = Path(sys.prefix) / "Lib" / "site-packages" / "torch" / "lib"
     names = (
         "cublas64_12.dll",
         "cublasLt64_12.dll",
@@ -162,5 +169,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name="DeepLiveCamStudio",
+    name=BUNDLE_NAME,
 )

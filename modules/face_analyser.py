@@ -31,8 +31,11 @@ def get_face_analyser() -> Any:
                 from modules.processors.frame._onnx_enhancer import (
                     build_provider_config,
                 )
-                from modules.execution_providers import provider_names
-                from modules.execution_providers import format_provider_config_summary
+                from modules.execution_providers import (
+                    build_session_options,
+                    format_provider_config_summary,
+                    provider_names,
+                )
                 providers = build_provider_config()
                 print(
                     f"[DLC.FACE-ANALYSER] Requested providers: "
@@ -47,6 +50,7 @@ def get_face_analyser() -> Any:
                 FACE_ANALYSER = insightface.app.FaceAnalysis(
                     name='buffalo_l',
                     providers=providers,
+                    sess_options=build_session_options(providers),
                     allowed_modules=['detection', 'recognition', 'landmark_2d_106']
                 )
                 FACE_ANALYSER.prepare(ctx_id=0, det_size=DET_SIZE)
