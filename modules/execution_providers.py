@@ -75,6 +75,7 @@ def build_provider_config(
     providers: Iterable,
     *,
     is_apple_silicon: bool = False,
+    directml_device_id: int | None = None,
     tensorrt_cache_path: str | Path | None = None,
     enable_tensorrt_cache: bool = True,
     enable_tensorrt_fp16: bool = True,
@@ -109,6 +110,13 @@ def build_provider_config(
                         enable_cache=enable_tensorrt_cache,
                         enable_fp16=enable_tensorrt_fp16,
                     ),
+                )
+            )
+        elif provider == "DmlExecutionProvider" and directml_device_id is not None:
+            config.append(
+                (
+                    "DmlExecutionProvider",
+                    {"device_id": str(directml_device_id)},
                 )
             )
         elif provider == "CUDAExecutionProvider" and enable_cuda_graph:
@@ -146,6 +154,30 @@ def suggest_default_execution_provider() -> str:
 
 def supported_provider_aliases() -> List[str]:
     return sorted(PROVIDER_ALIASES)
+
+
+def requested_provider_names(requested: Sequence[str] | None) -> List[str]:
+    """Translate requested aliases into canonical ONNX Runtime provider names."""
+    names: List[str] = []
+    for raw in requested or []:
+        alias = normalize_provider_alias(raw)
+        provider = PROVIDER_ALIASES.get(alias, str(raw))
+        if provider not in names:
+            names.append(provider)
+    return names
+
+
+def missing_requested_providers(
+    requested: Sequence[str] | None,
+    active: Iterable,
+) -> List[str]:
+    """Return requested providers that did not remain active for a real session."""
+    active_names = set(provider_names(active))
+    return [
+        provider
+        for provider in requested_provider_names(requested)
+        if provider not in active_names
+    ]
 
 
 def resolve_execution_providers(
@@ -232,6 +264,83 @@ def resolve_execution_providers(
         logger(f"Resolved execution provider(s): {resolved}")
 
     return resolved
+
+
+def build_session_options(
+    providers: Iterable,
+    *,
+    disable_cpu_fallback: bool = False,
+):
+    """Create session options that satisfy accelerator-specific requirements."""
+    options = onnxruntime.SessionOptions()
+    if hasattr(onnxruntime, "GraphOptimizationLevel"):
+        options.graph_optimization_level = (
+            onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
+        )
+
+    if "DmlExecutionProvider" in provider_names(providers):
+        # DirectML does not support memory patterns or parallel session
+        # execution. Make both constraints explicit instead of relying on
+        # package defaults that may change between ONNX Runtime releases.
+        options.enable_mem_pattern = False
+        if hasattr(onnxruntime, "ExecutionMode"):
+            options.execution_mode = onnxruntime.ExecutionMode.ORT_SEQUENTIAL
+    if disable_cpu_fallback and hasattr(options, "add_session_config_entry"):
+        options.add_session_config_entry("session.disable_cpu_ep_fallback", "1")
+    return options
+
+
+def probe_execution_providers(providers: Iterable) -> List[str]:
+    """Run a tiny real inference and return the providers that stayed active."""
+    import numpy as np
+    from onnx import TensorProto, helper
+
+    provider_config = build_provider_config(providers)
+    left_tensor = helper.make_tensor_value_info(
+        "left", TensorProto.FLOAT, [64, 64]
+    )
+    right_tensor = helper.make_tensor_value_info(
+        "right", TensorProto.FLOAT, [64, 64]
+    )
+    output_tensor = helper.make_tensor_value_info(
+        "output", TensorProto.FLOAT, [64, 64]
+    )
+    node = helper.make_node("MatMul", ["left", "right"], ["output"])
+    graph = helper.make_graph(
+        [node],
+        "execution_provider_probe",
+        [left_tensor, right_tensor],
+        [output_tensor],
+    )
+    model = helper.make_model(
+        graph,
+        producer_name="deep-live-cam-provider-check",
+        opset_imports=[helper.make_operatorsetid("", 13)],
+    )
+    model.ir_version = min(model.ir_version, 10)
+
+    accelerator_config = [
+        provider
+        for provider in provider_config
+        if provider_name(provider) != "CPUExecutionProvider"
+    ]
+    require_accelerator = bool(accelerator_config)
+    session = onnxruntime.InferenceSession(
+        model.SerializeToString(),
+        sess_options=build_session_options(
+            provider_config,
+            disable_cpu_fallback=require_accelerator,
+        ),
+        providers=accelerator_config or provider_config,
+    )
+    values = np.ones((64, 64), dtype=np.float32)
+    result = session.run(
+        ["output"],
+        {"left": values, "right": values},
+    )
+    if not np.allclose(result[0], 64.0):
+        raise RuntimeError("Execution provider probe returned an incorrect result.")
+    return list(session.get_providers())
 
 
 def _tensorrt_provider_options(

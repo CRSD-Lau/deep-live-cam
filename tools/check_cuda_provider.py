@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Diagnose ONNX Runtime CUDA provider availability."""
+"""Diagnose ONNX Runtime execution-provider availability with real inference."""
 
 from __future__ import annotations
 
@@ -49,6 +49,7 @@ def register_windows_cuda_dll_dirs() -> list[str]:
 
     return registered
 
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -59,11 +60,27 @@ def parse_args() -> argparse.Namespace:
         help="provider alias to check, for example cuda, directml, openvino, cpu",
     )
     parser.add_argument(
+        "--directml-device-id",
+        type=non_negative_int,
+        default=0,
+        help="DirectML adapter index (0 is the Windows default GPU)",
+    )
+    parser.add_argument(
         "--strict",
         action="store_true",
-        help="exit non-zero when a requested provider is unavailable",
+        help="exit non-zero when a requested provider is unavailable or falls back",
     )
     return parser.parse_args()
+
+
+def non_negative_int(value: str) -> int:
+    try:
+        result = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"{value} is not an integer") from exc
+    if result < 0:
+        raise argparse.ArgumentTypeError("value must be 0 or greater")
+    return result
 
 
 def load_provider_helpers():
@@ -73,15 +90,40 @@ def load_provider_helpers():
         raise RuntimeError(f"Unable to load provider resolver from {module_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.resolve_execution_providers, module.build_provider_config
+    return module
+
+
+def _requests_cuda(requested: list[str]) -> bool:
+    return any(
+        provider.lower().replace("_", "").replace("-", "").replace(
+            "executionprovider", ""
+        )
+        == "cuda"
+        for provider in requested
+    )
+
+
+def _install_hint(missing: list[str]) -> str:
+    if "DmlExecutionProvider" in missing:
+        return (
+            "Install the DirectML runtime profile with tools\\setup_directml.ps1 "
+            "or pip install -r requirements-directml.txt."
+        )
+    if "CUDAExecutionProvider" in missing:
+        return (
+            "Install a CUDA-capable onnxruntime-gpu build and confirm NVIDIA "
+            "CUDA/cuDNN DLLs are available."
+        )
+    return "Install an ONNX Runtime build that contains the requested provider."
 
 
 def main() -> int:
     args = parse_args()
+    prefix = "[check-provider]"
 
-    dll_dirs = register_windows_cuda_dll_dirs()
-    for directory in dll_dirs:
-        print(f"[check-cuda] Registered CUDA DLL directory: {directory}")
+    if _requests_cuda(args.execution_provider):
+        for directory in register_windows_cuda_dll_dirs():
+            print(f"{prefix} Registered CUDA DLL directory: {directory}")
 
     try:
         import onnxruntime
@@ -89,90 +131,64 @@ def main() -> int:
         print("onnxruntime is not installed. Run: pip install -r requirements.txt")
         return 1
 
-    resolve_execution_providers, build_provider_config = load_provider_helpers()
-
+    helpers = load_provider_helpers()
     available = list(onnxruntime.get_available_providers())
-    resolved = resolve_execution_providers(
+    resolved = helpers.resolve_execution_providers(
         args.execution_provider,
         available=available,
-        logger=lambda message: print(f"[check-cuda] {message}"),
+        logger=lambda message: print(f"{prefix} {message}"),
+    )
+    configured = helpers.build_provider_config(
+        resolved,
+        directml_device_id=args.directml_device_id,
     )
 
-    print(f"[check-cuda] onnxruntime version: {onnxruntime.__version__}")
-    print(f"[check-cuda] active resolution: {resolved}")
+    print(f"{prefix} onnxruntime version: {onnxruntime.__version__}")
+    print(f"{prefix} configured providers: {helpers.format_provider_config_summary(configured)}")
+
+    missing_from_resolution = helpers.missing_requested_providers(
+        args.execution_provider,
+        resolved,
+    )
+    if missing_from_resolution:
+        print(
+            f"{prefix} Requested provider(s) unavailable: "
+            f"{', '.join(missing_from_resolution)}. {_install_hint(missing_from_resolution)}"
+        )
+        if args.strict:
+            return 2
+
+    if _requests_cuda(args.execution_provider):
+        try:
+            import torch
+
+            print(f"{prefix} torch version: {torch.__version__}")
+            print(f"{prefix} torch.cuda.is_available(): {torch.cuda.is_available()}")
+            if torch.cuda.is_available():
+                print(f"{prefix} CUDA device: {torch.cuda.get_device_name(0)}")
+        except Exception as exc:
+            print(f"{prefix} torch CUDA check skipped: {exc}")
 
     try:
-        import torch
-
-        print(f"[check-cuda] torch version: {torch.__version__}")
-        print(f"[check-cuda] torch.cuda.is_available(): {torch.cuda.is_available()}")
-        if torch.cuda.is_available():
-            print(f"[check-cuda] CUDA device: {torch.cuda.get_device_name(0)}")
+        active = helpers.probe_execution_providers(configured)
+        print(f"{prefix} ONNX probe session providers: {active}")
     except Exception as exc:
-        print(f"[check-cuda] torch CUDA check skipped: {exc}")
+        print(f"{prefix} ONNX probe session failed: {exc}")
+        return 3 if args.strict else 0
 
-    requested_cuda = any(
-        provider.lower().replace("executionprovider", "") == "cuda"
-        for provider in args.execution_provider
+    missing_from_session = helpers.missing_requested_providers(
+        args.execution_provider,
+        active,
     )
-    cuda_active = "CUDAExecutionProvider" in resolved
-    if requested_cuda and not cuda_active:
+    if missing_from_session:
         print(
-            "[check-cuda] CUDAExecutionProvider is not active. Install a CUDA-capable "
-            "onnxruntime-gpu build and confirm NVIDIA CUDA/cuDNN DLLs are on PATH. "
-            "Deep-Live-Cam will use CPUExecutionProvider fallback until CUDA loads."
-        )
-        return 2 if args.strict else 0
-
-    probe_providers = []
-    if resolved:
-        try:
-            probe_providers = create_probe_session(
-                onnxruntime,
-                build_provider_config(resolved),
-            )
-            print(f"[check-cuda] ONNX probe session providers: {probe_providers}")
-        except Exception as exc:
-            print(f"[check-cuda] ONNX probe session failed: {exc}")
-            if args.strict:
-                return 3
-
-    if requested_cuda and "CUDAExecutionProvider" in resolved and "CUDAExecutionProvider" not in probe_providers:
-        print(
-            "[check-cuda] CUDAExecutionProvider is advertised by ONNX Runtime but "
-            "did not load for an actual session. On Windows this usually means "
-            "CUDA/cuDNN DLLs are missing from PATH. Install CUDA-enabled PyTorch "
-            "with: pip install -U torch torchvision torchaudio --index-url "
-            "https://download.pytorch.org/whl/cu128"
+            f"{prefix} Requested provider(s) fell back during real inference: "
+            f"{', '.join(missing_from_session)}. {_install_hint(missing_from_session)}"
         )
         return 4 if args.strict else 0
 
-    print("[check-cuda] Provider check complete.")
+    print(f"{prefix} Provider check complete.")
     return 0
-
-
-def create_probe_session(onnxruntime, providers: list[str]) -> list[str]:
-    import numpy as np
-    import onnx
-    from onnx import TensorProto, helper
-
-    input_tensor = helper.make_tensor_value_info("input", TensorProto.FLOAT, [1, 1])
-    output_tensor = helper.make_tensor_value_info("output", TensorProto.FLOAT, [1, 1])
-    node = helper.make_node("Identity", ["input"], ["output"])
-    graph = helper.make_graph([node], "cuda_provider_probe", [input_tensor], [output_tensor])
-    model = helper.make_model(
-        graph,
-        producer_name="deep-live-cam-check-cuda",
-        opset_imports=[helper.make_operatorsetid("", 13)],
-    )
-    model.ir_version = min(model.ir_version, 10)
-
-    session = onnxruntime.InferenceSession(
-        model.SerializeToString(),
-        providers=providers,
-    )
-    session.run(["output"], {"input": np.array([[1.0]], dtype=np.float32)})
-    return list(session.get_providers())
 
 
 if __name__ == "__main__":

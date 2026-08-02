@@ -5,7 +5,7 @@
 <h1 align="center">Deep Live Cam Studio</h1>
 
 <p align="center">
-  Windows-focused Deep-Live-Cam build with a packaged installer, in-app model setup, CUDA runtime support, and OBS virtual-camera workflow docs.
+  Windows-focused Deep-Live-Cam build with a packaged installer, in-app model setup, CUDA and DirectML runtime profiles, and OBS virtual-camera workflow docs.
 </p>
 
 <p align="center">
@@ -136,7 +136,8 @@ Updates install into a new versioned folder. You do not need to uninstall the pr
 
 - CUDA acceleration requires compatible NVIDIA drivers.
 - The installer bundles the CUDA 12/cuDNN 9 runtime DLLs needed by `onnxruntime-gpu`.
-- If CUDA is unavailable, the app can fall back to CPU or DirectML where supported.
+- The current `2.1.9` installer contains CUDA and CPU providers. It does not contain DirectML.
+- AMD/Intel GPU acceleration uses the separate DirectML environment or portable test build described below; provider checks fail instead of silently claiming success after a CPU fallback.
 - `ffmpeg` and `ffprobe` are required for video processing and audio restore.
 - OBS Virtual Camera is optional and must be installed/configured through OBS.
 - Desktop launch logs are written to `%LOCALAPPDATA%\DeepLiveCamStudio\logs`.
@@ -186,6 +187,8 @@ Useful CLI flags:
 --execution-provider cuda
 --execution-provider cpu
 --execution-provider directml
+--directml-device-id 0
+--check-execution-provider
 --virtual-cam
 --camera-width 1280
 --camera-height 720
@@ -232,6 +235,25 @@ pip install onnxruntime-gpu==1.23.2
 python tools/check_cuda_provider.py --execution-provider cuda --strict
 ```
 
+For AMD or Intel GPUs on Windows, create the isolated DirectML environment:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\setup_directml.ps1
+run-directml.bat
+```
+
+Validate a particular Windows GPU adapter without opening the UI:
+
+```powershell
+.venv-directml\Scripts\python.exe run.py --execution-provider directml --directml-device-id 0 --check-execution-provider
+```
+
+DirectML and CUDA use mutually exclusive ONNX Runtime Python packages, so the
+setup script deliberately keeps DirectML in `.venv-directml` instead of
+overwriting the normal CUDA environment. See
+[`docs/DIRECTML_TESTING.md`](docs/DIRECTML_TESTING.md) for the issue #3 test
+procedure.
+
 Run from source:
 
 ```powershell
@@ -246,6 +268,17 @@ Build the PyInstaller bundle:
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1
 ```
+
+Build the portable DirectML test bundle:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator DirectML
+powershell -ExecutionPolicy Bypass -File build\windows\test_packaged_runtime.ps1 -Accelerator DirectML -RequireAccelerator
+```
+
+The DirectML output is `dist\DeepLiveCamStudio-DirectML`. It is a portable test
+bundle; the production Inno Setup installer remains the CUDA build until AMD
+hardware validation is complete.
 
 Run local preflight checks:
 

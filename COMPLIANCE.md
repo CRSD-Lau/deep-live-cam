@@ -55,7 +55,7 @@ High-attention dependencies:
 - `PySide6`: LGPL-3.0-only OR GPL options. Preserve Qt notices and allow users to replace/inspect LGPL-covered libraries where applicable.
 - `pyvirtualcam`: package metadata/classifiers indicate GPLv2. Review compatibility with the AGPL-3.0 application before public binary distribution.
 - `cv2_enumerate_cameras`: package metadata includes GPL-3.0 text. GPL-3.0 can be compatible with AGPL-3.0, but include notices and source availability.
-- `onnxruntime-gpu`, TensorFlow, OpenCV, NumPy, and PySide6 may bundle native DLLs with their own notices.
+- The CUDA build uses `onnxruntime-gpu`; the DirectML test build uses the mutually exclusive `onnxruntime-directml` package. TensorFlow, OpenCV, NumPy, PySide6, and either ONNX Runtime profile may bundle native DLLs with their own notices.
 - `ffmpeg` is required for video processing. This installer does not bundle ffmpeg. If a future build bundles ffmpeg, record the exact build source and whether it is LGPL or GPL configured.
 - Inno Setup is used as a release build tool and is not bundled as an application runtime dependency. Current JR Software pages request commercial users purchase a commercial license even though the Inno Setup License text permits broad use, including commercial applications. Confirm the publisher's Inno Setup licensing position before production/commercial distribution.
 

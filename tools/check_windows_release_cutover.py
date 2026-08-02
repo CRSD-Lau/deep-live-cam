@@ -13,6 +13,7 @@ from pathlib import Path
 
 REQUIRED_RELEASE_PATHS = {
     ".github/workflows/windows-release.yml",
+    ".github/workflows/windows-directml-test.yml",
     ".gitignore",
     "CLEAN_VM_VERIFICATION.md",
     "CLEAN_RELEASE_WORKTREE_VERIFICATION.md",
@@ -34,9 +35,13 @@ REQUIRED_RELEASE_PATHS = {
     "RELEASE_VERIFICATION.md",
     "THIRD_PARTY_NOTICES.md",
     "requirements.txt",
+    "requirements-directml.txt",
+    "run-directml.bat",
     "run.py",
     "tests/test_face_analyser_get_one_face.py",
     "tests/test_image_upload_formats.py",
+    "tests/test_directml_support.py",
+    "tests/test_execution_providers.py",
     "tests/test_model_manager.py",
     "tests/test_validate_windows_release_artifacts.py",
     "tests/test_release_report.py",
@@ -52,6 +57,8 @@ REQUIRED_RELEASE_PATHS = {
     "tools/generate_windows_bundle_manifest.py",
     "tools/generate_windows_release_verification.py",
     "tools/install_windows_desktop_app.ps1",
+    "tools/setup_directml.ps1",
+    "modules/face_analyser.py",
     "tools/prune_windows_dist.py",
     "tools/summarize_manual_release_gates.py",
     "tools/validate_windows_release_artifacts.py",
@@ -60,6 +67,7 @@ REQUIRED_RELEASE_PATHS = {
 REQUIRED_RELEASE_PREFIXES = (
     "build/windows/",
     "docs/OBS_VIRTUAL_CAMERA.md",
+    "docs/DIRECTML_TESTING.md",
     "LICENSES/",
     "modules/core.py",
     "modules/desktop_launcher.py",

@@ -15,7 +15,10 @@ import modules.globals
 import modules.metadata
 from modules.enhancement_registry import ENHANCER_KEYS
 from modules.execution_providers import (
+    build_provider_config,
     encode_providers,
+    missing_requested_providers,
+    probe_execution_providers,
     resolve_execution_providers,
     supported_provider_aliases,
 )
@@ -67,7 +70,9 @@ def parse_args() -> None:
     program.add_argument('--virtual-cam-fps', help='virtual camera output fps', dest='virtual_cam_fps', type=positive_int, default=30)
     program.add_argument('--max-memory', help='maximum amount of RAM in GB', dest='max_memory', type=int, default=suggest_max_memory())
     program.add_argument('--execution-provider', help=f'execution provider ({", ".join(suggest_execution_providers())})', dest='execution_provider', default=[suggest_default_execution_provider()], metavar='PROVIDER', nargs='+')
+    program.add_argument('--directml-device-id', help='DirectML adapter index (0 is the Windows default GPU)', dest='directml_device_id', type=non_negative_int, default=0)
     program.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int)
+    program.add_argument('--check-execution-provider', help='run a real ONNX inference with the requested provider and exit', dest='check_execution_provider', action='store_true', default=False)
     program.add_argument('--download-models', help='review model sources, download models, and verify checksums', dest='download_models', action='store_true', default=False)
     program.add_argument('--yes', help='assume yes for non-interactive setup commands such as --download-models', dest='assume_yes', action='store_true', default=False)
     program.add_argument('-v', '--version', action='version', version=f'{modules.metadata.name} {modules.metadata.version}')
@@ -96,7 +101,12 @@ def parse_args() -> None:
     modules.globals.target_path = args.target_path
     modules.globals.output_path = normalize_output_path(modules.globals.source_path, modules.globals.target_path, args.output_path)
     modules.globals.frame_processors = args.frame_processor
-    modules.globals.headless = args.source_path or args.target_path or args.output_path
+    modules.globals.headless = bool(
+        args.source_path
+        or args.target_path
+        or args.output_path
+        or args.check_execution_provider
+    )
     modules.globals.keep_fps = args.keep_fps
     modules.globals.keep_audio = args.keep_audio
     modules.globals.keep_frames = args.keep_frames
@@ -126,7 +136,10 @@ def parse_args() -> None:
     modules.globals.virtual_cam_height = args.virtual_cam_height
     modules.globals.virtual_cam_fps = args.virtual_cam_fps
     modules.globals.max_memory = args.max_memory
+    modules.globals.requested_execution_providers = list(args.execution_provider)
     modules.globals.execution_providers = decode_execution_providers(args.execution_provider)
+    modules.globals.directml_device_id = args.directml_device_id
+    modules.globals.check_execution_provider = args.check_execution_provider
     modules.globals.execution_threads = (
         args.execution_threads
         if args.execution_threads is not None
@@ -148,13 +161,17 @@ def parse_args() -> None:
         modules.globals.execution_threads = args.cpu_cores_deprecated
     if args.gpu_vendor_deprecated == 'apple':
         print('\033[33mArgument --gpu-vendor apple is deprecated. Use --execution-provider coreml instead.\033[0m')
+        modules.globals.requested_execution_providers = ['coreml']
         modules.globals.execution_providers = decode_execution_providers(['coreml'])
     if args.gpu_vendor_deprecated == 'nvidia':
         print('\033[33mArgument --gpu-vendor nvidia is deprecated. Use --execution-provider cuda instead.\033[0m')
+        modules.globals.requested_execution_providers = ['cuda']
         modules.globals.execution_providers = decode_execution_providers(['cuda'])
     if args.gpu_vendor_deprecated == 'amd':
-        print('\033[33mArgument --gpu-vendor amd is deprecated. Use --execution-provider cuda instead.\033[0m')
-        modules.globals.execution_providers = decode_execution_providers(['rocm'])
+        amd_provider = 'directml' if platform.system().lower() == 'windows' else 'rocm'
+        print(f'\033[33mArgument --gpu-vendor amd is deprecated. Use --execution-provider {amd_provider} instead.\033[0m')
+        modules.globals.requested_execution_providers = [amd_provider]
+        modules.globals.execution_providers = decode_execution_providers([amd_provider])
     if args.gpu_threads_deprecated:
         print('\033[33mArgument --gpu-threads is deprecated. Use --execution-threads instead.\033[0m')
         modules.globals.execution_threads = args.gpu_threads_deprecated
@@ -171,6 +188,16 @@ def positive_int(value: str) -> int:
         raise argparse.ArgumentTypeError(f"{value} is not an integer") from exc
     if integer < 1:
         raise argparse.ArgumentTypeError("value must be greater than 0")
+    return integer
+
+
+def non_negative_int(value: str) -> int:
+    try:
+        integer = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"{value} is not an integer") from exc
+    if integer < 0:
+        raise argparse.ArgumentTypeError("value must be 0 or greater")
     return integer
 
 
@@ -266,6 +293,33 @@ def _configure_tensorflow_memory_growth() -> None:
             tensorflow.config.experimental.set_memory_growth(gpu, True)
     except Exception:
         pass
+
+
+def check_execution_provider() -> int:
+    """Verify that the requested provider runs inference without CPU-only fallback."""
+    configured = build_provider_config(
+        modules.globals.execution_providers,
+        directml_device_id=modules.globals.directml_device_id,
+    )
+    try:
+        active = probe_execution_providers(configured)
+    except Exception as exc:
+        update_status(f'Execution provider probe failed: {exc}')
+        return 3
+
+    missing = missing_requested_providers(
+        modules.globals.requested_execution_providers,
+        active,
+    )
+    update_status(f'Execution provider probe active providers: {active}')
+    if missing:
+        update_status(
+            'Execution provider check failed; requested provider(s) were not active: '
+            + ', '.join(missing)
+        )
+        return 2
+    update_status('Execution provider check passed.')
+    return 0
 
 
 def pre_check() -> bool:
@@ -423,6 +477,8 @@ def destroy(to_quit=True) -> None:
 
 def run() -> None:
     parse_args()
+    if getattr(modules.globals, "check_execution_provider", False):
+        raise SystemExit(check_execution_provider())
     if getattr(modules.globals, "download_models", False):
         from modules.model_manager import download_models
         raise SystemExit(download_models(assume_yes=modules.globals.assume_yes))

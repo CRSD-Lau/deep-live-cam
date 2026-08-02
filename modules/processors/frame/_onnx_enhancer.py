@@ -16,6 +16,7 @@ import onnxruntime
 import modules.globals
 from modules.execution_providers import (
     build_provider_config as build_execution_provider_config,
+    build_session_options,
     format_provider_config_summary,
     provider_names,
 )
@@ -38,6 +39,7 @@ def build_provider_config(providers=None):
     return build_execution_provider_config(
         providers,
         is_apple_silicon=IS_APPLE_SILICON,
+        directml_device_id=getattr(modules.globals, "directml_device_id", 0),
     )
 
 
@@ -108,10 +110,7 @@ def create_onnx_session(model_path: str) -> onnxruntime.InferenceSession:
         f"{format_provider_config_summary(providers)}",
         flush=True,
     )
-    session_options = onnxruntime.SessionOptions()
-    session_options.graph_optimization_level = (
-        onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
-    )
+    session_options = build_session_options(providers)
     session = onnxruntime.InferenceSession(
         model_path, sess_options=session_options, providers=providers,
     )

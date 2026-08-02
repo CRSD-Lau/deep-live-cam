@@ -24,7 +24,11 @@ def _install_import_stubs():
     )
     sys.modules.setdefault(
         "numpy",
-        types.SimpleNamespace(uint8=object, fromfile=lambda *_args, **_kwargs: b""),
+        types.SimpleNamespace(
+            ndarray=object,
+            uint8=object,
+            fromfile=lambda *_args, **_kwargs: b"",
+        ),
     )
     sys.modules.setdefault(
         "tqdm",
@@ -57,6 +61,32 @@ class Face:
 
 
 class GetOneFaceTests(unittest.TestCase):
+    def test_directml_keeps_face_analysis_on_cpu_to_avoid_amd_session_conflicts(self):
+        face_analyser = _load_face_analyser()
+
+        selected = face_analyser.select_face_analyser_providers(
+            [
+                ("DmlExecutionProvider", {"device_id": "0"}),
+                "CPUExecutionProvider",
+            ]
+        )
+
+        self.assertEqual(selected, ["CPUExecutionProvider"])
+        with patch.object(
+            face_analyser.modules.globals,
+            "execution_providers",
+            ["DmlExecutionProvider", "CPUExecutionProvider"],
+        ):
+            self.assertFalse(face_analyser._is_dml())
+
+    def test_non_directml_face_analysis_preserves_accelerator_providers(self):
+        face_analyser = _load_face_analyser()
+        configured = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+
+        selected = face_analyser.select_face_analyser_providers(configured)
+
+        self.assertEqual(selected, configured)
+
     def test_uses_supplied_detected_faces_without_reanalysing_frame(self):
         face_analyser = _load_face_analyser()
         right = Face(20)

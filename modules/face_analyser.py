@@ -20,6 +20,28 @@ FACE_ANALYSER_LOCK = threading.Lock()
 DET_SIZE = (640, 640)
 
 
+def _provider_name(provider: Any) -> str:
+    return str(provider[0]) if isinstance(provider, tuple) else str(provider)
+
+
+def select_face_analyser_providers(providers) -> list:
+    """Keep DirectML face swapping separate from CPU face analysis.
+
+    Multiple InsightFace DirectML sessions can hang or crash on affected AMD
+    drivers when detection and swapping run in the same process.  Detection,
+    recognition, and landmarks therefore stay on CPU for the DirectML profile,
+    while the substantially heavier swap/enhancement models remain on the GPU.
+    Other accelerator profiles keep their configured providers unchanged.
+    """
+    configured = list(providers)
+    if any(
+        _provider_name(provider) == "DmlExecutionProvider"
+        for provider in configured
+    ):
+        return ["CPUExecutionProvider"]
+    return configured
+
+
 def get_face_analyser() -> Any:
     """Get face analyser with thread-safe initialization."""
     global FACE_ANALYSER
@@ -31,14 +53,24 @@ def get_face_analyser() -> Any:
                 from modules.processors.frame._onnx_enhancer import (
                     build_provider_config,
                 )
-                from modules.execution_providers import provider_names
-                from modules.execution_providers import format_provider_config_summary
-                providers = build_provider_config()
+                from modules.execution_providers import (
+                    build_session_options,
+                    format_provider_config_summary,
+                    provider_names,
+                )
+                requested_providers = build_provider_config()
+                providers = select_face_analyser_providers(requested_providers)
                 print(
                     f"[DLC.FACE-ANALYSER] Requested providers: "
-                    f"{provider_names(providers)}",
+                    f"{provider_names(requested_providers)}",
                     flush=True,
                 )
+                if providers != requested_providers:
+                    print(
+                        "[DLC.FACE-ANALYSER] DirectML compatibility mode: "
+                        "face analysis uses CPU; face swapping remains on DirectML.",
+                        flush=True,
+                    )
                 print(
                     f"[DLC.FACE-ANALYSER] Provider config: "
                     f"{format_provider_config_summary(providers)}",
@@ -47,6 +79,7 @@ def get_face_analyser() -> Any:
                 FACE_ANALYSER = insightface.app.FaceAnalysis(
                     name='buffalo_l',
                     providers=providers,
+                    sess_options=build_session_options(providers),
                     allowed_modules=['detection', 'recognition', 'landmark_2d_106']
                 )
                 FACE_ANALYSER.prepare(ctx_id=0, det_size=DET_SIZE)
@@ -122,7 +155,13 @@ def _needs_landmark() -> bool:
 
 
 def _is_dml() -> bool:
-    return any("DmlExecutionProvider" in p for p in modules.globals.execution_providers)
+    providers = select_face_analyser_providers(
+        modules.globals.execution_providers
+    )
+    return any(
+        _provider_name(provider) == "DmlExecutionProvider"
+        for provider in providers
+    )
 
 
 def _analyse_faces(frame: Frame) -> list:

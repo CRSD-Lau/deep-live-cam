@@ -17,6 +17,8 @@ temp/
 venv/
 env/
 .venv-build-windows/
+.venv-build-windows-directml/
+.venv-directml/
 workflow/
 gfpgan/
 models/inswapper_128.onnx
@@ -32,6 +34,7 @@ build/deep_live_cam_studio/
 build/windows/manual-evidence/
 build/windows/installer/
 build/windows/pyinstaller-work/
+build/windows/pyinstaller-work-directml/
 build/windows/release-assets/
 build/windows/signing/
 install.bat

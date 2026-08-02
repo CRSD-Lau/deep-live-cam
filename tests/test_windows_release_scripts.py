@@ -19,6 +19,7 @@ WINDOWS_RELEASE_SCRIPTS = (
     "build/windows/verify_clean_vm_gate.ps1",
     "build/windows/verify_legal_review_gate.ps1",
     "build/windows/verify_obs_virtualcam_gate.ps1",
+    "tools/setup_directml.ps1",
 )
 
 
