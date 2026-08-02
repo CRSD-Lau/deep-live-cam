@@ -12,9 +12,10 @@ documentation, and repository security settings.
 
 | Area | Result |
 | --- | --- |
-| Source tests | 455 passed on Python 3.11 and Windows after hardening |
+| Source tests | 456 passed on Python 3.11 and Windows after hardening |
 | Coverage | 48.9% overall before this hardening change |
 | Dependency audit | ONNX 1.21.0 and Pillow 12.2.0 findings remediated in 2.2.0; both runtime profiles then returned no known vulnerabilities |
+| Dependency alert triage | GHSA-rrmf-rvhw-rf47 affects `torch.jit.script`; the app never imports or ships the PyTorch package and only copies its CUDA runtime DLLs. The official CUDA 12.8 index had no patched stable wheel on 2026-08-02, so the low alert was dismissed as not used and remains on the upgrade watchlist. |
 | Static security | Three medium findings remediated; Bandit then reported zero medium/high findings |
 | Secret history | Gitleaks 8.30.1 scanned 672 commits and found no leaks |
 | Code quality | Ruff reported 413 existing findings, primarily annotations, broad exceptions, and import ordering |
