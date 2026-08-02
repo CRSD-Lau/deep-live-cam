@@ -177,3 +177,7 @@ if ($downloadExit -ne 2) {
 }
 
 Write-Host "Packaged runtime preflight passed."
+# The consent probe intentionally returns 2 when no interactive approval is
+# available. Clear that handled native exit code so callers do not mistake this
+# successful preflight for a failure.
+$global:LASTEXITCODE = 0

@@ -51,3 +51,9 @@ def test_windows_release_powershell_scripts_parse(script_path):
     )
 
     assert completed.returncode == 0, completed.stderr
+
+
+def test_packaged_runtime_clears_handled_model_consent_exit_code():
+    script = Path("build/windows/test_packaged_runtime.ps1").read_text(encoding="utf-8")
+
+    assert "$global:LASTEXITCODE = 0" in script
