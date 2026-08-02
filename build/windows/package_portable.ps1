@@ -3,7 +3,8 @@ param(
     [ValidateSet("Cuda", "DirectML")]
     [string]$Accelerator = "DirectML",
     [string]$DistDir = "",
-    [string]$OutputDir = ""
+    [string]$OutputDir = "",
+    [switch]$SkipAcceleratorProbe
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,10 +29,14 @@ foreach ($RequiredFile in @("DeepLiveCamStudio.exe", "DeepLiveCamStudioCLI.exe",
     }
 }
 
-& (Join-Path $PSScriptRoot "test_packaged_runtime.ps1") `
-    -DistDir $DistDir `
-    -Accelerator $Accelerator `
-    -RequireAccelerator
+$RuntimeTestArgs = @(
+    "-DistDir", $DistDir,
+    "-Accelerator", $Accelerator
+)
+if (-not $SkipAcceleratorProbe) {
+    $RuntimeTestArgs += "-RequireAccelerator"
+}
+& (Join-Path $PSScriptRoot "test_packaged_runtime.ps1") @RuntimeTestArgs
 if ($LASTEXITCODE -ne 0) {
     throw "Packaged runtime validation failed with exit code $LASTEXITCODE."
 }
