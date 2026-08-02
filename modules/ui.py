@@ -25,6 +25,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageOps
 from PySide6.QtCore import (
+    QEventLoop,
     QObject,
     QThread,
     QTimer,
@@ -525,9 +526,11 @@ def update_status(text: str) -> None:
     """Thread-safe status update — uses signal if called off-UI thread."""
     _emit_status(_(text))
     if _APP is not None and QThread.currentThread() is _APP.thread():
-        # On UI thread — flush events so the user sees the update during
-        # long synchronous start() runs.
-        _APP.processEvents()
+        # Repaint status changes during synchronous preview/render work, but
+        # defer mouse and keyboard events. Processing user input here can
+        # re-enter Preview/Start Render while a model lock is already held,
+        # leaving the UI waiting forever on its own non-reentrant lock.
+        _APP.processEvents(QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents)
 
 
 def check_and_ignore_nsfw(target, destroy: Optional[Callable] = None) -> bool:
@@ -715,6 +718,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(ROOT_WIDTH, ROOT_HEIGHT)
         self.resize(ROOT_WIDTH, ROOT_HEIGHT)
         self._model_download_running = False
+        self._file_operation_running = False
         self._exit_requested = False
 
         scroll = QScrollArea()
@@ -1086,6 +1090,29 @@ class MainWindow(QMainWindow):
     def set_status(self, text: str) -> None:
         self._status_label.setText(text)
 
+    def _run_file_operation(
+        self,
+        operation: Callable[[], None],
+        failure_message: str,
+    ) -> bool:
+        """Run one preview/render action without allowing UI re-entry."""
+        if self._file_operation_running:
+            return False
+
+        self._file_operation_running = True
+        self.btn_start.setEnabled(False)
+        self.btn_preview.setEnabled(False)
+        try:
+            operation()
+        except Exception:
+            traceback.print_exc()
+            update_status(failure_message)
+        finally:
+            self._file_operation_running = False
+            self.btn_start.setEnabled(True)
+            self.btn_preview.setEnabled(True)
+        return True
+
     def _on_setup_models(self) -> None:
         if self._model_download_running:
             return
@@ -1361,6 +1388,8 @@ class MainWindow(QMainWindow):
         modules.globals.show_mouth_mask_box = False
 
     def _on_start(self) -> None:
+        if self._file_operation_running:
+            return
         if _MAPPER is not None and _MAPPER.isVisible():
             update_status("Please complete pop-up or close it.")
             return
@@ -1403,17 +1432,28 @@ class MainWindow(QMainWindow):
         if path:
             modules.globals.output_path = path
             _RECENT_OUTPUT_DIR = os.path.dirname(path)
-            self._start_cb()
+            self._run_file_operation(
+                self._start_cb,
+                "Render failed. Check the desktop launch log for details.",
+            )
 
     def _on_toggle_preview(self) -> None:
+        if self._file_operation_running:
+            return
         if _PREVIEW is None:
             return
         if _PREVIEW.isVisible():
             _PREVIEW.hide()
         elif modules.globals.source_path and modules.globals.target_path:
-            _PREVIEW.init_for_target()
-            _PREVIEW.refresh_frame(0)
-            _PREVIEW.show()
+            def refresh_and_show_preview() -> None:
+                _PREVIEW.init_for_target()
+                _PREVIEW.refresh_frame(0)
+                _PREVIEW.show()
+
+            self._run_file_operation(
+                refresh_and_show_preview,
+                "Preview failed. Check the desktop launch log for details.",
+            )
 
     def _on_live(self) -> None:
         idx = self.cb_camera.currentIndex()

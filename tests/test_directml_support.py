@@ -39,7 +39,10 @@ def test_windows_build_has_an_isolated_directml_profile():
 
 def test_directml_branch_workflow_publishes_a_portable_artifact():
     workflow = read(".github/workflows/windows-directml-test.yml")
+    packaged_runtime_test = read("build/windows/test_packaged_runtime.ps1")
 
     assert "-Accelerator DirectML" in workflow
     assert "dist/DeepLiveCamStudio-DirectML/**" in workflow
+    assert "include-hidden-files: true" in workflow
     assert "retention-days: 14" in workflow
+    assert r"_internal\sklearn\.libs\vcomp140.dll" in packaged_runtime_test

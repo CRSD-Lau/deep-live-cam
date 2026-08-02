@@ -44,6 +44,7 @@ $RequiredFiles = @(
     "RELEASE_SOURCE_PREP.md",
     "MODEL_DOWNLOAD_VERIFICATION.md",
     "PROCESSING_VERIFICATION.md",
+    "_internal\sklearn\.libs\vcomp140.dll",
     "docs\OBS_VIRTUAL_CAMERA.md",
     "LICENSES\BUNDLED_BINARY_OBLIGATIONS.md",
     "LICENSES\MODEL_LICENSE_AUDIT.md",
