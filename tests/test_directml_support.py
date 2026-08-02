@@ -61,4 +61,7 @@ def test_release_workflow_publishes_a_verified_directml_zip():
     assert "ForbiddenModelEntries" in portable_script
     assert "-SkipAcceleratorProbe" in workflow
     assert "if (-not $SkipAcceleratorProbe)" in portable_script
-    assert '"-RequireAccelerator"' in portable_script
+    assert "$RuntimeTestArgs = @{" in portable_script
+    assert "DistDir = $DistDir" in portable_script
+    assert "Accelerator = $Accelerator" in portable_script
+    assert "$RuntimeTestArgs.RequireAccelerator = $true" in portable_script
