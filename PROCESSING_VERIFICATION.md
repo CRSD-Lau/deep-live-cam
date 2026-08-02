@@ -88,36 +88,46 @@ Provider evidence:
 
 Note: ffmpeg printed an audio-map warning because the synthetic test video had no audio stream. The output video was still produced and readable.
 
-## CUDA Image Processing
+## CUDA Image Processing And Self-Contained Runtime
 
-Initial packaged CUDA run without external CUDA runtime DLLs on `PATH` fell back to CPU because `onnxruntime_providers_cuda.dll` could not load `cublasLt64_12.dll`.
+An early `2.2.0` release candidate exposed a packaging gap: the CUDA provider
+was registered, but an actual ONNX Runtime session could not load
+`cublasLt64_12.dll` unless compatible CUDA libraries were already on `PATH`.
+That candidate was not published.
 
-Command with external CUDA/cuDNN runtime available on `PATH`:
+The corrected clean build copies an explicit, tested CUDA 12/cuDNN 9 DLL set
+from the pinned build-only PyTorch wheel. The Python `torch` package is not
+included in the application. A fresh packaged bundle then passed this command
+on an NVIDIA RTX 4070 without an external CUDA Toolkit or PyTorch directory on
+`PATH`:
 
 ```powershell
-$env:PATH = "C:\Projects\deep-live-cam\venv\Lib\site-packages\torch\lib;$env:PATH"
-$env:DLC_MODELS_DIR = "<temp>\models"
 dist\DeepLiveCamStudio\DeepLiveCamStudioCLI.exe `
-  -s "<temp>\io\target.jpg" `
-  -t "<temp>\io\target.jpg" `
-  -o "<temp>\io\cuda-output-with-runtime.jpg" `
   --execution-provider cuda `
-  --execution-threads 1
+  --check-execution-provider
 ```
 
-Result: exit code `0`; output image was created.
+Result: exit code `0`; ONNX Runtime created a real CUDA session.
 
 Provider evidence:
 
 ```text
-[DLC.FACE-SWAPPER] Face swapper active providers: ['CUDAExecutionProvider', 'CPUExecutionProvider']
-[DLC.FACE-ANALYSER] detection active providers: ['CUDAExecutionProvider', 'CPUExecutionProvider']
-[DLC.FACE-ANALYSER] recognition active providers: ['CUDAExecutionProvider', 'CPUExecutionProvider']
+[DLC.CORE] Requested execution provider(s): ['cuda']
+[DLC.CORE] Resolved execution provider(s): ['CUDAExecutionProvider', 'CPUExecutionProvider']
+[DLC.CORE] Execution provider probe active providers: ['CUDAExecutionProvider', 'CPUExecutionProvider']
+[DLC.CORE] Execution provider check passed.
 ```
+
+The earlier end-to-end CUDA image test also produced a valid output once this
+same runtime set was available. The project owner subsequently confirmed the
+Preview, file-rendering, and OBS/Live Output paths on the corrected CUDA build.
 
 ## Release Implication
 
 - CPU packaged processing is verified locally for image and short-video paths.
-- CUDA packaged processing is verified locally when compatible CUDA 12/cuDNN 9 runtime DLLs are present on `PATH`.
-- The installer does not currently bundle NVIDIA CUDA/cuDNN runtime DLLs; release notes must continue to state that NVIDIA driver/CUDA/cuDNN runtime setup is external.
+- CUDA provider startup is verified from a self-contained packaged bundle, and
+  the interactive Preview, rendering, and Live Output paths are owner-verified.
+- The installer bundles the allow-listed CUDA 12/cuDNN 9 runtime DLLs. A
+  compatible NVIDIA display driver remains required; the CUDA Toolkit,
+  PyTorch, and TensorRT are not bundled application dependencies.
 - This does not replace a clean Windows VM install test or OBS Virtual Camera test.
