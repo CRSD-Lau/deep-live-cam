@@ -8,6 +8,11 @@ DirectML supports DirectX 12 GPUs from AMD, Intel, and NVIDIA. The reporter's
 AMD GPU result is still required before this build can be promoted to a normal
 release asset.
 
+For AMD stability, face detection and recognition run on CPU while the heavier
+face-swap and enhancement models run on DirectML. This avoids a known class of
+multi-session DirectML hangs while retaining GPU acceleration where it matters
+most.
+
 ## Run the portable build
 
 1. Download and extract the `DeepLiveCamStudio-DirectML-...` Actions artifact.
