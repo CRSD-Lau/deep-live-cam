@@ -2,13 +2,13 @@
 
 Release: `2.2.0`
 
-Status: PENDING FINAL TAG
+Status: READY FOR RELEASE-CANDIDATE BUILD
 
 The release is prepared in the isolated worktree
 `C:\Projects\deep-live-cam-release-2.2.0`. The original checkout's Voice Lab
 work and the prior DirectML test worktree are outside this release scope.
 
-## Required final proof
+## Completed source proof
 
 - [x] Release preparation started from the production branch after PR #4 was
   merged.
@@ -16,10 +16,12 @@ work and the prior DirectML test worktree are outside this release scope.
   files are changed in this worktree.
 - [x] Model/checkpoint files are not staged.
 - [x] Full tests pass before release-branch publication.
-- [ ] Release preparation PR is merged.
-- [ ] Annotated tag `v2.2.0` resolves to the final production commit.
-- [ ] Source packaging runs from `v2.2.0` in `git-ref` mode.
-- [ ] Final production branch and tag worktrees are clean.
 
-This file is finalized immediately before tagging and is included in the exact
-corresponding-source archive.
+## Post-merge proof
+
+The release operator must still verify that the preparation PR is merged,
+annotated tag `v2.2.0` resolves to the final production commit, source
+packaging runs from that tag in `git-ref` mode, and the tag checkout is clean.
+Those results belong in the generated `RELEASE_VERIFICATION.md` distributed
+with the final asset set; this source document intentionally does not claim
+that future work has already happened.
