@@ -33,6 +33,8 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
+- Updated ONNX to 1.22.0 and Pillow to 12.3.0 to incorporate their current
+  upstream security fixes before publishing the Windows binaries.
 - Portable packaging rejects model/checkpoint files and validates the required
   runtime contents before publication.
 

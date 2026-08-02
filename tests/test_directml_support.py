@@ -13,7 +13,8 @@ def test_directml_requirements_use_the_vendor_neutral_runtime_only():
 
     assert "onnxruntime-directml==1.23.0" in requirements
     assert "onnxruntime-gpu" not in requirements
-    assert "onnx==1.21.0" in requirements
+    assert "onnx==1.22.0" in requirements
+    assert "pillow==12.3.0" in requirements
     assert "insightface==0.7.3" in requirements
 
 

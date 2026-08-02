@@ -4,11 +4,11 @@ numpy>=1.23.5,<2
 typing-extensions>=4.8.0
 opencv-python==4.10.0.84
 cv2_enumerate_cameras==1.1.15
-onnx==1.21.0
+onnx==1.22.0
 insightface==0.7.3
 psutil==5.9.8
 PySide6>=6.7,<7
-pillow==12.2.0
+pillow==12.3.0
 tqdm>=4.65.0
 onnxruntime-directml==1.23.0; sys_platform == 'win32'
 tensorflow==2.19.1; sys_platform == 'win32'
