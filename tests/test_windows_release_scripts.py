@@ -80,3 +80,11 @@ def test_cuda_build_uses_pinned_runtime_wheel_and_requires_every_dll():
 def test_cuda_license_collection_includes_pytorch_but_directml_does_not():
     assert "torch" in high_attention_packages("onnxruntime-gpu")
     assert "torch" not in high_attention_packages("onnxruntime-directml")
+
+
+def test_processing_evidence_describes_the_self_contained_cuda_release():
+    evidence = Path("PROCESSING_VERIFICATION.md").read_text(encoding="utf-8")
+
+    assert "does not currently bundle NVIDIA CUDA" not in evidence
+    assert "without an external CUDA Toolkit" in evidence
+    assert "--check-execution-provider" in evidence
