@@ -35,8 +35,12 @@ build/windows/manual-evidence/
 build/windows/installer/
 build/windows/pyinstaller-work/
 build/windows/pyinstaller-work-directml/
+build/windows/portable/
 build/windows/release-assets/
 build/windows/signing/
+.coverage
+htmlcov/
+.ruff_cache/
 install.bat
 /.claude
 *.bat

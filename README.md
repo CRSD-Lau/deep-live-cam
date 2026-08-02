@@ -15,6 +15,9 @@
   <img src="https://img.shields.io/badge/platform-Windows%20x64-4353ff" alt="Windows x64">
   <img src="https://img.shields.io/badge/license-AGPL--3.0-111827" alt="AGPL-3.0">
   <img src="https://img.shields.io/badge/models-user%20download-f59e0b" alt="Models downloaded by user">
+  <a href="https://github.com/CRSD-Lau/deep-live-cam/actions/workflows/ci.yml">
+    <img src="https://github.com/CRSD-Lau/deep-live-cam/actions/workflows/ci.yml/badge.svg" alt="CI status">
+  </a>
 </p>
 
 <p align="center">
@@ -51,6 +54,8 @@
 - [Signing](#signing)
 - [Release Process](#release-process)
 - [Safety And Responsible Use](#safety-and-responsible-use)
+- [Security](#security)
+- [Contributing](#contributing)
 - [Upstream Attribution](#upstream-attribution)
 - [License And Compliance](#license-and-compliance)
 
@@ -347,6 +352,19 @@ The release asset set includes the CUDA installer, DirectML portable ZIP, hashes
 Use this software responsibly and legally. If using a real person's face, obtain consent and clearly label generated output when sharing. Do not use the tool for impersonation, fraud, harassment, non-consensual sexual content, or other harmful activity.
 
 The app includes content-safety checks, but users remain responsible for their own use.
+
+## Security
+
+Report vulnerabilities privately and review the supported release policy in
+[`SECURITY.md`](SECURITY.md). Do not place exploit details, credentials, or
+private media in a public issue.
+
+## Contributing
+
+Development setup, required checks, and hardware validation expectations are
+documented in [`CONTRIBUTING.md`](CONTRIBUTING.md). The current engineering
+audit and deferred refactor work are recorded in
+[`REPOSITORY_AUDIT.md`](REPOSITORY_AUDIT.md).
 
 ## Upstream Attribution
 

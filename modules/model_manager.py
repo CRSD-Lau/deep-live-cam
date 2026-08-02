@@ -9,6 +9,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
+from urllib.parse import urlsplit
 
 from tqdm import tqdm
 
@@ -149,9 +150,12 @@ def download_models(assume_yes: bool = False, required_only: bool = False) -> in
 
 
 def _download_file(url: str, destination: Path) -> None:
+    _require_https(url)
     destination.parent.mkdir(parents=True, exist_ok=True)
     request = urllib.request.Request(url, headers={"User-Agent": "DeepLiveCamStudio/installer"})
-    with urllib.request.urlopen(request) as response:
+    # The input and final redirect target are restricted to HTTPS.
+    with urllib.request.urlopen(request, timeout=60) as response:  # nosec B310
+        _require_https(response.geturl())
         total = int(response.headers.get("Content-Length", 0))
         with tqdm(total=total, desc=destination.name, unit="B", unit_scale=True, unit_divisor=1024) as progress:
             with destination.open("wb") as handle:
@@ -161,3 +165,9 @@ def _download_file(url: str, destination: Path) -> None:
                         break
                     handle.write(chunk)
                     progress.update(len(chunk))
+
+
+def _require_https(url: str) -> None:
+    parsed = urlsplit(url)
+    if parsed.scheme.lower() != "https" or not parsed.netloc:
+        raise ValueError(f"Refusing non-HTTPS model download URL: {url}")

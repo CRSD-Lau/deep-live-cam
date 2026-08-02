@@ -1,6 +1,8 @@
 import hashlib
 import sys
 
+import pytest
+
 from modules import model_manager
 
 
@@ -88,3 +90,32 @@ def test_missing_models_accepts_existing_file_only_when_checksum_matches(
 
     (tmp_path / "known.onnx").write_bytes(content)
     assert model_manager.missing_models(required_only=True) == []
+
+
+def test_download_file_rejects_non_https_url_before_network_access(monkeypatch, tmp_path):
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("urlopen should not be called for an insecure URL")
+
+    monkeypatch.setattr(model_manager.urllib.request, "urlopen", fail_if_called)
+
+    with pytest.raises(ValueError, match="non-HTTPS model download URL"):
+        model_manager._download_file("http://example.test/model.onnx", tmp_path / "model.onnx")
+
+
+def test_download_file_rejects_redirect_to_non_https_url(monkeypatch, tmp_path):
+    class FakeResponse:
+        headers = {"Content-Length": "0"}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, traceback):
+            return False
+
+        def geturl(self):
+            return "http://example.test/model.onnx"
+
+    monkeypatch.setattr(model_manager.urllib.request, "urlopen", lambda *args, **kwargs: FakeResponse())
+
+    with pytest.raises(ValueError, match="non-HTTPS model download URL"):
+        model_manager._download_file("https://example.test/model.onnx", tmp_path / "model.onnx")

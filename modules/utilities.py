@@ -1,13 +1,12 @@
 import glob
 import mimetypes
 import os
-import platform
 import shutil
-import ssl
 import subprocess
-import urllib
+import urllib.request
 from pathlib import Path
 from typing import List, Any
+from urllib.parse import urlsplit
 
 import cv2
 import numpy
@@ -317,33 +316,39 @@ def conditional_download(download_directory_path: str, urls: List[str]) -> None:
     if not os.path.exists(download_directory_path):
         os.makedirs(download_directory_path)
     for url in urls:
+        _require_https_download_url(url)
+        file_name = os.path.basename(urlsplit(url).path)
+        if not file_name:
+            raise ValueError(f"Download URL does not contain a file name: {url}")
         download_file_path = os.path.join(
-            download_directory_path, os.path.basename(url)
+            download_directory_path, file_name
         )
         if not os.path.exists(download_file_path):
             request = urllib.request.Request(url)
-            
-            # Create a specific SSL context for macOS to avoid globally disabling verification
-            ctx = None
-            if platform.system().lower() == "darwin":
-                ctx = ssl._create_unverified_context()
-                
-            response = urllib.request.urlopen(request, context=ctx)
-            total = int(response.headers.get("Content-Length", 0))
-            with tqdm(
-                total=total,
-                desc="Downloading",
-                unit="B",
-                unit_scale=True,
-                unit_divisor=1024,
-            ) as progress:
-                with open(download_file_path, "wb") as f:
-                    while True:
-                        buffer = response.read(8192)
-                        if not buffer:
-                            break
-                        f.write(buffer)
-                        progress.update(len(buffer))
+            # The input and final redirect target are restricted to HTTPS.
+            with urllib.request.urlopen(request, timeout=60) as response:  # nosec B310
+                _require_https_download_url(response.geturl())
+                total = int(response.headers.get("Content-Length", 0))
+                with tqdm(
+                    total=total,
+                    desc="Downloading",
+                    unit="B",
+                    unit_scale=True,
+                    unit_divisor=1024,
+                ) as progress:
+                    with open(download_file_path, "wb") as f:
+                        while True:
+                            buffer = response.read(8192)
+                            if not buffer:
+                                break
+                            f.write(buffer)
+                            progress.update(len(buffer))
+
+
+def _require_https_download_url(url: str) -> None:
+    parsed = urlsplit(url)
+    if parsed.scheme.lower() != "https" or not parsed.netloc:
+        raise ValueError(f"Refusing non-HTTPS download URL: {url}")
 
 
 def resolve_relative_path(path: str) -> str:

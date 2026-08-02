@@ -88,3 +88,21 @@ def test_processing_evidence_describes_the_self_contained_cuda_release():
     assert "does not currently bundle NVIDIA CUDA" not in evidence
     assert "without an external CUDA Toolkit" in evidence
     assert "--check-execution-provider" in evidence
+
+
+def test_windows_build_uses_release_venv_unless_existing_environment_is_explicit():
+    script = Path("build/windows/build_windows.ps1").read_text(encoding="utf-8")
+
+    assert '$Venv = if ($UseExistingVenv) { $ExistingVenv } else { $BuildVenv }' in script
+    assert "-UseExistingVenv was requested" in script
+
+
+def test_clean_build_covers_both_accelerator_outputs():
+    script = Path("build/windows/clean_build.ps1").read_text(encoding="utf-8")
+
+    for expected_path in (
+        "pyinstaller-work-directml",
+        "build\\windows\\portable",
+        "dist\\DeepLiveCamStudio-DirectML",
+    ):
+        assert expected_path in script
