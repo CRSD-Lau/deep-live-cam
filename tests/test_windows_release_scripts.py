@@ -106,3 +106,11 @@ def test_clean_build_covers_both_accelerator_outputs():
         "dist\\DeepLiveCamStudio-DirectML",
     ):
         assert expected_path in script
+
+
+def test_source_packaging_peels_annotated_tags_to_commits():
+    script = Path("build/windows/package_source.ps1").read_text(encoding="utf-8")
+
+    assert '$CommitRef = "$GitRef^{commit}"' in script
+    assert "git rev-parse --verify $CommitRef" in script
+    assert "$LASTEXITCODE -ne 0" in script

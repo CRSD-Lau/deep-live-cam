@@ -48,10 +48,12 @@ if ($Status) {
     }
 }
 
-$ResolvedRef = (git rev-parse --verify $GitRef).Trim()
-if (-not $ResolvedRef) {
+$CommitRef = "$GitRef^{commit}"
+$ResolvedRefOutput = git rev-parse --verify $CommitRef 2>$null
+if ($LASTEXITCODE -ne 0 -or -not $ResolvedRefOutput) {
     throw "Could not resolve git ref: $GitRef"
 }
+$ResolvedRef = ($ResolvedRefOutput | Select-Object -First 1).Trim()
 
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 $ShortRef = $ResolvedRef.Substring(0, 12)

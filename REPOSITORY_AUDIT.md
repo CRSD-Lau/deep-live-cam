@@ -12,7 +12,7 @@ documentation, and repository security settings.
 
 | Area | Result |
 | --- | --- |
-| Source tests | 452 passed on Python 3.11 and Windows after hardening |
+| Source tests | 455 passed on Python 3.11 and Windows after hardening |
 | Coverage | 48.9% overall before this hardening change |
 | Dependency audit | ONNX 1.21.0 and Pillow 12.2.0 findings remediated in 2.2.0; both runtime profiles then returned no known vulnerabilities |
 | Static security | Three medium findings remediated; Bandit then reported zero medium/high findings |
@@ -33,6 +33,8 @@ documentation, and repository security settings.
   certificate-verification bypass.
 - Made clean release environments the default and expanded cleanup to both
   CUDA and DirectML outputs.
+- Made corresponding-source packaging peel annotated tags to their commit so
+  manifests and archive names record the reproducible source commit.
 - Added a security policy and replaced stale contribution and bug-report
   instructions.
 - Enabled GitHub private vulnerability reporting, Dependabot security updates,
