@@ -10,6 +10,7 @@ WINDOWS_RELEASE_SCRIPTS = (
     "build/windows/assemble_release_assets.ps1",
     "build/windows/clean_build.ps1",
     "build/windows/package_installer.ps1",
+    "build/windows/package_portable.ps1",
     "build/windows/package_source.ps1",
     "build/windows/prepare_release_staging.ps1",
     "build/windows/run_release_checks.ps1",

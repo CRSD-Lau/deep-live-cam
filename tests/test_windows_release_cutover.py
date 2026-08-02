@@ -13,13 +13,20 @@ def test_classifies_release_mixed_and_unknown_paths():
     release_paths, mixed_paths, unknown_paths = cutover.classify(
         [
             "build/windows/run_release_checks.ps1",
+            "CHANGELOG.md",
+            "modules/metadata.py",
             "modules/model_manager.py",
             "modules/compositing/blend.py",
             "scratch.txt",
         ]
     )
 
-    assert release_paths == ["build/windows/run_release_checks.ps1", "modules/model_manager.py"]
+    assert release_paths == [
+        "CHANGELOG.md",
+        "build/windows/run_release_checks.ps1",
+        "modules/metadata.py",
+        "modules/model_manager.py",
+    ]
     assert mixed_paths == ["modules/compositing/blend.py"]
     assert unknown_paths == ["scratch.txt"]
 

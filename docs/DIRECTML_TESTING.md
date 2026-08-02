@@ -1,34 +1,83 @@
-# DirectML Test Build
+# DirectML Portable Build
 
-This portable build is for issue #3 hardware validation. It uses Microsoft's
-ONNX Runtime DirectML package instead of the NVIDIA-only CUDA package in the
-current public installer.
+The DirectML release is the Windows GPU build for AMD and Intel DirectX 12
+graphics. NVIDIA users should normally use the CUDA installer, although the
+DirectML build can also run on DirectX 12-capable NVIDIA GPUs.
 
-DirectML supports DirectX 12 GPUs from AMD, Intel, and NVIDIA. The reporter's
-AMD GPU result is still required before this build can be promoted to a normal
-release asset.
+DirectML and CUDA require mutually exclusive ONNX Runtime packages. They are
+therefore shipped as separate downloads and must not be copied over one
+another.
 
-For AMD stability, face detection and recognition run on CPU while the heavier
-face-swap and enhancement models run on DirectML. This avoids a known class of
-multi-session DirectML hangs while retaining GPU acceleration where it matters
-most.
+## Install and run
 
-## Run the portable build
+1. Download `DeepLiveCamStudio-<version>-DirectML-x64-portable.zip` from the
+   matching GitHub Release.
+2. Extract the ZIP into a new folder.
+3. Run `DeepLiveCamStudio.exe`.
+4. Select **Set Up Models** if the required models are not already installed.
 
-1. Download and extract the `DeepLiveCamStudio-DirectML-...` Actions artifact.
-2. Run `DeepLiveCamStudioCLI.exe --execution-provider directml --check-execution-provider`.
-3. Confirm the output includes `DmlExecutionProvider` and says the provider
-   check passed.
-4. Run `DeepLiveCamStudio.exe`, set up the models when prompted, and test a
-   short live or file-based swap.
-5. Report the GPU model, Windows version, provider-check output, whether the
-   app launched, and approximate FPS on issue #3.
+The portable build stores downloaded models, settings, and logs under
+`%LOCALAPPDATA%\DeepLiveCamStudio`, just like the installed CUDA build.
 
-On a computer with multiple GPUs, Windows adapter 0 is used by default. Try
-`--directml-device-id 1` (then 2, if present) when the intended GPU is not the
-primary adapter. Windows Task Manager's Performance tab shows the adapter
-number assigned to each GPU.
+## Verify GPU acceleration
 
-The portable artifact is an unsigned test build, not a production release.
-It expires from GitHub Actions after 14 days and should not replace the current
-installed release until the AMD hardware test is confirmed.
+Open PowerShell in the extracted folder and run:
+
+```powershell
+.\DeepLiveCamStudioCLI.exe --execution-provider directml --check-execution-provider
+```
+
+The check must report `DmlExecutionProvider` as active and finish with
+`Execution provider check passed`. It fails instead of silently treating CPU
+fallback as successful.
+
+For Radeon stability, face detection and recognition run on CPU while the
+heavier face-swap and enhancement models run on DirectML. Seeing
+`CPUExecutionProvider` for face analysis is therefore expected; the face
+swapper must still report `DmlExecutionProvider`.
+
+## Multiple GPUs
+
+Windows adapter 0 is used by default. When the intended GPU is not adapter 0,
+test another adapter from the CLI:
+
+```powershell
+.\DeepLiveCamStudioCLI.exe --execution-provider directml --directml-device-id 1 --check-execution-provider
+```
+
+Windows Task Manager's **Performance** tab shows the adapter number assigned
+to each GPU.
+
+## Troubleshooting
+
+- Always extract a new release into a new folder; do not overwrite an older
+  CUDA or DirectML bundle.
+- Install current GPU drivers and Windows updates.
+- Run the provider check above before testing Preview, Render, or Live Output.
+- Click Preview or Start Render once and allow the initial model load to
+  finish.
+- Desktop logs are written to
+  `%LOCALAPPDATA%\DeepLiveCamStudio\logs\desktop-launch.log`.
+
+When reporting a problem, include the GPU model, Windows version, provider
+check output, and `desktop-launch.log`.
+
+## Build from source
+
+Create the isolated DirectML environment:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\setup_directml.ps1
+```
+
+Build, validate, and package the portable release:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator DirectML
+powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.0 -Accelerator DirectML
+```
+
+The packaging step performs a strict provider probe, rejects bundled model
+weights, verifies hidden runtime dependencies such as
+`_internal/sklearn/.libs/vcomp140.dll`, and writes a SHA-256 sidecar next to the
+release ZIP.

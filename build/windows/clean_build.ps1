@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.1.9",
+    [string]$AppVersion = "2.2.0",
     [switch]$PruneStaleInstallerArtifacts
 )
 

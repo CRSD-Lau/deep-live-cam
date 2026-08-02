@@ -1,25 +1,57 @@
-# Deep Live Cam Studio 2.1.9 Windows Release
+# Deep Live Cam Studio 2.2.0 Windows Release
 
-This release packages a modified build of Deep-Live-Cam for Windows x64.
+This release adds a verified DirectML build for AMD and Intel GPUs and fixes a
+file Preview/Render deadlock that could also affect CUDA systems.
 
 ## Downloads
 
-- Windows installer: `DeepLiveCamStudio-2.1.9-x64-setup.exe`
-- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.1.9-x64-setup.exe.sha256`
+- NVIDIA/CUDA installer: `DeepLiveCamStudio-2.2.0-x64-setup.exe`
+- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.2.0-x64-setup.exe.sha256`
+- AMD/Intel DirectML portable ZIP: {{DIRECTML_PORTABLE_NAME}}
+- DirectML portable SHA-256: {{DIRECTML_PORTABLE_SHA256}}
 - Corresponding source archive: listed in the uploaded `RELEASE_ASSETS.md`
 - Source archive SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and source `.zip.sha256` sidecar
 - Source ref: listed in the uploaded `RELEASE_ASSETS.md` and source `.manifest.md`
 
-## Source And License
+Use the CUDA installer for NVIDIA GPUs. Use the DirectML ZIP for AMD or Intel
+DirectX 12 GPUs: extract it into a new folder and run
+`DeepLiveCamStudio.exe`. Do not copy one runtime over another.
 
-Deep-Live-Cam is licensed under AGPL-3.0. This binary release is distributed with corresponding source availability requirements.
+## What Changed
 
-Attach the source archive listed above to the GitHub Release, or link the exact release tag/commit in the publishing repository. The public release must make the complete corresponding source available for the exact binary installer.
+### Added
 
-The source archive must be produced from the release Git ref with:
+- DirectML GPU acceleration for AMD and Intel GPUs, including strict provider
+  verification and multi-GPU adapter selection.
+- A versioned DirectML portable ZIP with a SHA-256 sidecar and release-time
+  archive validation.
+
+### Fixed
+
+- Preview and Start Render can no longer re-enter while the first file
+  operation is loading models, preventing the observed Not Responding
+  deadlock.
+- DirectML face analysis uses the CPU compatibility path while swap and
+  enhancement inference remain on the GPU, avoiding Radeon multi-session
+  hangs.
+- GitHub packaging now preserves dot-prefixed runtime directories, including
+  the scikit-learn `.libs` DLL required by the application.
+- Provider diagnostics fail clearly when requested GPU acceleration is not
+  active instead of silently treating CPU fallback as success.
+
+The final DirectML artifact was validated by the issue reporter on a Radeon
+6900 XT for file rendering and Live Output. CUDA rendering and Live Output were
+also verified locally on an NVIDIA RTX 4070.
+
+## Source and license
+
+Deep-Live-Cam is licensed under AGPL-3.0. Complete corresponding source for the
+exact binary release is attached and identified by the source ref above.
+
+The source archive is produced with:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.9 -GitRef HEAD
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.0 -GitRef HEAD
 ```
 
 This release preserves attribution to the original project:
@@ -27,11 +59,13 @@ This release preserves attribution to the original project:
 - Original project: https://github.com/hacksider/Deep-Live-Cam
 - License: AGPL-3.0
 
-## Models Are Not Bundled
+## Models are not bundled
 
-The installer intentionally does not include model/checkpoint files (`.onnx`, `.pth`, `.safetensors`) because model licenses and redistribution rights are separate from the application license.
+The installer intentionally does not include model/checkpoint files. The
+DirectML portable ZIP also excludes them because model licenses and
+redistribution rights are separate from the application license.
 
-After installing, users can review model sources, license notes, and SHA-256 checksums before downloading:
+After launching, select **Set Up Models**, or run:
 
 ```powershell
 DeepLiveCamStudioCLI.exe --download-models
@@ -43,57 +77,31 @@ Downloaded models are stored under:
 %LOCALAPPDATA%\DeepLiveCamStudio\models
 ```
 
-## Notable Packaging Changes
+## Requirements and known limitations
 
-- Windows x64 per-user installer using Inno Setup.
-- PyInstaller onedir app bundle; Python does not need to be installed by users.
-- Start menu shortcut and optional desktop shortcut.
-- Clean uninstall of app files; user model data is preserved during silent uninstall and interactive uninstall asks before removing models.
-- WebP and AVIF source-image upload support.
-- Default-on extended subject blend mask for smoother hairline, neck, shoulder, and upper-chest compositing.
-- Layered extended subject matte with soft falloff to reduce hard mask edges around hair and shoulders.
-- New Studio controls for extended subject masking and subject-mask preview overlay.
-- Fixed alpha-channel preview frames before face detection and swap-model inference.
-- Packaged runtime preflight and installer smoke tests are included under `build/windows`.
+- `ffmpeg` and `ffprobe` must be installed separately for video workflows.
+- OBS Studio must be installed separately for OBS Virtual Camera workflows.
+- The public files are unsigned and may trigger Microsoft Defender
+  SmartScreen.
+- Face-swap and enhancer model families retain their documented
+  non-commercial or research-use restrictions; no model weights are
+  redistributed here.
 
-## Known Requirements
+## Release evidence
 
-- ffmpeg/ffprobe must be installed separately for video workflows unless a future release explicitly bundles a reviewed ffmpeg build.
-- NVIDIA GPU acceleration requires compatible NVIDIA drivers and runtime libraries. CPU fallback should be tested before publishing.
-- OBS Virtual Camera workflows require OBS Studio installed separately.
-
-## Compliance Notes
-
-Review these files before publishing:
-
-- `COMPLIANCE.md`
-- `THIRD_PARTY_NOTICES.md`
-- `LICENSES/PYTHON_DEPENDENCIES.md`
-- `MODEL_DOWNLOAD_VERIFICATION.md`
-- `PROCESSING_VERIFICATION.md`
-- `RELEASE_CHECKLIST.md`
-- `RELEASE_REPORT.md`
-
-Known legal risks that must not be hidden from release notes:
-
-- The `inswapper` model family has historical non-commercial/research-use restrictions from InsightFace even where mirrors are labeled GPL-3.0.
-- GPEN upscaler model mirrors are marked non-commercial, academic, and educational use only.
-- `pyvirtualcam` metadata reports GPLv2; review binary distribution compatibility.
-- Dependency metadata can be incomplete and should be legally reviewed before public distribution.
-
-## Pre-Publish Checks
-
-This release candidate is not publish-approved by release notes alone; publish
-approval is recorded in `RELEASE_VERIFICATION.md`, `MANUAL_RELEASE_GATES.md`,
-and the signed gate documents included with the upload.
+This release candidate is not publish-approved by release notes alone;
+publish approval is recorded in `RELEASE_VERIFICATION.md`,
+`MANUAL_RELEASE_GATES.md`, and the signed gate documents included with the
+upload.
 
 Completed local evidence is included in the uploaded release documents:
 
-- Packaged runtime preflight.
-- Installer smoke test.
-- Model download/checksum verification.
-- CPU fallback processing.
-- CUDA processing on the local NVIDIA test machine.
+- Full automated test suite.
+- Packaged CUDA and DirectML runtime/provider checks.
+- Installer smoke install/uninstall checks.
+- Model download/checksum and forbidden-model scans.
+- CUDA and DirectML file-render checks.
+- Radeon 6900 XT and NVIDIA RTX 4070 Live Output checks.
 
 Remaining publish blockers:
 
@@ -101,6 +109,6 @@ Remaining publish blockers:
 
 Completed manual signoffs include:
 
-- Clean Windows VM install without admin rights.
-- OBS Virtual Camera workflow.
+- Clean Windows install without admin rights.
+- OBS Virtual Camera and DirectML Live Output workflows.
 - Authorized legal review for dependency, model-license, and redistribution obligations.

@@ -34,6 +34,7 @@ $OnnxRuntimeLicense = if ($Accelerator -eq "DirectML") {
 
 $RequiredFiles = @(
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "Logo.png",
     "THIRD_PARTY_NOTICES.md",
@@ -99,6 +100,7 @@ foreach ($RelativePath in $DevOnlyPayloadPaths) {
 
 $DuplicatedReleaseDocs = @(
     "_internal\README.md",
+    "_internal\CHANGELOG.md",
     "_internal\LICENSE",
     "_internal\THIRD_PARTY_NOTICES.md",
     "_internal\COMPLIANCE.md",

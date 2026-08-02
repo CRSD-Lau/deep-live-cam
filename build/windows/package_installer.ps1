@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.1.9",
+    [string]$AppVersion = "2.2.0",
     [string]$IsccPath = "",
     [string]$SignCertPath = "",
     [string]$SignCertPassword = "",
@@ -19,6 +19,7 @@ if (-not (Test-Path (Join-Path $DistDir "DeepLiveCamStudio.exe"))) {
 
 $RequiredDocs = @(
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
     "COMPLIANCE.md",

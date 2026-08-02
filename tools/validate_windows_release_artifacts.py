@@ -15,6 +15,7 @@ FORBIDDEN_DIRS = {"models", "checkpoints", "model-cache", "model_cache"}
 REQUIRED_SOURCE_ENTRIES = (
     "LICENSE",
     "README.md",
+    "CHANGELOG.md",
     "COMPLIANCE.md",
     "Logo.png",
     "THIRD_PARTY_NOTICES.md",
@@ -60,6 +61,7 @@ REQUIRED_SOURCE_ENTRIES = (
     "build/windows/assemble_release_assets.ps1",
     "build/windows/clean_build.ps1",
     "build/windows/package_installer.ps1",
+    "build/windows/package_portable.ps1",
     "build/windows/package_source.ps1",
     "build/windows/prepare_release_staging.ps1",
     "build/windows/run_release_checks.ps1",
@@ -189,6 +191,46 @@ def source_archive_missing_required_entries(path: Path, app_version: str) -> lis
     return [entry for entry in REQUIRED_SOURCE_ENTRIES if f"{prefix}{entry}" not in names]
 
 
+def _validate_directml_portable(
+    assets_dir: Path, app_version: str, failures: list[str]
+) -> tuple[Path | None, str]:
+    """Validate the DirectML portable ZIP, hash, runtime entries, and model exclusion."""
+    archive_path = assets_dir / f"DeepLiveCamStudio-{app_version}-DirectML-x64-portable.zip"
+    hash_path = Path(str(archive_path) + ".sha256")
+    if not archive_path.exists():
+        fail(f"release assets missing DirectML portable archive: {archive_path.name}", failures)
+        return None, ""
+
+    digest = sha256(archive_path)
+    if read_sidecar_digest(hash_path) != digest:
+        fail(f"DirectML portable SHA-256 sidecar missing or mismatched: {hash_path.name}", failures)
+
+    required_entries = {
+        "DeepLiveCamStudio.exe",
+        "DeepLiveCamStudioCLI.exe",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE",
+        "_internal/sklearn/.libs/vcomp140.dll",
+    }
+    try:
+        with zipfile.ZipFile(archive_path) as archive:
+            names = {name.replace("\\", "/") for name in archive.namelist()}
+        for entry in sorted(required_entries - names):
+            fail(f"DirectML portable archive missing required entry: {entry}", failures)
+        forbidden_entries = source_archive_has_forbidden_entries(archive_path)
+    except zipfile.BadZipFile:
+        fail(f"DirectML portable archive is not a valid zip: {archive_path.name}", failures)
+        return archive_path, digest
+
+    if forbidden_entries:
+        for entry in forbidden_entries[:20]:
+            print(f"[release-artifacts] forbidden DirectML portable entry: {entry}")
+        fail("DirectML portable archive contains forbidden model/checkpoint entries", failures)
+
+    return archive_path, digest
+
+
 def source_manifest_text(path: Path) -> str:
     manifest = path.with_suffix(".manifest.md")
     if not manifest.exists():
@@ -256,7 +298,13 @@ def source_manifest_resolved_ref(manifest_text: str) -> str:
     return ""
 
 
-def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_ref: bool, failures: list[str]) -> None:
+def validate_release_assets_dir(
+    assets_dir: Path,
+    app_version: str,
+    require_git_ref: bool,
+    require_directml_portable: bool,
+    failures: list[str],
+) -> None:
     if not assets_dir.exists():
         fail(f"missing release assets directory: {assets_dir}", failures)
         return
@@ -320,6 +368,7 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         "RELEASE_CUTOVER_STATUS.md",
         "CLEAN_RELEASE_WORKTREE_VERIFICATION.md",
         "README.md",
+        "CHANGELOG.md",
         "LICENSE",
         "RELEASE_REPORT.md",
         "CLEAN_VM_VERIFICATION.md",
@@ -341,6 +390,13 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
     for doc in required_docs:
         if not (assets_dir / doc).exists():
             fail(f"release assets missing required document: {doc}", failures)
+
+    directml_archive = None
+    directml_digest = ""
+    if require_directml_portable:
+        directml_archive, directml_digest = _validate_directml_portable(
+            assets_dir, app_version, failures
+        )
     validate_sha256sums(assets_dir, failures)
     if installer.exists() and source.exists():
         validate_release_evidence_consistency(
@@ -371,6 +427,10 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
         for path in [installer, installer_hash, source, source_hash, source_manifest]:
             if f"`{path.name}`" not in asset_manifest_text:
                 fail(f"RELEASE_ASSETS.md does not list: {path.name}", failures)
+        if directml_archive:
+            for path in [directml_archive, Path(str(directml_archive) + ".sha256")]:
+                if f"`{path.name}`" not in asset_manifest_text:
+                    fail(f"RELEASE_ASSETS.md does not list: {path.name}", failures)
         for doc in required_docs:
             if f"`{doc}`" not in asset_manifest_text:
                 fail(f"RELEASE_ASSETS.md does not list required document: {doc}", failures)
@@ -394,6 +454,11 @@ def validate_release_assets_dir(assets_dir: Path, app_version: str, require_git_
             "Remaining publish blockers:",
             "Authorized legal review for dependency, model-license, and redistribution obligations.",
         )
+        if directml_archive:
+            expected_phrases += (
+                f"`{directml_archive.name}`",
+                f"`{directml_digest}`",
+            )
         for phrase in expected_phrases:
             if phrase not in release_notes_text:
                 fail(f"RELEASE_NOTES.md missing phrase: {phrase}", failures)
@@ -409,12 +474,17 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate Windows release artifact set.")
     parser.add_argument("--output-dir", default="build/windows/installer", help="Installer output directory.")
     parser.add_argument("--release-assets-dir", help="Optional curated GitHub Release asset directory to validate.")
-    parser.add_argument("--app-version", default="2.1.7", help="Application version.")
+    parser.add_argument("--app-version", default="2.2.0", help="Application version.")
     parser.add_argument("--repo-root", default=".", help="Repository root containing RELEASE_VERIFICATION.md.")
     parser.add_argument(
         "--require-git-ref-source",
         action="store_true",
         help="Require source archive manifest mode to be git-ref instead of allowing draft-working-tree.",
+    )
+    parser.add_argument(
+        "--require-directml-portable",
+        action="store_true",
+        help="Require and validate the versioned DirectML portable release ZIP.",
     )
     args = parser.parse_args(argv)
 
@@ -491,6 +561,7 @@ def main(argv: list[str] | None = None) -> int:
             assets_dir=(repo_root / args.release_assets_dir).resolve(),
             app_version=args.app_version,
             require_git_ref=args.require_git_ref_source,
+            require_directml_portable=args.require_directml_portable,
             failures=failures,
         )
 
