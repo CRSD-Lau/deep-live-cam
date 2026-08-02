@@ -59,7 +59,7 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `namex` | `0.1.0` | UNKNOWN |
 | `networkx` | `3.6.1` | BSD-3-Clause |
 | `numpy` | `1.26.4` | Copyright (c) 2005-2023, NumPy Developers. All rights reserved. Redistribution and use in source and binary forms, with or without modificat |
-| `onnx` | `1.21.0` | Apache-2.0 |
+| `onnx` | `1.22.0` | Apache-2.0 |
 | `onnxruntime-gpu` | `1.23.2` | MIT License |
 | `opencv-python` | `4.10.0.84` | Apache 2.0 |
 | `opencv-python-headless` | `4.11.0.86` | Apache 2.0 |
@@ -68,7 +68,7 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `optree` | `0.19.1` | Apache-2.0 |
 | `packageurl-python` | `0.17.6` | MIT |
 | `packaging` | `26.2` | Apache-2.0 OR BSD-2-Clause |
-| `pillow` | `12.2.0` | MIT-CMU |
+| `pillow` | `12.3.0` | MIT-CMU |
 | `pip-api` | `0.0.34` | OSI Approved :: Apache Software License |
 | `pip-requirements-parser` | `32.0.1` | MIT |
 | `pip_audit` | `2.10.0` | OSI Approved :: Apache Software License |
