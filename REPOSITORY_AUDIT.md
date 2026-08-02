@@ -12,7 +12,7 @@ documentation, and repository security settings.
 
 | Area | Result |
 | --- | --- |
-| Source tests | 451 passed on Python 3.11 and Windows after hardening |
+| Source tests | 452 passed on Python 3.11 and Windows after hardening |
 | Coverage | 48.9% overall before this hardening change |
 | Dependency audit | ONNX 1.21.0 and Pillow 12.2.0 findings remediated in 2.2.0; both runtime profiles then returned no known vulnerabilities |
 | Static security | Three medium findings remediated; Bandit then reported zero medium/high findings |
