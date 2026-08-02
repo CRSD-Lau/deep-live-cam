@@ -29,12 +29,12 @@ foreach ($RequiredFile in @("DeepLiveCamStudio.exe", "DeepLiveCamStudioCLI.exe",
     }
 }
 
-$RuntimeTestArgs = @(
-    "-DistDir", $DistDir,
-    "-Accelerator", $Accelerator
-)
+$RuntimeTestArgs = @{
+    DistDir = $DistDir
+    Accelerator = $Accelerator
+}
 if (-not $SkipAcceleratorProbe) {
-    $RuntimeTestArgs += "-RequireAccelerator"
+    $RuntimeTestArgs.RequireAccelerator = $true
 }
 & (Join-Path $PSScriptRoot "test_packaged_runtime.ps1") @RuntimeTestArgs
 if ($LASTEXITCODE -ne 0) {
