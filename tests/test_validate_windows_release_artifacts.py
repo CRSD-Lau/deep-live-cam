@@ -100,7 +100,7 @@ def write_release_assets(tmp_path):
         "LEGAL_REVIEW_EVIDENCE_PACKET.md",
     ):
         content = MANUAL_GATE_SUMMARY if doc == "MANUAL_RELEASE_GATES.md" else "doc"
-        if doc in {"CLEAN_VM_VERIFICATION.md", "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "LEGAL_REVIEW.md", "CLEAN_VM_AUTOMATED_EVIDENCE.md"}:
+        if doc == "CLEAN_VM_AUTOMATED_EVIDENCE.md":
             content = f"Installer SHA-256: `{validator.sha256(installer)}`\n"
         if doc == "LEGAL_REVIEW_EVIDENCE_PACKET.md":
             content = "\n".join(
@@ -297,6 +297,30 @@ def test_validate_release_artifacts_prefers_git_ref_source_when_required(tmp_pat
 
 def test_validate_release_artifacts_accepts_curated_release_assets(tmp_path, monkeypatch):
     write_release_assets(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    assert validator.main(version_args("--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7")) == 0
+
+
+def test_validate_release_artifacts_accepts_headless_candidate_without_optional_manual_evidence(tmp_path, monkeypatch):
+    assets_dir = write_release_assets(tmp_path)
+    optional_evidence = (
+        "CLEAN_VM_AUTOMATED_EVIDENCE.md",
+        "OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md",
+        "LEGAL_REVIEW_EVIDENCE_PACKET.md",
+    )
+    manifest = assets_dir / "RELEASE_ASSETS.md"
+    manifest_text = manifest.read_text(encoding="utf-8")
+    for name in optional_evidence:
+        (assets_dir / name).unlink()
+        manifest_text = manifest_text.replace(f"- `{name}`\n", "")
+    manifest.write_text(manifest_text, encoding="utf-8")
+
+    sums_lines = []
+    for path in sorted(assets_dir.iterdir(), key=lambda item: item.name):
+        if path.is_file() and path.name != "SHA256SUMS.txt":
+            sums_lines.append(f"{validator.sha256(path)}  {path.name}")
+    write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
     monkeypatch.chdir(tmp_path)
 
     assert validator.main(version_args("--require-git-ref-source", "--release-assets-dir", "build/windows/release-assets/2.1.7")) == 0

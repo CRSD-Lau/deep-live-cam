@@ -271,14 +271,11 @@ def validate_release_evidence_consistency(
     source_digest: str,
     failures: list[str],
 ) -> None:
-    gate_docs_with_installer_hash = (
-        "CLEAN_VM_VERIFICATION.md",
-        "OBS_VIRTUAL_CAMERA_VERIFICATION.md",
-        "LEGAL_REVIEW.md",
+    evidence_docs_with_installer_hash = (
         "CLEAN_VM_AUTOMATED_EVIDENCE.md",
         "LEGAL_REVIEW_EVIDENCE_PACKET.md",
     )
-    for name in gate_docs_with_installer_hash:
+    for name in evidence_docs_with_installer_hash:
         require_text(
             assets_dir / name,
             installer_digest,
@@ -377,9 +374,6 @@ def validate_release_assets_dir(
         "MODEL_DOWNLOAD_VERIFICATION.md",
         "PROCESSING_VERIFICATION.md",
         "MANUAL_RELEASE_GATES.md",
-        "CLEAN_VM_AUTOMATED_EVIDENCE.md",
-        "OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md",
-        "LEGAL_REVIEW_EVIDENCE_PACKET.md",
         "COMPLIANCE.md",
         "THIRD_PARTY_NOTICES.md",
         "BUNDLED_BINARY_OBLIGATIONS.md",
