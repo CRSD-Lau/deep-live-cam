@@ -36,6 +36,8 @@ DirectX 12 GPUs: extract it into a new folder and run
   hangs.
 - GitHub packaging now preserves dot-prefixed runtime directories, including
   the scikit-learn `.libs` DLL required by the application.
+- Clean NVIDIA installer builds now include the pinned CUDA 12/cuDNN 9 runtime
+  DLL set required for an actual ONNX Runtime CUDA session.
 - Provider diagnostics fail clearly when requested GPU acceleration is not
   active instead of silently treating CPU fallback as success.
 

@@ -56,6 +56,11 @@ High-attention dependencies:
 - `pyvirtualcam`: package metadata/classifiers indicate GPLv2. Review compatibility with the AGPL-3.0 application before public binary distribution.
 - `cv2_enumerate_cameras`: package metadata includes GPL-3.0 text. GPL-3.0 can be compatible with AGPL-3.0, but include notices and source availability.
 - The CUDA build uses `onnxruntime-gpu`; the DirectML test build uses the mutually exclusive `onnxruntime-directml` package. TensorFlow, OpenCV, NumPy, PySide6, and either ONNX Runtime profile may bundle native DLLs with their own notices.
+- The CUDA installer copies a reviewed set of CUDA 12/cuDNN 9 runtime DLLs
+  from the pinned PyTorch CUDA wheel. Preserve the PyTorch/NVIDIA licence and
+  notice files in `LICENSES/THIRD_PARTY_LICENSES/torch-2.11.0_cu128/`; the
+  NVIDIA display driver, CUDA Toolkit installer, and TensorRT system runtimes
+  remain external prerequisites.
 - `ffmpeg` is required for video processing. This installer does not bundle ffmpeg. If a future build bundles ffmpeg, record the exact build source and whether it is LGPL or GPL configured.
 - Inno Setup is used as a release build tool and is not bundled as an application runtime dependency. Current JR Software pages request commercial users purchase a commercial license even though the Inno Setup License text permits broad use, including commercial applications. Confirm the publisher's Inno Setup licensing position before production/commercial distribution.
 

@@ -37,6 +37,7 @@ REQUIRED_RELEASE_PATHS = {
     "THIRD_PARTY_NOTICES.md",
     "requirements.txt",
     "requirements-directml.txt",
+    "requirements-build-windows-cuda.txt",
     "run-directml.bat",
     "run.py",
     "tests/test_face_analyser_get_one_face.py",

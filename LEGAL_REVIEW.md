@@ -23,6 +23,8 @@ kept in the release asset manifest rather than embedded in installed files.
 - [x] Inno Setup publisher/commercial-use posture remains accepted.
 - [x] ffmpeg is not bundled.
 - [x] DirectML dependency and binary redistribution delta is documented.
+- [x] PyTorch CUDA-wheel licence, notice, and package metadata accompany the
+  selected CUDA 12/cuDNN 9 runtime DLLs bundled in the NVIDIA installer.
 
 ## 2.2.0 delta review
 
@@ -38,6 +40,9 @@ kept in the release asset manifest rather than embedded in installed files.
 - The scikit-learn `vcomp140.dll` packaging fix restores a dependency that was
   already part of the built runtime; it does not add a new model or content
   source.
+- The clean CUDA build installs pinned `torch==2.11.0+cu128` only as the source
+  for the runtime DLL allow-list. The Python `torch` package is excluded from
+  the installer, while its `LICENSE`, `NOTICE`, and metadata remain bundled.
 
 Generate the final evidence packet with:
 

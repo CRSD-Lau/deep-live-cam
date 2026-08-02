@@ -59,4 +59,8 @@ Current public source evidence reviewed on 2026-05-19 is captured in `LICENSES/M
 - Inno Setup: used to build the Windows installer, not bundled as a runtime dependency. The Inno Setup License permits broad use, including commercial applications, but current JR Software pages request commercial users purchase an Inno Setup commercial license. Confirm the release publisher's Inno Setup license position before production/commercial distribution.
 - ffmpeg/ffprobe: required for video processing, not bundled by default. If bundled later, include the exact ffmpeg license and build configuration.
 - OBS Virtual Camera: optional user-installed workflow dependency, not bundled.
-- NVIDIA CUDA/cuDNN/TensorRT runtime libraries: not bundled by default. Users must install compatible drivers/runtimes or use CPU/DirectML where available.
+- NVIDIA CUDA 12 and cuDNN 9 runtime DLLs: selected redistributable DLLs are
+  copied from the pinned `torch==2.11.0+cu128` Windows wheel into the CUDA
+  installer. The wheel's `LICENSE`, `NOTICE`, and package metadata are included
+  under `LICENSES/THIRD_PARTY_LICENSES/torch-2.11.0_cu128/`. NVIDIA drivers,
+  the CUDA Toolkit installer, and TensorRT system runtimes are not bundled.

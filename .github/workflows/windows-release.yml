@@ -28,6 +28,9 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-build-windows-cuda.txt
 
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y

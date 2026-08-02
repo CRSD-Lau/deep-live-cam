@@ -69,7 +69,34 @@ $RequiredFiles = @(
     "LICENSES\THIRD_PARTY_LICENSES\pyvirtualcam-0.15.0\licenses\LICENSE",
     "LICENSES\THIRD_PARTY_LICENSES\cv2_enumerate_cameras-1.1.15\LICENSE",
     "LICENSES\THIRD_PARTY_LICENSES\easydict-1.13\LICENSE",
+    "LICENSES\THIRD_PARTY_LICENSES\torch-2.11.0_cu128\LICENSE",
+    "LICENSES\THIRD_PARTY_LICENSES\torch-2.11.0_cu128\METADATA",
+    "LICENSES\THIRD_PARTY_LICENSES\torch-2.11.0_cu128\NOTICE",
     "LICENSES\WINDOWS_BUNDLE_MANIFEST.md"
+)
+
+$RequiredFiles += @(
+    "_internal\cublas64_12.dll",
+    "_internal\cublasLt64_12.dll",
+    "_internal\cudart64_12.dll",
+    "_internal\cudnn64_9.dll",
+    "_internal\cudnn_adv64_9.dll",
+    "_internal\cudnn_cnn64_9.dll",
+    "_internal\cudnn_engines_precompiled64_9.dll",
+    "_internal\cudnn_engines_runtime_compiled64_9.dll",
+    "_internal\cudnn_graph64_9.dll",
+    "_internal\cudnn_heuristic64_9.dll",
+    "_internal\cudnn_ops64_9.dll",
+    "_internal\cufft64_11.dll",
+    "_internal\cufftw64_11.dll",
+    "_internal\curand64_10.dll",
+    "_internal\cusolver64_11.dll",
+    "_internal\cusolverMg64_11.dll",
+    "_internal\cusparse64_12.dll",
+    "_internal\nvrtc-builtins64_128.dll",
+    "_internal\nvrtc64_120_0.dll",
+    "_internal\nvToolsExt64_1.dll",
+    "_internal\zlibwapi.dll"
 )
 
 foreach ($RelativePath in $RequiredFiles) {

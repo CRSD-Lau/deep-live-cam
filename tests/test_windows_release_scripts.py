@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from tools.collect_third_party_license_files import high_attention_packages
+
 
 WINDOWS_RELEASE_SCRIPTS = (
     "build/windows/build_windows.ps1",
@@ -57,3 +59,24 @@ def test_packaged_runtime_clears_handled_model_consent_exit_code():
     script = Path("build/windows/test_packaged_runtime.ps1").read_text(encoding="utf-8")
 
     assert "$global:LASTEXITCODE = 0" in script
+
+
+def test_cuda_build_uses_pinned_runtime_wheel_and_requires_every_dll():
+    requirements = Path("requirements-build-windows-cuda.txt").read_text(encoding="utf-8")
+    build_script = Path("build/windows/build_windows.ps1").read_text(encoding="utf-8")
+    spec = Path("build/windows/deep_live_cam_studio.spec").read_text(encoding="utf-8")
+    runtime_test = Path("build/windows/test_packaged_runtime.ps1").read_text(encoding="utf-8")
+
+    assert "torch==2.11.0+cu128" in requirements
+    assert "https://download.pytorch.org/whl/cu128" in requirements
+    assert '"--no-cache-dir", "--no-deps"' in build_script
+    assert '"-r", $CudaRuntimeRequirementsFile' in build_script
+    assert "CUDA release build is missing required PyTorch runtime DLLs" in spec
+    for name in ("cublasLt64_12.dll", "cudnn64_9.dll", "cusparse64_12.dll"):
+        assert name in spec
+        assert name in runtime_test
+
+
+def test_cuda_license_collection_includes_pytorch_but_directml_does_not():
+    assert "torch" in high_attention_packages("onnxruntime-gpu")
+    assert "torch" not in high_attention_packages("onnxruntime-directml")

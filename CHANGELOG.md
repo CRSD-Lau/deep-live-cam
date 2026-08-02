@@ -28,6 +28,8 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   is already loading models, which could deadlock the UI.
 - Preserved dot-prefixed runtime directories in GitHub artifacts so required
   scikit-learn DLLs are not omitted.
+- Restored the pinned CUDA 12/cuDNN 9 runtime DLL set in clean NVIDIA installer
+  builds and made packaging fail if any required DLL is absent.
 - Improved provider diagnostics so an unavailable GPU provider cannot be
   mistaken for successful acceleration.
 
