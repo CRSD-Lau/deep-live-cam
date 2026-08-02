@@ -1,119 +1,95 @@
 # Windows Release Checklist
 
-Use this checklist for every Windows installer release.
+Use this checklist for every public Windows release. The current release is
+`2.2.0` and contains two mutually exclusive runtime profiles:
 
-## Build
+- NVIDIA/CUDA installer
+- AMD/Intel DirectML portable ZIP
 
-- [ ] Confirm working tree contains only intentional release changes.
-- [ ] For any public user-facing installer fix after a release is published, bump `AppVersion` to the next patch version before publishing, unless there is an explicit same-version hotfix decision recorded in the release notes.
-- [ ] If a same-version hotfix is unavoidable, confirm the GitHub Release installer asset, installer `.sha256`, corresponding source archive, source `.sha256`, source manifest, `RELEASE_ASSETS.md`, and `SHA256SUMS.txt` are all replaced and re-verified after upload.
-- [ ] Confirm no model/checkpoint files are staged or included in `dist\DeepLiveCamStudio`.
-- [ ] Commit generated release evidence before source packaging, including `LICENSES/PYTHON_DEPENDENCIES.md`, `LICENSES/WINDOWS_BUNDLE_MANIFEST.md`, and `LICENSES/THIRD_PARTY_LICENSES/`.
-- [ ] Review `RELEASE_SOURCE_PREP.md` and resolve mixed-scope dirty worktree changes before tagging.
-- [ ] Confirm `CLEAN_RELEASE_WORKTREE_VERIFICATION.md` matches the final release commit/tag.
-- [ ] For the standard local release gate, run `powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.9 -GitRef <release-tag-or-commit>`.
-- [ ] Confirm the standard local release gate produced `build\windows\release-assets\2.1.9\RELEASE_ASSETS.md`.
-- [ ] Confirm `build\windows\release-assets\2.1.9\SHA256SUMS.txt` is present and validates every upload file except itself.
-- [ ] Confirm `build\windows\release-assets\2.1.9\MANUAL_RELEASE_GATES.md` is present and matches the three manual gate files.
-- [ ] For the final publish gate, run `powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.9 -GitRef <release-tag-or-commit> -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady`.
-- [ ] For CI release-candidate builds, confirm `.github/workflows/windows-release.yml` completed the same non-strict `run_release_checks.ps1` gate and uploaded `RELEASE_VERIFICATION.md`.
-- [ ] Do not treat GitHub-hosted CI artifacts as publish-approved unless a separate strict publish gate has passed on appropriate release-test machines.
-- [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\clean_build.ps1`.
-- [ ] Run `python tools\generate_python_dependency_licenses.py --output LICENSES\PYTHON_DEPENDENCIES.md` after installing release dependencies.
-- [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1`.
-- [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\test_packaged_runtime.ps1`.
-- [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1` on the target test machine.
-- [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.1.9`.
-- [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\test_installer.ps1 -AppVersion 2.1.9`.
-- [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.1.9 -GitRef <release-tag-or-commit>`.
-- [ ] Verify installer exists at `build\windows\installer\DeepLiveCamStudio-2.1.9-x64-setup.exe`.
-- [ ] Verify SHA-256 sidecar exists at `build\windows\installer\DeepLiveCamStudio-2.1.9-x64-setup.exe.sha256`.
-- [ ] Confirm sidecar matches `Get-FileHash build\windows\installer\DeepLiveCamStudio-2.1.9-x64-setup.exe -Algorithm SHA256`.
-- [ ] Verify corresponding source archive and `.sha256` sidecar exist under `build\windows\installer`.
-- [ ] Verify corresponding source archive `.manifest.md` exists under `build\windows\installer`.
-- [ ] Confirm `package_source.ps1` reported source archive content verification passed.
-- [ ] Run `python tools\validate_windows_release_artifacts.py --app-version 2.1.9 --require-git-ref-source` before publishing.
-- [ ] If assembling assets separately from `run_release_checks.ps1`, run `powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.1.9 -RequireGitRefSource`.
-- [ ] If validating assets separately from `run_release_checks.ps1`, run `python tools\validate_windows_release_artifacts.py --app-version 2.1.9 --require-git-ref-source --release-assets-dir build\windows\release-assets\2.1.9`.
-- [ ] Confirm the source archive manifest says `Archive mode: ` followed by `git-ref` for public GitHub Releases. `draft-working-tree` archives are for local traceability only.
-- [ ] Review generated `RELEASE_VERIFICATION.md` and confirm no automated evidence item unexpectedly failed.
-- [ ] Confirm manual gate evidence files remain `PENDING` until their gate is actually complete: `CLEAN_VM_VERIFICATION.md`, `OBS_VIRTUAL_CAMERA_VERIFICATION.md`, and `LEGAL_REVIEW.md`.
-- [ ] Run `python tools\summarize_manual_release_gates.py --strict` and confirm it passes before publishing.
+## Source and version
 
-## Installer smoke test
+- [ ] Work from a clean release branch based on the production branch.
+- [ ] `modules/metadata.py`, installer defaults, workflow defaults, README,
+  changelog, and release notes use the intended version.
+- [ ] `CHANGELOG.md` describes user-visible changes and links the comparison.
+- [ ] The full automated test suite passes.
+- [ ] The release commit is merged before tagging.
+- [ ] The annotated tag resolves to the exact release commit.
 
-- [ ] Local automated installer smoke test passes with `build\windows\test_installer.ps1`.
-- [ ] Install on a clean Windows x64 VM without admin rights.
-- [ ] Run `build\windows\verify_clean_vm_gate.ps1` on the clean Windows x64 VM and attach or summarize its generated evidence.
-- [ ] Record clean VM results in `CLEAN_VM_VERIFICATION.md` and set `Status: PASS` only if every required check passes.
-- [ ] Confirm Start menu shortcut launches.
-- [ ] Confirm optional desktop shortcut works when selected.
-- [ ] Confirm uninstall removes app files.
-- [ ] Confirm local automated smoke test preserves a sentinel file in `%LOCALAPPDATA%\DeepLiveCamStudio\models` during silent uninstall.
-- [ ] Confirm interactive uninstall asks before removing `%LOCALAPPDATA%\DeepLiveCamStudio\models`.
+## CUDA installer
 
-## Runtime test
+- [ ] Build with `build\windows\build_windows.ps1 -Accelerator Cuda`.
+- [ ] Run `build\windows\test_packaged_runtime.ps1 -Accelerator Cuda -RequireAccelerator`.
+- [ ] Run `build\windows\test_environment.ps1 -RequireFfmpeg -RequireCuda`.
+- [ ] Package with `build\windows\package_installer.ps1 -AppVersion 2.2.0`.
+- [ ] Run `build\windows\test_installer.ps1 -AppVersion 2.2.0`.
+- [ ] Confirm the installer and `.sha256` sidecar match.
+- [ ] Confirm silent uninstall preserves `%LOCALAPPDATA%\DeepLiveCamStudio\models`.
 
-- [ ] Local packaged runtime preflight passes with `build\windows\test_packaged_runtime.ps1`.
-- [ ] Launch GUI on a fresh install.
-- [ ] Run `DeepLiveCamStudioCLI.exe --download-models` and review the model license prompt.
-- [ ] Verify downloaded model checksums pass.
-- [ ] Review `MODEL_DOWNLOAD_VERIFICATION.md` from the release environment, if present, and confirm it was regenerated for the final release candidate.
-- [ ] Confirm missing-model failures show a clear setup message.
-- [ ] Confirm `switch_states.json` is written under `%LOCALAPPDATA%\DeepLiveCamStudio`.
-- [ ] Confirm desktop logs are written under `%LOCALAPPDATA%\DeepLiveCamStudio\logs`.
+## DirectML portable build
 
-## Processing test
+- [ ] Build with `build\windows\build_windows.ps1 -Accelerator DirectML`.
+- [ ] Package with `build\windows\package_portable.ps1 -AppVersion 2.2.0 -Accelerator DirectML`.
+- [ ] Confirm the strict provider probe reports `DmlExecutionProvider`.
+- [ ] Confirm the ZIP contains `_internal/sklearn/.libs/vcomp140.dll`.
+- [ ] Confirm the ZIP and `.sha256` sidecar match.
+- [ ] Confirm the ZIP contains no `.onnx`, `.pth`, `.safetensors`, `models/`,
+  or `checkpoints/` payloads.
+- [ ] Test file Preview, Start Render, and Live Output on AMD hardware.
 
-- [ ] Run `powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1 -RequireFfmpeg` on the video-processing test machine.
-- [ ] CPU fallback test with a small image and a short video.
-- [ ] CUDA machine test with `powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1 -RequireCuda`.
-- [ ] DirectML or CPU-only fallback test on a non-NVIDIA Windows machine.
-- [ ] OBS Virtual Camera test with OBS installed and virtual camera enabled: `powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1 -RequireObsVirtualCam`.
-- [ ] Run `build\windows\verify_obs_virtualcam_gate.ps1` on the OBS test machine and attach or summarize its generated evidence.
-- [ ] Record OBS results in `OBS_VIRTUAL_CAMERA_VERIFICATION.md` and set `Status: PASS` only if every required check passes.
-- [ ] Confirm live preview still opens and stops cleanly.
+## Corresponding source and compliance
 
-## Compliance
+- [ ] Generate dependency licences from the final CUDA and DirectML
+  environments.
+- [ ] Confirm `LICENSES/THIRD_PARTY_LICENSES/` contains the CUDA and DirectML
+  ONNX Runtime licences plus Qt, OpenCV, TensorFlow, ONNX, pyvirtualcam,
+  cv2_enumerate_cameras, and other shipped dependencies.
+- [ ] Confirm no model/checkpoint files are committed or distributed.
+- [ ] Package source from the exact tag:
 
-- [ ] Include `Logo.png`, `LICENSE`, `THIRD_PARTY_NOTICES.md`, `COMPLIANCE.md`, `RELEASE_CHECKLIST.md`, `RELEASE_PUBLISH_HANDOFF.md`, `RELEASE_REPORT.md`, and `RELEASE_SOURCE_PREP.md` in the installed app.
-- [ ] Include `LICENSES/MODEL_LICENSE_AUDIT.md` in the installed app.
-- [ ] Include `LICENSES/PYTHON_DEPENDENCIES.md` in the installed app.
-- [ ] Include generated `LICENSES/WINDOWS_BUNDLE_MANIFEST.md` in the installed app.
-- [ ] Include `MODEL_DOWNLOAD_VERIFICATION.md` and `PROCESSING_VERIFICATION.md` in the installed app.
-- [ ] Include `docs/OBS_VIRTUAL_CAMERA.md` in the installed app.
-- [ ] Link the GitHub Release to the exact source tag or commit.
-- [ ] Confirm complete corresponding source includes `Logo.png`, build scripts, and installer scripts.
-- [ ] Confirm corresponding source archive contains `LICENSE`, `COMPLIANCE.md`, `THIRD_PARTY_NOTICES.md`, `RELEASE_SOURCE_PREP.md`, `LICENSES/BUNDLED_BINARY_OBLIGATIONS.md`, `LICENSES/THIRD_PARTY_LICENSES/`, `LICENSES/MODEL_LICENSE_AUDIT.md`, packaging scripts, and model-download source.
-- [ ] Confirm `package_source.ps1` was run against the exact tag or commit used for the installer and not against a workspace-only dirty state.
-- [ ] Confirm corresponding source archive contains no `.onnx`, `.pth`, `.safetensors`, `models/`, `checkpoints/`, or model-cache entries.
-- [ ] Re-run dependency license scan with `tools\generate_python_dependency_licenses.py` and update `THIRD_PARTY_NOTICES.md` if newly surfaced risks need summary treatment.
-- [ ] Re-check Hugging Face model repository licenses and checksums.
-- [ ] Review `namex` and any other `UNKNOWN` or non-SPDX dependency metadata before publishing.
-- [ ] Confirm no `.onnx`, `.pth`, `.safetensors`, checkpoint, or model cache files are bundled.
-- [ ] Confirm generated `LICENSES/WINDOWS_BUNDLE_MANIFEST.md` reports zero dev-only sample/test payload paths.
-- [ ] Review `pyvirtualcam` GPLv2 metadata compatibility before publishing the binary.
-- [ ] Review `LICENSES/BUNDLED_BINARY_OBLIGATIONS.md` and confirm the release path satisfies bundled LGPL/GPL-family obligations.
-- [ ] Run `build\windows\verify_legal_review_gate.ps1` and attach or summarize its generated reviewer packet.
-- [ ] Confirm `LICENSES/THIRD_PARTY_LICENSES/` was regenerated from the release build environment and includes high-attention TensorFlow, ONNX Runtime, OpenCV, Qt/PySide, pyvirtualcam, and model-safety dependency notices in the installed payload.
-- [ ] Review any ffmpeg redistribution plan before bundling ffmpeg.
-- [ ] Confirm the release publisher's Inno Setup commercial-license position before production/commercial distribution.
-- [ ] Record final compliance/legal conclusions in `LEGAL_REVIEW.md` and set `Status: PASS` only after authorized review.
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.0 -GitRef v2.2.0
+  ```
+
+- [ ] Confirm the source manifest reports `Archive mode: git-ref` and records
+  the forbidden-model scan.
+- [ ] Attach the complete corresponding source ZIP, hash, and manifest.
+- [ ] Keep AGPL-3.0 attribution and model-license limitations visible in the
+  release notes.
+- [ ] Do not bundle ffmpeg or model weights without a separate redistribution
+  review.
+
+## Manual release gates
+
+- [ ] `CLEAN_VM_VERIFICATION.md` is `Status: PASS` with no unchecked items.
+- [ ] `OBS_VIRTUAL_CAMERA_VERIFICATION.md` is `Status: PASS` with no unchecked
+  items and covers the final runtime paths.
+- [ ] `LEGAL_REVIEW.md` is `Status: PASS` for the intended release and records
+  the DirectML dependency delta.
+- [ ] `tools\summarize_manual_release_gates.py --strict` passes.
+
+## Final release gate
+
+Run the strict CUDA installer and source gate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.0 -GitRef v2.2.0 -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
+```
+
+Assemble the combined asset set after the DirectML ZIP is available:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.2.0 -PortableDir build\windows\portable -RequireGitRefSource
+python tools\validate_windows_release_artifacts.py --app-version 2.2.0 --release-assets-dir build\windows\release-assets\2.2.0 --require-git-ref-source --require-directml-portable
+```
 
 ## GitHub Release
 
-- [ ] Attach installer `.exe`.
-- [ ] Attach installer `.sha256`.
-- [ ] After upload, verify the live GitHub Release installer asset digest matches the local installer SHA-256; do not rely only on the local file or branch commit.
-- [ ] Download the installer from the public release page on a separate machine or browser session and confirm it installs the expected `DeepLiveCamStudio.exe` hash.
-- [ ] Attach or link source archive for the exact release.
-- [ ] Attach source archive `.sha256`.
-- [ ] Attach source archive `.manifest.md`.
-- [ ] Attach or review `RELEASE_ASSETS.md` from `build\windows\release-assets\2.1.9`.
-- [ ] Attach `SHA256SUMS.txt` from `build\windows\release-assets\2.1.9`.
-- [ ] Attach or quote `RELEASE_VERIFICATION.md`.
-- [ ] Use `RELEASE_NOTES_TEMPLATE.md` and replace placeholders with exact version, commit, hashes, and source URL.
-- [ ] Include AGPL-3.0 source availability notice in release notes.
-- [ ] Include model exclusion notice and setup command in release notes.
-- [ ] Include known legal risks for model redistribution.
-
+- [ ] Create release `v2.2.0` from the annotated tag, initially as a draft.
+- [ ] Upload every file listed in `RELEASE_ASSETS.md`.
+- [ ] Verify live GitHub asset digests against `SHA256SUMS.txt`.
+- [ ] Download the public CUDA installer and DirectML ZIP and re-run their
+  smoke/provider checks.
+- [ ] Publish only after the public-download checks pass.
+- [ ] Update README links, close resolved issues, and thank external testers.
+- [ ] Preserve a rollback path to `v2.1.9` and record any deferred risks.

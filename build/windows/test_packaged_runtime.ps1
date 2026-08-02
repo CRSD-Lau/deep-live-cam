@@ -34,6 +34,7 @@ $OnnxRuntimeLicense = if ($Accelerator -eq "DirectML") {
 
 $RequiredFiles = @(
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "Logo.png",
     "THIRD_PARTY_NOTICES.md",
@@ -53,7 +54,7 @@ $RequiredFiles = @(
     "LICENSES\THIRD_PARTY_LICENSES\tensorflow-2.19.1\package\THIRD_PARTY_NOTICES.txt",
     $OnnxRuntimeLicense,
     "LICENSES\THIRD_PARTY_LICENSES\opencv-python-4.10.0.84\package\LICENSE-3RD-PARTY.txt",
-    "LICENSES\THIRD_PARTY_LICENSES\onnx-1.21.0\licenses\LICENSE",
+    "LICENSES\THIRD_PARTY_LICENSES\onnx-1.22.0\licenses\LICENSE",
     "LICENSES\THIRD_PARTY_LICENSES\opennsfw2-0.10.2\LICENSE",
     "LICENSES\THIRD_PARTY_LICENSES\PySide6-6.11.1\METADATA",
     "LICENSES\THIRD_PARTY_LICENSES\PySide6-6.11.1\licenses\LicenseRef-Qt-Commercial.txt",
@@ -99,6 +100,7 @@ foreach ($RelativePath in $DevOnlyPayloadPaths) {
 
 $DuplicatedReleaseDocs = @(
     "_internal\README.md",
+    "_internal\CHANGELOG.md",
     "_internal\LICENSE",
     "_internal\THIRD_PARTY_NOTICES.md",
     "_internal\COMPLIANCE.md",
@@ -175,3 +177,7 @@ if ($downloadExit -ne 2) {
 }
 
 Write-Host "Packaged runtime preflight passed."
+# The consent probe intentionally returns 2 when no interactive approval is
+# available. Clear that handled native exit code so callers do not mistake this
+# successful preflight for a failure.
+$global:LASTEXITCODE = 0

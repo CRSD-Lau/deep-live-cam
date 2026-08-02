@@ -10,6 +10,7 @@ WINDOWS_RELEASE_SCRIPTS = (
     "build/windows/assemble_release_assets.ps1",
     "build/windows/clean_build.ps1",
     "build/windows/package_installer.ps1",
+    "build/windows/package_portable.ps1",
     "build/windows/package_source.ps1",
     "build/windows/prepare_release_staging.ps1",
     "build/windows/run_release_checks.ps1",
@@ -50,3 +51,9 @@ def test_windows_release_powershell_scripts_parse(script_path):
     )
 
     assert completed.returncode == 0, completed.stderr
+
+
+def test_packaged_runtime_clears_handled_model_consent_exit_code():
+    script = Path("build/windows/test_packaged_runtime.ps1").read_text(encoding="utf-8")
+
+    assert "$global:LASTEXITCODE = 0" in script

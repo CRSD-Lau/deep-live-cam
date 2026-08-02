@@ -1,41 +1,27 @@
 # Clean Release Worktree Verification
 
-Status: AUTOMATED-PASS
+Release: `2.2.0`
 
-This file records evidence that the Windows release artifact set can be
-validated from a clean Git worktree for the release commit. It does not replace
-the manual clean VM, OBS visual workflow, or legal review gates.
+Status: READY FOR RELEASE-CANDIDATE BUILD
 
-## Release Commit Under Test
+The release is prepared in the isolated worktree
+`C:\Projects\deep-live-cam-release-2.2.0`. The original checkout's Voice Lab
+work and the prior DirectML test worktree are outside this release scope.
 
-- Commit: see the generated source archive manifest and `RELEASE_ASSETS.md` for the exact resolved Git ref.
-- Worktree used: `C:\Projects\deep-live-cam-release-verify`
-- Verification time UTC: `2026-05-19T07:25:46Z`
-- Main developer worktree status at the time: dirty with mixed-scope runtime and quality work excluded from this release commit.
+## Completed source proof
 
-## Artifact Set
+- [x] Release preparation started from the production branch after PR #4 was
+  merged.
+- [x] Only release-owned source, tests, workflow, version, and documentation
+  files are changed in this worktree.
+- [x] Model/checkpoint files are not staged.
+- [x] Full tests pass before release-branch publication.
 
-- Installer: `C:\Projects\deep-live-cam\build\windows\installer\DeepLiveCamStudio-2.1.7-x64-setup.exe`
-- Installer SHA-256: see `DeepLiveCamStudio-2.1.7-x64-setup.exe.sha256`.
-- Source archive: see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`.
-- Source SHA-256: see `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md` and the matching `.sha256` sidecar.
+## Post-merge proof
 
-## Automated Checks
-
-- [x] Detached release worktree checked out at the release commit.
-- [x] `git status --short --untracked-files=all` returned no paths in the detached release worktree.
-- [x] `tools/check_windows_release_cutover.py` reported `Dirty paths: 0` in the detached release worktree.
-- [x] `build/windows/package_source.ps1 -AppVersion 2.1.7 -GitRef HEAD -OutputDir C:\Projects\deep-live-cam\build\windows\clean-worktree-source-check` created the source archive from the clean detached release worktree without `-AllowDirty`.
-- [x] Source archive manifest records `Archive mode: git-ref`.
-- [x] Source archive manifest records the exact resolved release commit.
-- [x] Source archive validation found no `.onnx`, `.pth`, `.safetensors`, `models/`, `checkpoints/`, or model-cache entries.
-- [x] `tools/validate_windows_release_artifacts.py --require-git-ref-source --release-assets-dir C:\Projects\deep-live-cam\build\windows\release-assets\2.1.7` passed against the installer and source archive.
-- [x] Focused release tests passed from the detached release worktree using the main workspace Python: `25 passed`.
-
-## Remaining Non-Automated Gates
-
-The release is still not publish-ready until these separate files are completed:
-
-- `CLEAN_VM_VERIFICATION.md`
-- `OBS_VIRTUAL_CAMERA_VERIFICATION.md`
-- `LEGAL_REVIEW.md`
+The release operator must still verify that the preparation PR is merged,
+annotated tag `v2.2.0` resolves to the final production commit, source
+packaging runs from that tag in `git-ref` mode, and the tag checkout is clean.
+Those results belong in the generated `RELEASE_VERIFICATION.md` distributed
+with the final asset set; this source document intentionally does not claim
+that future work has already happened.

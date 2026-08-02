@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.1.9",
+    [string]$AppVersion = "2.2.0",
     [string]$GitRef = "HEAD",
     [string]$OutputDir = "",
     [switch]$AllowDirty,
@@ -68,6 +68,7 @@ $ForbiddenSourceDirectoryNames = @("models", "checkpoints", "model-cache", "mode
 $RequiredEntries = @(
     "LICENSE",
     "README.md",
+    "CHANGELOG.md",
     "COMPLIANCE.md",
     "Logo.png",
     "THIRD_PARTY_NOTICES.md",
@@ -98,7 +99,7 @@ $RequiredEntries = @(
     "LICENSES/THIRD_PARTY_LICENSES/onnxruntime-directml-1.23.0/METADATA",
     "LICENSES/THIRD_PARTY_LICENSES/onnxruntime-directml-1.23.0/package/LICENSE",
     "LICENSES/THIRD_PARTY_LICENSES/opencv-python-4.10.0.84/package/LICENSE-3RD-PARTY.txt",
-    "LICENSES/THIRD_PARTY_LICENSES/onnx-1.21.0/licenses/LICENSE",
+    "LICENSES/THIRD_PARTY_LICENSES/onnx-1.22.0/licenses/LICENSE",
     "LICENSES/THIRD_PARTY_LICENSES/opennsfw2-0.10.2/LICENSE",
     "LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/METADATA",
     "LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/licenses/LicenseRef-Qt-Commercial.txt",
@@ -113,6 +114,7 @@ $RequiredEntries = @(
     "build/windows/assemble_release_assets.ps1",
     "build/windows/clean_build.ps1",
     "build/windows/package_installer.ps1",
+    "build/windows/package_portable.ps1",
     "build/windows/package_source.ps1",
     "build/windows/prepare_release_staging.ps1",
     "build/windows/run_release_checks.ps1",

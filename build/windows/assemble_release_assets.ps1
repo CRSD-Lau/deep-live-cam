@@ -1,6 +1,7 @@
 param(
-    [string]$AppVersion = "2.1.9",
+    [string]$AppVersion = "2.2.0",
     [string]$InstallerDir = "",
+    [string]$PortableDir = "",
     [string]$OutputDir = "",
     [string]$Python = "python",
     [switch]$RequireGitRefSource
@@ -60,6 +61,26 @@ if (-not (Test-Path -LiteralPath $InstallerHash)) {
     throw "Installer SHA-256 sidecar missing: $InstallerHash"
 }
 
+$PortableArchive = $null
+$PortableHash = $null
+$PortableDigest = ""
+if ($PortableDir) {
+    $PortableDir = [System.IO.Path]::GetFullPath($PortableDir)
+    $PortableArchive = Join-Path $PortableDir "DeepLiveCamStudio-$AppVersion-DirectML-x64-portable.zip"
+    $PortableHash = "$PortableArchive.sha256"
+    if (-not (Test-Path -LiteralPath $PortableArchive -PathType Leaf)) {
+        throw "DirectML portable archive missing: $PortableArchive"
+    }
+    if (-not (Test-Path -LiteralPath $PortableHash -PathType Leaf)) {
+        throw "DirectML portable SHA-256 sidecar missing: $PortableHash"
+    }
+    $PortableDigest = (Get-FileHash -LiteralPath $PortableArchive -Algorithm SHA256).Hash
+    $SidecarDigest = ((Get-Content -LiteralPath $PortableHash -Raw).Trim() -split "\s+")[0].ToUpperInvariant()
+    if ($SidecarDigest -ne $PortableDigest) {
+        throw "DirectML portable SHA-256 sidecar does not match: $PortableHash"
+    }
+}
+
 $SourceArchives = @(
     Get-ChildItem -LiteralPath $InstallerDir -Filter "DeepLiveCamStudio-$AppVersion-source-*.zip" -File |
         Where-Object {
@@ -100,6 +121,7 @@ $FilesToCopy = @(
     $SourceHash,
     $SourceManifest,
     (Join-Path $RepoRoot "README.md"),
+    (Join-Path $RepoRoot "CHANGELOG.md"),
     (Join-Path $RepoRoot "LICENSE"),
     (Join-Path $RepoRoot "RELEASE_NOTES_TEMPLATE.md"),
     (Join-Path $RepoRoot "RELEASE_PUBLISH_HANDOFF.md"),
@@ -123,6 +145,10 @@ $FilesToCopy = @(
     (Join-Path $RepoRoot "LICENSES\PYTHON_DEPENDENCIES.md"),
     (Join-Path $RepoRoot "LICENSES\WINDOWS_BUNDLE_MANIFEST.md")
 )
+if ($PortableArchive) {
+    $FilesToCopy += $PortableArchive
+    $FilesToCopy += $PortableHash
+}
 foreach ($Path in $FilesToCopy) {
     if (-not (Test-Path -LiteralPath $Path)) {
         throw "Required release asset input missing: $Path"
@@ -201,6 +227,13 @@ $ReleaseNotesText = $ReleaseNotesText.Replace(
     "powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion $AppVersion -GitRef HEAD",
     "powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion $AppVersion -GitRef $ResolvedRef"
 )
+if ($PortableArchive) {
+    $ReleaseNotesText = $ReleaseNotesText.Replace("{{DIRECTML_PORTABLE_NAME}}", "``$(Split-Path $PortableArchive -Leaf)``")
+    $ReleaseNotesText = $ReleaseNotesText.Replace("{{DIRECTML_PORTABLE_SHA256}}", "``$PortableDigest``")
+} else {
+    $ReleaseNotesText = $ReleaseNotesText.Replace("{{DIRECTML_PORTABLE_NAME}}", "not included in this CUDA-only candidate")
+    $ReleaseNotesText = $ReleaseNotesText.Replace("{{DIRECTML_PORTABLE_SHA256}}", "not available")
+}
 $ReleaseNotesText | Set-Content -LiteralPath $ReleaseNotes -Encoding utf8
 
 $AssetManifest = Join-Path $StagingDir "RELEASE_ASSETS.md"
@@ -228,6 +261,7 @@ $Lines = @(
     "",
     "- Installer SHA-256: ``$InstallerDigest``",
     "- Source SHA-256: ``$SourceDigest``",
+    $(if ($PortableArchive) { "- DirectML portable SHA-256: ``$PortableDigest``" }),
     "",
     "## Notes",
     "",

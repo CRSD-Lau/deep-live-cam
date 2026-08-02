@@ -1,6 +1,6 @@
 #define AppName "Deep Live Cam Studio"
 #ifndef AppVersion
-#define AppVersion "2.1.9"
+#define AppVersion "2.2.0"
 #endif
 #ifndef DistDir
 #define DistDir "..\..\dist\DeepLiveCamStudio"
@@ -16,10 +16,10 @@
 AppId={{7B7D33BB-6B98-48D2-A8D5-31D6D6E53A08}
 AppName={#AppName}
 AppVersion={#AppVersion}
-AppPublisher=Deep-Live-Cam contributors
-AppPublisherURL=https://github.com/hacksider/Deep-Live-Cam
-AppSupportURL=https://github.com/hacksider/Deep-Live-Cam/issues
-AppUpdatesURL=https://github.com/hacksider/Deep-Live-Cam/releases
+AppPublisher=CRSD-Lau and Deep-Live-Cam contributors
+AppPublisherURL=https://github.com/CRSD-Lau/deep-live-cam
+AppSupportURL=https://github.com/CRSD-Lau/deep-live-cam/issues
+AppUpdatesURL=https://github.com/CRSD-Lau/deep-live-cam/releases
 DefaultDirName={localappdata}\Programs\DeepLiveCamStudio\{#AppVersion}
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes

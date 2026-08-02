@@ -1,101 +1,59 @@
 # Windows Release Publish Handoff
 
-Status: NOT PUBLISH-APPROVED
+Release: `2.2.0`
 
-This handoff is for the Windows `2.1.7` release candidate. It points release
-testers and reviewers at the exact artifacts, commands, and gate files needed
-before publishing a GitHub Release.
+Status: RELEASE-CANDIDATE UNTIL FINAL ASSET VERIFICATION
 
-## Current Artifacts
+## Intended public downloads
 
-- Upload folder: `build/windows/release-assets/2.1.7/`
-- Upload manifest: `build/windows/release-assets/2.1.7/RELEASE_ASSETS.md`
-- Installer: `DeepLiveCamStudio-2.1.7-x64-setup.exe`
-- Installer SHA-256: see `RELEASE_ASSETS.md` and
-  `DeepLiveCamStudio-2.1.7-x64-setup.exe.sha256`
-- Corresponding source archive: see `RELEASE_ASSETS.md`
-- Source archive SHA-256: see `RELEASE_ASSETS.md` and the matching
-  `DeepLiveCamStudio-2.1.7-source-*.zip.sha256`
+- `DeepLiveCamStudio-2.2.0-x64-setup.exe` — NVIDIA/CUDA installer
+- `DeepLiveCamStudio-2.2.0-DirectML-x64-portable.zip` — AMD/Intel DirectML
+- matching SHA-256 sidecars
+- exact corresponding-source ZIP, SHA-256 sidecar, and source manifest
+- the compliance and release evidence listed by `RELEASE_ASSETS.md`
 
-Upload every file listed in `RELEASE_ASSETS.md`. Do not upload model or
-checkpoint files unless a separate redistribution approval exists.
+Model/checkpoint files are intentionally excluded from every artifact.
 
-When automated manual-gate evidence packets exist locally, the release assembly
-also includes these reviewer/tester convenience copies:
+## Build automation
 
-- `CLEAN_VM_AUTOMATED_EVIDENCE.md`
-- `OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md`
-- `LEGAL_REVIEW_EVIDENCE_PACKET.md`
+Dispatch `.github/workflows/windows-release.yml` with:
 
-These packets support the manual gates but do not approve publication by
-themselves.
+- `app_version`: `2.2.0`
+- `git_ref`: the exact release commit or `v2.2.0`
 
-## Final Gate Commands
+The workflow builds the DirectML ZIP first, then the CUDA installer and source
+asset set. The final combined artifact is validated with
+`--require-directml-portable` so the hidden scikit-learn runtime DLL and model
+exclusion are checked before upload.
 
-Run the automated gate summary first:
+Hosted CI intentionally does not grant publish approval. Final approval comes
+from the repository's strict local/manual gates.
+
+## Final local gates
 
 ```powershell
-venv\Scripts\python.exe tools\summarize_manual_release_gates.py --strict
+python tools\summarize_manual_release_gates.py --strict
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.0 -GitRef v2.2.0 -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
+python tools\validate_windows_release_artifacts.py --app-version 2.2.0 --release-assets-dir build\windows\release-assets\2.2.0 --require-git-ref-source --require-directml-portable
 ```
 
-It must pass before publication. If it fails, complete the gates below.
+All three commands must pass against the exact files intended for GitHub.
 
-### Clean Windows VM
+## Publish and verify
 
-On a fresh Windows x64 VM:
+1. Create a draft release from annotated tag `v2.2.0`.
+2. Use `RELEASE_NOTES.md` as the release body.
+3. Upload every file listed in `RELEASE_ASSETS.md`.
+4. Compare GitHub's live asset digests with `SHA256SUMS.txt`.
+5. Download both public runtime assets into clean temporary folders.
+6. Run the CUDA installer smoke test and DirectML provider/runtime checks.
+7. Publish the draft only after those public-download checks pass.
+8. Close issue #3 with the final release link and credit `@d1stru3t0r` for the
+   Radeon 6900 XT validation.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.1.7
-```
+## Rollback
 
-Then complete the interactive checks in `CLEAN_VM_VERIFICATION.md`. Change that
-file to `Status: PASS` only after every checklist item is checked.
-
-### OBS Virtual Camera
-
-On the OBS test machine:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_obs_virtualcam_gate.ps1 -CameraName "OBS Virtual Camera"
-```
-
-Then complete the visual receiving-app or OBS rebroadcast checks in
-`OBS_VIRTUAL_CAMERA_VERIFICATION.md`. Change that file to `Status: PASS` only
-after every checklist item is checked.
-
-### Legal Review
-
-Generate the reviewer packet:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.1.7
-```
-
-An authorized reviewer must complete `LEGAL_REVIEW.md`, including AGPL
-corresponding-source handling, model-download license posture, PySide6/shiboken6
-LGPL/GPL posture, `pyvirtualcam` and `cv2_enumerate_cameras` metadata, Inno
-Setup commercial-use position, ffmpeg exclusion, and any unknown dependency
-metadata. Change that file to `Status: PASS` only after every checklist item is
-checked.
-
-## Publish Gate
-
-After the three manual files are `Status: PASS` with no unchecked items, run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.1.7 -GitRef <release-tag-or-commit> -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
-```
-
-Then validate the upload folder:
-
-```powershell
-venv\Scripts\python.exe tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --release-assets-dir build\windows\release-assets\2.1.7 --app-version 2.1.7 --require-git-ref-source
-```
-
-Only publish if both commands pass.
-
-## Release Notes
-
-Use `build/windows/release-assets/2.1.7/RELEASE_NOTES.md` as the GitHub Release
-body. It includes the installer hash, source archive, source hash, AGPL source
-availability notice, model exclusion notice, and remaining legal-risk notes.
+If a post-release check fails, keep or restore `v2.1.9` as the latest stable
+release, mark `v2.2.0` as a pre-release or draft, and document the failed asset
+and hash. Do not replace files under the same version without updating every
+binary, source, manifest, checksum, and release note that identifies it.

@@ -13,7 +13,8 @@ def test_directml_requirements_use_the_vendor_neutral_runtime_only():
 
     assert "onnxruntime-directml==1.23.0" in requirements
     assert "onnxruntime-gpu" not in requirements
-    assert "onnx==1.21.0" in requirements
+    assert "onnx==1.22.0" in requirements
+    assert "pillow==12.3.0" in requirements
     assert "insightface==0.7.3" in requirements
 
 
@@ -46,3 +47,16 @@ def test_directml_branch_workflow_publishes_a_portable_artifact():
     assert "include-hidden-files: true" in workflow
     assert "retention-days: 14" in workflow
     assert r"_internal\sklearn\.libs\vcomp140.dll" in packaged_runtime_test
+
+
+def test_release_workflow_publishes_a_verified_directml_zip():
+    workflow = read(".github/workflows/windows-release.yml")
+    portable_script = read("build/windows/package_portable.ps1")
+
+    assert "build-directml:" in workflow
+    assert "package_portable.ps1" in workflow
+    assert "DeepLiveCamStudio-${{ inputs.app_version }}-DirectML-x64-portable.zip" in workflow
+    assert "include-hidden-files: true" in workflow
+    assert '"_internal/sklearn/.libs/vcomp140.dll"' in portable_script
+    assert "ForbiddenModelEntries" in portable_script
+    assert "-RequireAccelerator" in portable_script
