@@ -59,4 +59,6 @@ def test_release_workflow_publishes_a_verified_directml_zip():
     assert "include-hidden-files: true" in workflow
     assert '"_internal/sklearn/.libs/vcomp140.dll"' in portable_script
     assert "ForbiddenModelEntries" in portable_script
-    assert "-RequireAccelerator" in portable_script
+    assert "-SkipAcceleratorProbe" in workflow
+    assert "if (-not $SkipAcceleratorProbe)" in portable_script
+    assert '"-RequireAccelerator"' in portable_script

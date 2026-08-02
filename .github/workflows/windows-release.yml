@@ -111,7 +111,10 @@ jobs:
 
       - name: Package and verify DirectML release asset
         shell: pwsh
-        run: powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion "${{ inputs.app_version }}" -Accelerator DirectML
+        # GitHub-hosted runners have no DirectML display adapter. Structure and
+        # non-GPU runtime checks still run here; hardware evidence is a separate
+        # manual publication gate.
+        run: powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion "${{ inputs.app_version }}" -Accelerator DirectML -SkipAcceleratorProbe
 
       - name: Upload DirectML release artifact
         uses: actions/upload-artifact@v4
