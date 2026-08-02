@@ -16,6 +16,7 @@ def test_directml_requirements_use_the_vendor_neutral_runtime_only():
     assert "onnx==1.22.0" in requirements
     assert "pillow==12.3.0" in requirements
     assert "insightface==0.7.3" in requirements
+    assert "torch" not in requirements
 
 
 def test_directml_launcher_refuses_silent_cpu_fallback():

@@ -44,9 +44,12 @@ def is_notice_file(path: Path) -> bool:
 
 
 def high_attention_packages(onnxruntime_package: str) -> tuple[str, ...]:
+    accelerator_packages = (onnxruntime_package,)
+    if onnxruntime_package == "onnxruntime-gpu":
+        accelerator_packages += ("torch",)
     return (
         BASE_HIGH_ATTENTION_PACKAGES[:2]
-        + (onnxruntime_package,)
+        + accelerator_packages
         + BASE_HIGH_ATTENTION_PACKAGES[2:]
     )
 

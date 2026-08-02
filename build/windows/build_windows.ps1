@@ -16,6 +16,7 @@ $PythonExe = Join-Path $Venv "Scripts\python.exe"
 $BundleName = if ($IsDirectML) { "DeepLiveCamStudio-DirectML" } else { "DeepLiveCamStudio" }
 $DistDir = Join-Path $RepoRoot "dist\$BundleName"
 $RequirementsFile = if ($IsDirectML) { "requirements-directml.txt" } else { "requirements.txt" }
+$CudaRuntimeRequirementsFile = "requirements-build-windows-cuda.txt"
 $PyInstallerWork = Join-Path $RepoRoot $(if ($IsDirectML) { "build\windows\pyinstaller-work-directml" } else { "build\windows\pyinstaller-work" })
 $Spec = Join-Path $PSScriptRoot "deep_live_cam_studio.spec"
 
@@ -40,6 +41,15 @@ if (-not (Test-Path $PythonExe)) {
 Invoke-Checked $PythonExe @("-m", "pip", "install", "--upgrade", "pip", "wheel")
 if (-not $SkipDependencyInstall) {
     Invoke-Checked $PythonExe @("-m", "pip", "install", "-r", $RequirementsFile)
+    if (-not $IsDirectML) {
+        # The application does not import torch, but its CUDA wheel is the
+        # reviewed source for the CUDA 12/cuDNN 9 redistributable DLLs copied
+        # by the PyInstaller spec.
+        Invoke-Checked $PythonExe @(
+            "-m", "pip", "install", "--no-cache-dir", "--no-deps",
+            "-r", $CudaRuntimeRequirementsFile
+        )
+    }
 }
 Invoke-Checked $PythonExe @("-m", "pip", "install", "pyinstaller>=6.10,<7", "pyinstaller-hooks-contrib>=2024.8")
 
@@ -54,6 +64,23 @@ try {
 finally {
     $env:DLC_BUILD_ACCELERATOR = $PreviousBuildAccelerator
     $env:DLC_BUNDLE_NAME = $PreviousBundleName
+}
+
+# A clean release venv only needs torch long enough for PyInstaller to copy the
+# selected runtime DLLs. Keep dist-info for licence generation, but release the
+# four-gigabyte Python package before installer compression. Never modify an
+# explicitly reused developer venv.
+if (-not $IsDirectML -and $Venv -eq $BuildVenv) {
+    $TorchPackageDir = Join-Path $Venv "Lib\site-packages\torch"
+    if (Test-Path -LiteralPath $TorchPackageDir) {
+        $ResolvedTorchPackageDir = (Resolve-Path -LiteralPath $TorchPackageDir).Path
+        $ResolvedBuildVenv = (Resolve-Path -LiteralPath $BuildVenv).Path
+        if (-not $ResolvedTorchPackageDir.StartsWith("$ResolvedBuildVenv\")) {
+            throw "Refusing to remove torch package outside the isolated build venv: $ResolvedTorchPackageDir"
+        }
+        Remove-Item -LiteralPath $ResolvedTorchPackageDir -Recurse -Force
+        Write-Host "Removed build-only torch package after CUDA runtime DLL collection."
+    }
 }
 Invoke-Checked $PythonExe @("tools\prune_windows_dist.py", "--dist", $DistDir)
 

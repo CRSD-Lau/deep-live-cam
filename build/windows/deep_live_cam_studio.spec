@@ -53,11 +53,14 @@ def cuda_runtime_binaries():
         "nvToolsExt64_1.dll",
         "zlibwapi.dll",
     )
-    binaries = []
-    for name in names:
-        path = torch_lib / name
-        if path.exists():
-            binaries.append((str(path), "."))
+    missing = [name for name in names if not (torch_lib / name).is_file()]
+    if missing:
+        raise RuntimeError(
+            "CUDA release build is missing required PyTorch runtime DLLs: "
+            + ", ".join(missing)
+        )
+
+    binaries = [(str(torch_lib / name), ".") for name in names]
     return binaries
 
 

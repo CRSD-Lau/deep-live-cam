@@ -135,7 +135,7 @@ The local development environment may contain these packages, but they are build
 | `pytest` | `9.0.3` | MIT | Test-only dependency; spec excludes pytest and tests. |
 | `pywin32-ctypes` | `0.2.3` | BSD-3-Clause | PyInstaller/build tooling dependency; not an app runtime dependency. |
 | `setuptools` | `81.0.0` | MIT | Build environment package; may appear via vendored metadata but is not a declared app runtime dependency. |
-| `torch` | `2.11.0+cu128` | BSD-3-Clause | Spec excludes torch; bundle scan checks _internal/torch is absent. |
+| `torch` | `2.11.0+cu128` | BSD-3-Clause | Spec excludes the Python package; selected CUDA/cuDNN runtime DLLs and the wheel's licence/notice are bundled. |
 | `torchaudio` | `2.11.0+cu128` | OSI Approved :: BSD License | Spec excludes torchaudio. |
 | `torchvision` | `0.26.0+cu128` | BSD | Spec excludes torchvision. |
 | `uv` | `0.11.14` | MIT OR Apache-2.0 | Tooling only; not part of app runtime. |
