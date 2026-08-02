@@ -41,8 +41,9 @@ DirectX 12 GPUs: extract it into a new folder and run
 - Provider diagnostics fail clearly when requested GPU acceleration is not
   active instead of silently treating CPU fallback as success.
 
-The final DirectML artifact was validated by the issue reporter on a Radeon
-6900 XT for file rendering and Live Output. CUDA rendering and Live Output were
+The DirectML fix was validated by the issue reporter on a Radeon 6900 XT for
+file rendering and Live Output. The packaged release runtimes were separately
+checked for their expected GPU providers. CUDA rendering and Live Output were
 also verified locally on an NVIDIA RTX 4070.
 
 ## Source and license
