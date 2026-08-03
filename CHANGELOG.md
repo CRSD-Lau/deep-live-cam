@@ -8,6 +8,8 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Promoted the social-preview artwork to the README hero and moved the real
+  application screenshot into the usage guide for a clearer front page.
 - Modernized the public repository presentation with a release-independent
   README, documentation index, support and governance policies, structured
   issue forms, a pull-request checklist, CODEOWNERS, and a social-preview asset.

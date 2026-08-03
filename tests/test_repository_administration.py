@@ -88,6 +88,17 @@ def test_readme_uses_release_independent_download_links():
     assert "DeepLiveCamStudio-<version>-DirectML-x64-portable.zip" in readme
 
 
+def test_readme_uses_social_preview_as_hero_and_keeps_product_screenshot():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    social_preview = "docs/images/social-preview.png"
+    product_screenshot = "docs/images/deep-live-cam-studio-main.png"
+
+    assert readme.count(social_preview) == 1
+    assert readme.count(product_screenshot) == 1
+    assert readme.index(social_preview) < readme.index("> [!IMPORTANT]")
+    assert readme.index(product_screenshot) > readme.index("## Using the Studio")
+
+
 def test_social_preview_matches_github_recommendations():
     preview = ROOT / "docs/images/social-preview.png"
     data = preview.read_bytes()
