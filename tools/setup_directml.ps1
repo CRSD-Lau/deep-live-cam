@@ -42,9 +42,16 @@ if (-not (Test-Path -LiteralPath $PythonExe)) {
     Invoke-Checked $Python ($BootstrapArgs + @("-m", "venv", $ResolvedVenv))
 }
 
-Invoke-Checked $PythonExe @("-m", "pip", "install", "--upgrade", "pip", "wheel")
+$DirectMLPythonVersion = & $PythonExe -c "import sys; print('.'.join(map(str, sys.version_info[:3])))"
+if ($LASTEXITCODE -ne 0 -or $DirectMLPythonVersion.Trim() -ne "3.11.9") {
+    throw "The DirectML lock requires CPython 3.11.9; found $DirectMLPythonVersion at $PythonExe"
+}
+
 Invoke-Checked $PythonExe @("-m", "pip", "uninstall", "-y", "onnxruntime", "onnxruntime-gpu")
-Invoke-Checked $PythonExe @("-m", "pip", "install", "-r", "requirements-directml.txt")
+Invoke-Checked $PythonExe @(
+    "-m", "pip", "install", "--require-hashes",
+    "-r", "requirements-locks\windows-directml-py311.lock"
+)
 Invoke-Checked $PythonExe @(
     "tools\check_cuda_provider.py",
     "--execution-provider", "directml",

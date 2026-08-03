@@ -95,7 +95,8 @@ Invoke-ReleaseStep "Refresh Python dependency license snapshot" {
         "README.md",
         "BUNDLED_BINARY_OBLIGATIONS.md",
         "MODEL_LICENSE_AUDIT.md",
-        "PYTHON_DEPENDENCIES.md"
+        "PYTHON_DEPENDENCIES.md",
+        "PYTHON_DEPENDENCIES_DIRECTML.md"
     )
     foreach ($LicenseFile in $CuratedLicenseFiles) {
         $Source = Join-Path $RepoRoot "LICENSES\$LicenseFile"

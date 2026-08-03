@@ -16,7 +16,9 @@ venv/
 env/
 .venv-build-windows/
 .venv-build-windows-directml/
+.venv-build-windows-cuda-runtime/
 .venv-directml/
+.venv-locks/
 models/inswapper_128.onnx
 models/GFPGANv1.4.pth
 *.onnx

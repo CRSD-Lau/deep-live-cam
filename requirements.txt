@@ -10,8 +10,8 @@ pillow==12.3.0
 tqdm>=4.66.5
 onnxruntime-silicon==1.16.3; sys_platform == 'darwin' and platform_machine == 'arm64'
 onnxruntime-gpu==1.23.2; sys_platform != 'darwin'
-tensorflow>=2.15.0; sys_platform != 'darwin'
-tensorflow>=2.15.0; sys_platform == 'darwin' and python_version < '3.13'
+tensorflow==2.19.1; sys_platform != 'darwin'
+tensorflow==2.19.1; sys_platform == 'darwin' and python_version < '3.13'
 opennsfw2==0.10.2
 protobuf==5.29.6
 pygrabber; sys_platform == 'win32'

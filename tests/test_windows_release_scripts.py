@@ -23,6 +23,7 @@ WINDOWS_RELEASE_SCRIPTS = (
     "build/windows/verify_legal_review_gate.ps1",
     "build/windows/verify_obs_virtualcam_gate.ps1",
     "tools/setup_directml.ps1",
+    "tools/update_dependency_locks.ps1",
 )
 
 
@@ -69,7 +70,7 @@ def test_cuda_build_uses_pinned_runtime_wheel_and_requires_every_dll():
 
     assert "torch==2.11.0+cu128" in requirements
     assert "https://download.pytorch.org/whl/cu128" in requirements
-    assert '"--no-cache-dir", "--no-deps"' in build_script
+    assert '"--require-hashes", "--no-cache-dir", "--no-deps"' in build_script
     assert '"-r", $CudaRuntimeRequirementsFile' in build_script
     assert "CUDA release build is missing required PyTorch runtime DLLs" in spec
     for name in ("cublasLt64_12.dll", "cudnn64_9.dll", "cusparse64_12.dll"):
@@ -97,12 +98,23 @@ def test_windows_build_uses_release_venv_unless_existing_environment_is_explicit
     assert "-UseExistingVenv was requested" in script
 
 
+def test_cuda_build_isolates_the_build_only_torch_wheel():
+    script = Path("build/windows/build_windows.ps1").read_text(encoding="utf-8")
+    spec = Path("build/windows/deep_live_cam_studio.spec").read_text(encoding="utf-8")
+
+    assert '".venv-build-windows-cuda-runtime"' in script
+    assert "$CudaRuntimePython" in script
+    assert "DLC_CUDA_RUNTIME_TORCH_LIB" in script
+    assert "DLC_CUDA_RUNTIME_TORCH_LIB" in spec
+
+
 def test_clean_build_covers_both_accelerator_outputs():
     script = Path("build/windows/clean_build.ps1").read_text(encoding="utf-8")
 
     for expected_path in (
         "pyinstaller-work-directml",
         "build\\windows\\portable",
+        ".venv-build-windows-cuda-runtime",
         "dist\\DeepLiveCamStudio-DirectML",
     ):
         assert expected_path in script

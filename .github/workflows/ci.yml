@@ -27,26 +27,35 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.11"
+          python-version: "3.11.9"
           cache: pip
           cache-dependency-path: |
-            requirements-directml.txt
+            requirements-locks/windows-directml-py311.lock
             requirements-dev.txt
 
       - name: Install test environment
         shell: pwsh
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements-directml.txt -r requirements-dev.txt
+          python -m pip install --require-hashes -r requirements-locks/windows-directml-py311.lock
+          python -m pip install -r requirements-dev.txt
+
+      - name: Verify dependency locks
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File tools\update_dependency_locks.ps1 -Check
 
       - name: Run test suite
         run: python -m pytest -q
 
       - name: Audit CUDA dependency profile
-        run: python -m pip_audit -r requirements.txt --progress-spinner off
+        run: python -m pip_audit -r requirements-locks/windows-cuda-py311.lock --progress-spinner off
+
+      - name: Audit CUDA build-only runtime version
+        # PYSEC-2025-194 is scoped to torch.jit.script through 2.6.0 in OSV.
+        # This build uses 2.11.0 only as a DLL source and excludes Torch code.
+        run: python -m pip_audit -r requirements-locks/windows-cuda-runtime-audit-py311.txt --progress-spinner off --no-deps --disable-pip --ignore-vuln PYSEC-2025-194
 
       - name: Audit DirectML dependency profile
-        run: python -m pip_audit -r requirements-directml.txt --progress-spinner off
+        run: python -m pip_audit -r requirements-locks/windows-directml-py311.lock --progress-spinner off
 
       - name: Scan Python security issues
         run: python -m bandit -r modules tools run.py DeepLiveCamStudio.pyw -ll

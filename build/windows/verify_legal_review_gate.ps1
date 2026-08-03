@@ -65,6 +65,7 @@ $RequiredDocs = @(
     "LICENSES/BUNDLED_BINARY_OBLIGATIONS.md",
     "LICENSES/MODEL_LICENSE_AUDIT.md",
     "LICENSES/PYTHON_DEPENDENCIES.md",
+    "LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md",
     "LICENSES/WINDOWS_BUNDLE_MANIFEST.md",
     "RELEASE_REPORT.md",
     "RELEASE_CHECKLIST.md",
@@ -101,7 +102,10 @@ if ($SourceManifest -notmatch 'No `\.onnx`, `\.pth`, `\.safetensors`') {
 }
 
 $BundleManifest = Get-Content -LiteralPath (Join-Path $RepoRoot "LICENSES/WINDOWS_BUNDLE_MANIFEST.md") -Raw
-$PythonLicenses = Get-Content -LiteralPath (Join-Path $RepoRoot "LICENSES/PYTHON_DEPENDENCIES.md") -Raw
+$PythonLicenses = @(
+    Get-Content -LiteralPath (Join-Path $RepoRoot "LICENSES/PYTHON_DEPENDENCIES.md") -Raw
+    Get-Content -LiteralPath (Join-Path $RepoRoot "LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md") -Raw
+) -join "`n"
 $ModelAudit = Get-Content -LiteralPath (Join-Path $RepoRoot "LICENSES/MODEL_LICENSE_AUDIT.md") -Raw
 $Obligations = Get-Content -LiteralPath (Join-Path $RepoRoot "LICENSES/BUNDLED_BINARY_OBLIGATIONS.md") -Raw
 $Verification = Get-Content -LiteralPath (Join-Path $RepoRoot "RELEASE_VERIFICATION.md") -Raw

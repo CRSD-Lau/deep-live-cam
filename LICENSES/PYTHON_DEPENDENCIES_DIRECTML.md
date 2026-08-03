@@ -13,12 +13,8 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `albumentations` | `2.0.8` | MIT License Copyright (c) 2017 Vladimir Iglovikov, Alexander Buslaev, Alexander Parinov, Permission is hereby granted, free of charge, to an |
 | `annotated-types` | `0.8.0` | MIT |
 | `astunparse` | `1.6.3` | BSD |
-| `bandit` | `1.9.4` | Apache-2.0 |
 | `beautifulsoup4` | `4.15.0` | MIT License |
-| `boolean.py` | `5.0` | BSD-2-Clause |
-| `CacheControl` | `0.14.4` | Apache-2.0 |
 | `certifi` | `2026.7.22` | MPL-2.0 |
-| `cffi` | `2.0.0` | MIT |
 | `charset-normalizer` | `3.4.9` | MIT |
 | `colorama` | `0.4.6` | OSI Approved :: BSD License |
 | `coloredlogs` | `15.0.1` | MIT |
@@ -26,14 +22,11 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `contourpy` | `1.3.3` | BSD 3-Clause License Copyright (c) 2021-2025, ContourPy Developers. All rights reserved. Redistribution and use in source and binary forms,  |
 | `cv2_enumerate_cameras` | `1.1.15` | GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/> Everyone is permitte |
 | `cycler` | `0.12.1` | Copyright (c) 2015, matplotlib project All rights reserved. Redistribution and use in source and binary forms, with or without modification, |
-| `cyclonedx-python-lib` | `11.7.0` | Apache-2.0 |
 | `Cython` | `3.2.9` | Apache-2.0 |
-| `defusedxml` | `0.7.1` | PSFL |
 | `easydict` | `1.13` | LGPL-3.0 |
 | `filelock` | `3.32.2` | MIT |
 | `flatbuffers` | `25.12.19` | Apache 2.0 |
 | `fonttools` | `4.63.0` | MIT |
-| `fsspec` | `2026.4.0` | BSD-3-Clause |
 | `gast` | `0.7.0` | BSD 3-Clause |
 | `gdown` | `6.1.0` | MIT |
 | `google-pasta` | `0.2.0` | Apache 2.0 |
@@ -43,13 +36,11 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `idna` | `3.18` | BSD-3-Clause |
 | `ImageIO` | `2.37.4` | BSD-2-Clause |
 | `insightface` | `0.7.3` | MIT |
-| `Jinja2` | `3.1.6` | OSI Approved :: BSD License |
 | `joblib` | `1.5.3` | BSD-3-Clause |
 | `keras` | `3.15.1` | Apache License 2.0 |
 | `kiwisolver` | `1.5.0` | ========================= The Kiwi licensing terms ========================= Kiwi is licensed under the terms of the Modified BSD License (a |
 | `lazy-loader` | `0.5` | BSD-3-Clause |
 | `libclang` | `18.1.1` | Apache License 2.0 |
-| `license-expression` | `30.4.4` | Apache-2.0 |
 | `Markdown` | `3.10.3` | BSD-3-Clause |
 | `markdown-it-py` | `4.2.0` | OSI Approved :: MIT License |
 | `MarkupSafe` | `3.0.3` | BSD-3-Clause |
@@ -57,30 +48,22 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `mdurl` | `0.1.2` | OSI Approved :: MIT License |
 | `ml_dtypes` | `0.5.4` | Apache-2.0 |
 | `mpmath` | `1.3.0` | BSD |
-| `msgpack` | `1.1.2` | Apache-2.0 |
 | `namex` | `0.1.0` | UNKNOWN |
 | `narwhals` | `2.24.0` | MIT |
 | `networkx` | `3.6.1` | BSD-3-Clause |
 | `numpy` | `1.26.4` | Copyright (c) 2005-2023, NumPy Developers. All rights reserved. Redistribution and use in source and binary forms, with or without modificat |
 | `onnx` | `1.22.0` | Apache-2.0 |
-| `onnxruntime-gpu` | `1.23.2` | MIT License |
+| `onnxruntime-directml` | `1.23.0` | MIT License |
 | `opencv-python` | `4.10.0.84` | Apache 2.0 |
 | `opencv-python-headless` | `4.11.0.86` | Apache 2.0 |
 | `opennsfw2` | `0.10.2` | OSI Approved :: MIT License |
 | `opt_einsum` | `3.4.0` | MIT |
 | `optree` | `0.19.1` | Apache-2.0 |
-| `packageurl-python` | `0.17.6` | MIT |
 | `packaging` | `26.2` | Apache-2.0 OR BSD-2-Clause |
 | `pillow` | `12.3.0` | MIT-CMU |
-| `pip-api` | `0.0.34` | OSI Approved :: Apache Software License |
-| `pip-requirements-parser` | `32.0.1` | MIT |
-| `pip_audit` | `2.10.1` | OSI Approved :: Apache Software License |
-| `platformdirs` | `4.9.6` | MIT |
 | `prettytable` | `3.18.0` | BSD-3-Clause |
 | `protobuf` | `5.29.6` | 3-Clause BSD License |
 | `psutil` | `5.9.8` | BSD-3-Clause |
-| `py-serializable` | `2.1.0` | Apache-2.0 |
-| `pycparser` | `3.0` | BSD-3-Clause |
 | `pydantic` | `2.13.4` | MIT |
 | `pydantic_core` | `2.46.4` | MIT |
 | `Pygments` | `2.20.0` | BSD-2-Clause |
@@ -96,18 +79,13 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `PyYAML` | `6.0.3` | MIT |
 | `requests` | `2.34.2` | Apache-2.0 |
 | `rich` | `15.0.0` | MIT |
-| `ruff` | `0.16.1` | MIT |
 | `scikit-image` | `0.26.0` | Files: * Copyright: 2009-2022 the scikit-image team License: BSD-3-Clause Files: doc/source/themes/scikit-image/layout.html Copyright: 2007- |
 | `scikit-learn` | `1.9.0` | BSD-3-Clause |
 | `scipy` | `1.17.1` | Copyright (c) 2001-2002 Enthought, Inc. 2003, SciPy Developers. All rights reserved. Redistribution and use in source and binary forms, with |
 | `shiboken6` | `6.11.1` | LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only |
 | `simsimd` | `6.5.16` | Apache-2.0 |
 | `six` | `1.17.0` | MIT |
-| `sortedcontainers` | `2.4.0` | Apache 2.0 |
-| `sounddevice` | `0.5.5` | MIT |
-| `soundfile` | `0.13.1` | BSD 3-Clause License |
 | `soupsieve` | `2.9.1` | MIT |
-| `stevedore` | `5.9.0` | Apache-2.0 |
 | `stringzilla` | `5.0.7` | Apache-2.0 |
 | `sympy` | `1.14.0` | BSD |
 | `tensorboard` | `2.19.0` | Apache 2.0 |
@@ -117,8 +95,6 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `termcolor` | `3.3.0` | MIT |
 | `threadpoolctl` | `3.6.0` | BSD-3-Clause |
 | `tifffile` | `2026.3.3` | BSD-3-Clause |
-| `tomli` | `2.4.1` | MIT |
-| `tomli_w` | `1.2.0` | OSI Approved :: MIT License |
 | `tqdm` | `4.70.0` | MPL-2.0 AND MIT |
 | `typing-inspection` | `0.4.2` | MIT |
 | `typing_extensions` | `4.16.0` | PSF-2.0 |
@@ -134,19 +110,12 @@ The local development environment may contain these packages, but they are build
 | Package | Version | License metadata observed | Exclusion evidence |
 | --- | ---: | --- | --- |
 | `altgraph` | `0.17.5` | MIT | PyInstaller/build tooling dependency; not an app runtime dependency. |
-| `iniconfig` | `2.3.0` | MIT | Test tooling dependency; not an app runtime dependency. |
 | `pefile` | `2024.8.26` | MIT | PyInstaller/build tooling dependency; not an app runtime dependency. |
 | `pip` | `26.2` | MIT | Build environment package manager; not an app runtime dependency. |
-| `pluggy` | `1.6.0` | MIT | Test tooling dependency; not an app runtime dependency. |
 | `pyinstaller` | `6.20.0` | GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones | Build tooling only; not shipped as an app runtime dependency. |
 | `pyinstaller-hooks-contrib` | `2026.5` | OSI Approved :: Apache Software License; OSI Approved :: GNU General Public License v2 (GPLv2) | Build tooling only; not shipped as an app runtime dependency. |
-| `pytest` | `9.0.3` | MIT | Test-only dependency; spec excludes pytest and tests. |
 | `pywin32-ctypes` | `0.2.3` | BSD-3-Clause | PyInstaller/build tooling dependency; not an app runtime dependency. |
 | `setuptools` | `83.0.0` | MIT | Build environment package; may appear via vendored metadata but is not a declared app runtime dependency. |
-| `torch` | `2.11.0+cu128` | BSD-3-Clause | Spec excludes torch; bundle scan checks _internal/torch is absent. |
-| `torchaudio` | `2.11.0+cu128` | OSI Approved :: BSD License | Spec excludes torchaudio. |
-| `torchvision` | `0.26.0+cu128` | BSD | Spec excludes torchvision. |
-| `uv` | `0.11.14` | MIT OR Apache-2.0 | Tooling only; not part of app runtime. |
 | `wheel` | `0.47.0` | MIT | Build environment package; not an app runtime dependency. |
 
 ## High-Attention Items

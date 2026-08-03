@@ -11,6 +11,13 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - dependencies
+    groups:
+      windows-build-toolchain:
+        patterns:
+          - "pip"
+          - "wheel"
+          - "pyinstaller"
+          - "pyinstaller-hooks-contrib"
     ignore:
       - dependency-name: "*"
         update-types:
