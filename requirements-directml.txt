@@ -1,7 +1,7 @@
 # Windows DirectML runtime profile for AMD, Intel, and NVIDIA DirectX 12 GPUs.
 # Keep shared dependency pins synchronized with requirements.txt.
 numpy>=1.23.5,<2
-typing-extensions>=4.8.0
+typing-extensions>=4.15.0
 opencv-python==4.10.0.84
 cv2_enumerate_cameras==1.1.15
 onnx==1.22.0
