@@ -9,7 +9,8 @@ This folder keeps the license and redistribution evidence used for Windows relea
 
 | File or folder | Purpose |
 | --- | --- |
-| [`PYTHON_DEPENDENCIES.md`](PYTHON_DEPENDENCIES.md) | Dependency license metadata snapshot from the Windows packaging environment. |
+| [`PYTHON_DEPENDENCIES.md`](PYTHON_DEPENDENCIES.md) | CUDA dependency license metadata snapshot from the Windows packaging environment. |
+| [`PYTHON_DEPENDENCIES_DIRECTML.md`](PYTHON_DEPENDENCIES_DIRECTML.md) | DirectML dependency license metadata snapshot from its isolated Windows packaging environment. |
 | [`BUNDLED_BINARY_OBLIGATIONS.md`](BUNDLED_BINARY_OBLIGATIONS.md) | High-attention obligations for native libraries and GPL/LGPL-family dependencies in the PyInstaller payload. |
 | [`MODEL_LICENSE_AUDIT.md`](MODEL_LICENSE_AUDIT.md) | Model-source review notes and redistribution posture. |
 | [`WINDOWS_BUNDLE_MANIFEST.md`](WINDOWS_BUNDLE_MANIFEST.md) | Installed payload manifest summary for the Windows bundle. |

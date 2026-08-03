@@ -32,7 +32,8 @@ def test_windows_build_has_an_isolated_directml_profile():
     spec = read("build/windows/deep_live_cam_studio.spec")
 
     assert 'ValidateSet("Cuda", "DirectML")' in build_script
-    assert '"requirements-directml.txt"' in build_script
+    assert r'"requirements-locks\windows-directml-py311.lock"' in build_script
+    assert '"--require-hashes", "-r", $RequirementsFile' in build_script
     assert '".venv-build-windows-directml"' in build_script
     assert '"DeepLiveCamStudio-DirectML"' in build_script
     assert 'ACCELERATOR != "cuda"' in spec

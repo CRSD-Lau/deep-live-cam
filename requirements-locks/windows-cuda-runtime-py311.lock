@@ -1,0 +1,3 @@
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.11.0+cu128 \
+    --hash=sha256:90ef0c2454e5296a9fb021ddd42252e4ce1abe2c0a4988a173ef90a6cded0bf5

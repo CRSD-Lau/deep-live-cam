@@ -143,6 +143,7 @@ $FilesToCopy = @(
     (Join-Path $RepoRoot "LICENSES\BUNDLED_BINARY_OBLIGATIONS.md"),
     (Join-Path $RepoRoot "LICENSES\MODEL_LICENSE_AUDIT.md"),
     (Join-Path $RepoRoot "LICENSES\PYTHON_DEPENDENCIES.md"),
+    (Join-Path $RepoRoot "LICENSES\PYTHON_DEPENDENCIES_DIRECTML.md"),
     (Join-Path $RepoRoot "LICENSES\WINDOWS_BUNDLE_MANIFEST.md")
 )
 if ($PortableArchive) {

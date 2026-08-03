@@ -231,19 +231,15 @@ See [docs/OBS_VIRTUAL_CAMERA.md](docs/OBS_VIRTUAL_CAMERA.md) for setup and troub
 Recommended Windows setup:
 
 ```powershell
-python -m venv venv
+py -3.11 -m venv venv
 venv\Scripts\activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+python -m pip install --no-deps -r requirements-build-windows-cuda.txt
 ```
 
 For CUDA source runs:
 
-```powershell
-pip install -U torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
-pip uninstall onnxruntime onnxruntime-gpu
-pip install onnxruntime-gpu==1.23.2
-python tools/check_cuda_provider.py --execution-provider cuda --strict
-```
+Verify CUDA with `python tools/check_cuda_provider.py --execution-provider cuda --strict`.
 
 For AMD or Intel GPUs on Windows, create the isolated DirectML environment:
 
@@ -263,6 +259,10 @@ setup script deliberately keeps DirectML in `.venv-directml` instead of
 overwriting the normal CUDA environment. See
 [`docs/DIRECTML_TESTING.md`](docs/DIRECTML_TESTING.md) for DirectML setup,
 provider verification, and troubleshooting.
+
+Release dependency versions, supported Windows/GPU requirements, and the
+reviewable lock update command are documented in
+[`docs/DEPENDENCY_LOCKS.md`](docs/DEPENDENCY_LOCKS.md).
 
 Run from source:
 
@@ -388,6 +388,7 @@ Release compliance files:
 - [LICENSES/BUNDLED_BINARY_OBLIGATIONS.md](LICENSES/BUNDLED_BINARY_OBLIGATIONS.md)
 - [LICENSES/MODEL_LICENSE_AUDIT.md](LICENSES/MODEL_LICENSE_AUDIT.md)
 - [LICENSES/PYTHON_DEPENDENCIES.md](LICENSES/PYTHON_DEPENDENCIES.md)
+- [LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md](LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md)
 - [LICENSES/WINDOWS_BUNDLE_MANIFEST.md](LICENSES/WINDOWS_BUNDLE_MANIFEST.md)
 
 Model files have separate license and redistribution considerations. The installer excludes model/checkpoint files and requires explicit user download with visible source and license notes.

@@ -29,7 +29,12 @@ def cuda_runtime_binaries():
     if ACCELERATOR != "cuda":
         return []
 
-    torch_lib = Path(sys.prefix) / "Lib" / "site-packages" / "torch" / "lib"
+    torch_lib = Path(
+        os.environ.get(
+            "DLC_CUDA_RUNTIME_TORCH_LIB",
+            Path(sys.prefix) / "Lib" / "site-packages" / "torch" / "lib",
+        )
+    )
     names = (
         "cublas64_12.dll",
         "cublasLt64_12.dll",

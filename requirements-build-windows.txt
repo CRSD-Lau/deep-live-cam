@@ -1,0 +1,8 @@
+# Shared deterministic Windows packaging toolchain input.
+# Update this manifest, then regenerate both platform locks with:
+#   powershell -ExecutionPolicy Bypass -File tools\update_dependency_locks.ps1
+pip==26.2
+setuptools==83.0.0
+wheel==0.47.0
+pyinstaller==6.20.0
+pyinstaller-hooks-contrib==2026.5

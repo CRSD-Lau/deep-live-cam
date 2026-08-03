@@ -76,13 +76,27 @@ Invoke-ReleaseStep "Refresh Python dependency license snapshot" {
     if (-not $LicensePython) {
         $LicensePython = $Python
     }
-    & $LicensePython tools\generate_python_dependency_licenses.py --output LICENSES\PYTHON_DEPENDENCIES.md
-    if ($LASTEXITCODE -ne 0) {
-        throw "Python dependency license snapshot generation failed with exit code $LASTEXITCODE."
+    $CudaRuntimeSitePackages = Join-Path $RepoRoot ".venv-build-windows-cuda-runtime\Lib\site-packages"
+    $PreviousPythonPath = $env:PYTHONPATH
+    try {
+        if (Test-Path -LiteralPath $CudaRuntimeSitePackages) {
+            $env:PYTHONPATH = if ($PreviousPythonPath) {
+                "$CudaRuntimeSitePackages;$PreviousPythonPath"
+            } else {
+                $CudaRuntimeSitePackages
+            }
+        }
+        & $LicensePython tools\generate_python_dependency_licenses.py --output LICENSES\PYTHON_DEPENDENCIES.md
+        if ($LASTEXITCODE -ne 0) {
+            throw "Python dependency license snapshot generation failed with exit code $LASTEXITCODE."
+        }
+        & $LicensePython tools\collect_third_party_license_files.py --output LICENSES\THIRD_PARTY_LICENSES
+        if ($LASTEXITCODE -ne 0) {
+            throw "Third-party license file collection failed with exit code $LASTEXITCODE."
+        }
     }
-    & $LicensePython tools\collect_third_party_license_files.py --output LICENSES\THIRD_PARTY_LICENSES
-    if ($LASTEXITCODE -ne 0) {
-        throw "Third-party license file collection failed with exit code $LASTEXITCODE."
+    finally {
+        $env:PYTHONPATH = $PreviousPythonPath
     }
     & $LicensePython tools\prune_windows_dist.py --dist $DistDir
     if ($LASTEXITCODE -ne 0) {
@@ -95,7 +109,8 @@ Invoke-ReleaseStep "Refresh Python dependency license snapshot" {
         "README.md",
         "BUNDLED_BINARY_OBLIGATIONS.md",
         "MODEL_LICENSE_AUDIT.md",
-        "PYTHON_DEPENDENCIES.md"
+        "PYTHON_DEPENDENCIES.md",
+        "PYTHON_DEPENDENCIES_DIRECTML.md"
     )
     foreach ($LicenseFile in $CuratedLicenseFiles) {
         $Source = Join-Path $RepoRoot "LICENSES\$LicenseFile"

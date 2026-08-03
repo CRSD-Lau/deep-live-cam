@@ -53,9 +53,23 @@ $LicensePython = ($LicensePythonCandidates | Where-Object { $_ -and (Test-Path $
 if (-not $LicensePython) {
     $LicensePython = "python"
 }
-& $LicensePython tools\collect_third_party_license_files.py --output LICENSES\THIRD_PARTY_LICENSES
-if ($LASTEXITCODE -ne 0) {
-    throw "Third-party license file collection failed with exit code $LASTEXITCODE."
+$CudaRuntimeSitePackages = Join-Path $RepoRoot ".venv-build-windows-cuda-runtime\Lib\site-packages"
+$PreviousPythonPath = $env:PYTHONPATH
+try {
+    if (Test-Path -LiteralPath $CudaRuntimeSitePackages) {
+        $env:PYTHONPATH = if ($PreviousPythonPath) {
+            "$CudaRuntimeSitePackages;$PreviousPythonPath"
+        } else {
+            $CudaRuntimeSitePackages
+        }
+    }
+    & $LicensePython tools\collect_third_party_license_files.py --output LICENSES\THIRD_PARTY_LICENSES
+    if ($LASTEXITCODE -ne 0) {
+        throw "Third-party license file collection failed with exit code $LASTEXITCODE."
+    }
+}
+finally {
+    $env:PYTHONPATH = $PreviousPythonPath
 }
 & $LicensePython tools\generate_windows_logo_assets.py --source Logo.png --output-dir build\windows\assets
 if ($LASTEXITCODE -ne 0) {

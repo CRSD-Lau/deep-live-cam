@@ -94,6 +94,7 @@ def write_release_assets(tmp_path):
         "BUNDLED_BINARY_OBLIGATIONS.md",
         "MODEL_LICENSE_AUDIT.md",
         "PYTHON_DEPENDENCIES.md",
+        "PYTHON_DEPENDENCIES_DIRECTML.md",
         "WINDOWS_BUNDLE_MANIFEST.md",
         "CLEAN_VM_AUTOMATED_EVIDENCE.md",
         "OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md",
@@ -160,6 +161,7 @@ def write_release_assets(tmp_path):
             "BUNDLED_BINARY_OBLIGATIONS.md",
             "MODEL_LICENSE_AUDIT.md",
             "PYTHON_DEPENDENCIES.md",
+            "PYTHON_DEPENDENCIES_DIRECTML.md",
             "WINDOWS_BUNDLE_MANIFEST.md",
             "CLEAN_VM_AUTOMATED_EVIDENCE.md",
             "OBS_VIRTUAL_CAMERA_AUTOMATED_EVIDENCE.md",
@@ -217,6 +219,14 @@ def write_directml_portable(assets_dir, *, omit_entry=None, extra_entry=None):
     return archive_path
 
 
+def refresh_sha256sums(assets_dir):
+    sums_lines = []
+    for path in sorted(assets_dir.iterdir(), key=lambda item: item.name):
+        if path.is_file() and path.name != "SHA256SUMS.txt":
+            sums_lines.append(f"{validator.sha256(path)}  {path.name}")
+    write_file(assets_dir / "SHA256SUMS.txt", "\n".join(sums_lines) + "\n")
+
+
 def test_directml_portable_validator_accepts_complete_archive(tmp_path):
     assets_dir = tmp_path / "assets"
     assets_dir.mkdir()
@@ -254,6 +264,77 @@ def test_directml_portable_validator_rejects_model_weights(tmp_path):
     validator._validate_directml_portable(assets_dir, "2.1.7", failures)
 
     assert any("forbidden model/checkpoint" in failure for failure in failures)
+
+
+def test_named_release_asset_checks_pass_for_complete_cuda_assets(tmp_path):
+    assets_dir = write_release_assets(tmp_path)
+
+    results = validator.evaluate_release_asset_checks(
+        assets_dir,
+        "2.1.7",
+        require_git_ref=True,
+        require_directml_portable=False,
+    )
+
+    assert [result.name for result in results] == [
+        "source-archive-selection",
+        "installer",
+        "source-archive",
+        "model-exclusion",
+        "required-documents",
+        "directml-portable",
+        "sha256-manifest",
+        "evidence-consistency",
+        "manual-gate-summary",
+        "release-asset-manifest",
+        "release-notes",
+    ]
+    assert all(result.passed for result in results)
+
+
+def test_named_release_asset_checks_pass_for_combined_directml_assets(tmp_path):
+    assets_dir = write_release_assets(tmp_path)
+    directml_archive = write_directml_portable(assets_dir)
+    directml_hash = Path(str(directml_archive) + ".sha256")
+    with (assets_dir / "RELEASE_ASSETS.md").open("a", encoding="utf-8") as handle:
+        handle.write(f"- `{directml_archive.name}`\n- `{directml_hash.name}`\n")
+    with (assets_dir / "RELEASE_NOTES.md").open("a", encoding="utf-8") as handle:
+        handle.write(
+            f"\n`{directml_archive.name}`\n`{validator.sha256(directml_archive)}`\n"
+        )
+    refresh_sha256sums(assets_dir)
+
+    results = validator.evaluate_release_asset_checks(
+        assets_dir,
+        "2.1.7",
+        require_git_ref=True,
+        require_directml_portable=True,
+    )
+
+    assert all(result.passed for result in results)
+
+
+def test_named_release_asset_check_attributes_manual_gate_failures(tmp_path):
+    assets_dir = write_release_assets(tmp_path)
+    write_file(assets_dir / "MANUAL_RELEASE_GATES.md", "placeholder\n")
+    refresh_sha256sums(assets_dir)
+
+    results = validator.evaluate_release_asset_checks(
+        assets_dir,
+        "2.1.7",
+        require_git_ref=True,
+        require_directml_portable=False,
+    )
+
+    failed = {result.name: result.failures for result in results if not result.passed}
+    assert failed.keys() == {"manual-gate-summary"}
+    assert failed["manual-gate-summary"] == (
+        "MANUAL_RELEASE_GATES.md missing phrase: # Manual Windows Release Gate Summary",
+        "MANUAL_RELEASE_GATES.md missing phrase: `CLEAN_VM_VERIFICATION.md`",
+        "MANUAL_RELEASE_GATES.md missing phrase: `OBS_VIRTUAL_CAMERA_VERIFICATION.md`",
+        "MANUAL_RELEASE_GATES.md missing phrase: `LEGAL_REVIEW.md`",
+        "MANUAL_RELEASE_GATES.md missing phrase: ## Open Items",
+    )
 
 
 def test_validate_release_artifacts_accepts_complete_artifact_set(tmp_path, monkeypatch):
