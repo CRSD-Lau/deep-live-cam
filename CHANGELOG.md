@@ -8,6 +8,12 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Modernized the public repository presentation with a release-independent
+  README, documentation index, support and governance policies, structured
+  issue forms, a pull-request checklist, CODEOWNERS, and a social-preview asset.
+- Strengthened repository administration with required CodeQL checks, enforced
+  branch protection for administrators, Discussions, automatic merged-branch
+  cleanup, and clearer security-reporting boundaries.
 - Refreshed the reviewed Windows dependency set: ONNX Runtime GPU 1.24.3,
   OpenNSFW2 0.18.0, PyInstaller 6.21.0, PyInstaller hooks 2026.6,
   PySide6 6.11.1, and pytest 9.1.1, with regenerated CUDA and DirectML locks.

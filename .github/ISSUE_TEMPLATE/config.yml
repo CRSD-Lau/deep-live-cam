@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and setup help
+    url: https://github.com/CRSD-Lau/deep-live-cam/discussions
+    about: Ask for installation, hardware, workflow, or troubleshooting help.
+  - name: Report a security vulnerability privately
+    url: https://github.com/CRSD-Lau/deep-live-cam/security/advisories/new
+    about: Do not disclose vulnerabilities in a public issue.

@@ -56,6 +56,40 @@ documentation, and repository security settings.
 - Added regression checks that prevent the removed scaffolding and entry points
   from being tracked again.
 
+## Repository Administration Refresh — 2026-08-03
+
+The public repository surface and maintainer settings received a separate administration review after the engineering cleanup.
+
+### Public Presentation
+
+- Reorganized the README around download choice, quick start, supported workflows, privacy, documentation, and contribution routes.
+- Replaced hard-coded release links with the latest stable release endpoint and version-independent asset patterns.
+- Added a documentation index, focused Windows build guide, support policy, governance policy, Code of Conduct, and a purpose-built 1280×640 social-preview asset.
+- Added regression tests for community files, relative documentation links, modern issue-form configuration, release-independent README links, and social-preview dimensions.
+
+### Community and Intake
+
+- Replaced the free-form bug template with a required-field issue form and added a scoped feature-request form.
+- Disabled blank issues and routed setup questions to Discussions and vulnerabilities to private reporting.
+- Added a pull-request checklist and CODEOWNERS coverage for repository, security, dependency, licence, and release surfaces.
+- Enabled Discussions and removed the empty Projects and Wiki tabs.
+
+### Repository Settings
+
+- Set the repository homepage to the latest release and added `desktop-app`, `computer-vision`, and `python` discovery topics.
+- Enabled auto-merge, update-branch support, and automatic deletion of merged topic branches.
+- Required `Tests and security checks`, `Analyze (python)`, and `CodeQL` from their expected GitHub Apps on an up-to-date branch.
+- Applied branch protection to administrators while preserving zero required approvals for the current single-maintainer model.
+- Left signed commits and code-owner approvals disabled until signing and multi-maintainer workflows exist; enabling either now would add an unsupported process or deadlock self-authored changes.
+
+### Security Settings
+
+Private vulnerability reporting, Dependabot security updates, CodeQL, secret scanning, push protection, SHA-pinned Actions, and read-only workflow tokens remain enabled. GitHub left non-provider-pattern scanning and secret-validity checks disabled when requested, indicating that the enhanced controls are unavailable for the current repository/account configuration.
+
+### Remaining Manual Interface Step
+
+Upload `docs/images/social-preview.png` through **Settings → General → Social preview**. GitHub does not expose a supported REST or GraphQL upload operation for this setting. The prepared PNG is 1280×640 and under 1 MB, matching GitHub's recommended format.
+
 ## Deferred Work Requiring Isolated Regression Plans
 
 ### Core pipeline decomposition

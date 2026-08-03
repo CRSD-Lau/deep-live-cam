@@ -1,0 +1,11 @@
+# Default repository owner
+* @CRSD-Lau
+
+# High-risk administration, security, dependency, and release surfaces
+/.github/ @CRSD-Lau
+/SECURITY.md @CRSD-Lau
+/COMPLIANCE.md @CRSD-Lau
+/LICENSES/ @CRSD-Lau
+/build/windows/ @CRSD-Lau
+/requirements*.txt @CRSD-Lau
+/requirements-locks/ @CRSD-Lau
