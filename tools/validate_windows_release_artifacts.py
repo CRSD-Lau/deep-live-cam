@@ -662,7 +662,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate Windows release artifact set.")
     parser.add_argument("--output-dir", default="build/windows/installer", help="Installer output directory.")
     parser.add_argument("--release-assets-dir", help="Optional curated GitHub Release asset directory to validate.")
-    parser.add_argument("--app-version", default="2.2.0", help="Application version.")
+    parser.add_argument("--app-version", default="2.2.1", help="Application version.")
     parser.add_argument("--repo-root", default=".", help="Repository root containing RELEASE_VERIFICATION.md.")
     parser.add_argument(
         "--require-git-ref-source",

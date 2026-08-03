@@ -1,12 +1,13 @@
-# Deep Live Cam Studio 2.2.0 Windows Release
+# Deep Live Cam Studio 2.2.1 Windows Release
 
-This release adds a verified DirectML build for AMD and Intel GPUs and fixes a
-file Preview/Render deadlock that could also affect CUDA systems.
+This maintenance release modernizes the Windows dependency set, hardens the
+release process, and safely refactors the UI/frame pipeline while preserving
+the CUDA and DirectML workflows introduced in 2.2.0.
 
 ## Downloads
 
-- NVIDIA/CUDA installer: `DeepLiveCamStudio-2.2.0-x64-setup.exe`
-- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.2.0-x64-setup.exe.sha256`
+- NVIDIA/CUDA installer: `DeepLiveCamStudio-2.2.1-x64-setup.exe`
+- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.2.1-x64-setup.exe.sha256`
 - AMD/Intel DirectML portable ZIP: {{DIRECTML_PORTABLE_NAME}}
 - DirectML portable SHA-256: {{DIRECTML_PORTABLE_SHA256}}
 - Corresponding source archive: listed in the uploaded `RELEASE_ASSETS.md`
@@ -19,32 +20,28 @@ DirectX 12 GPUs: extract it into a new folder and run
 
 ## What Changed
 
-### Added
+### Changed
 
-- DirectML GPU acceleration for AMD and Intel GPUs, including strict provider
-  verification and multi-GPU adapter selection.
-- A versioned DirectML portable ZIP with a SHA-256 sidecar and release-time
-  archive validation.
+- Refreshed the reviewed Windows dependency set and regenerated reproducible
+  CUDA and DirectML locks plus licence snapshots.
+- Refactored high-complexity UI and frame-pipeline orchestration behind
+  characterization tests while preserving user-visible behavior.
+- Modernized the repository README, documentation, issue forms, support and
+  security policies, dependency policy, and public project presentation.
 
 ### Fixed
 
-- Preview and Start Render can no longer re-enter while the first file
-  operation is loading models, preventing the observed Not Responding
-  deadlock.
-- DirectML face analysis uses the CPU compatibility path while swap and
-  enhancement inference remain on the GPU, avoiding Radeon multi-session
-  hangs.
-- GitHub packaging now preserves dot-prefixed runtime directories, including
-  the scikit-learn `.libs` DLL required by the application.
-- Clean NVIDIA installer builds now include the pinned CUDA 12/cuDNN 9 runtime
-  DLL set required for an actual ONNX Runtime CUDA session.
-- Provider diagnostics fail clearly when requested GPU acceleration is not
-  active instead of silently treating CPU fallback as success.
+- Removed stale release triggers, obsolete duplicate tooling, unused imports,
+  and retired scaffolding without changing supported workflows.
+- Kept strict provider checks so CPU fallback cannot be mistaken for a
+  successful CUDA or DirectML result.
 
-The DirectML fix was validated by the issue reporter on a Radeon 6900 XT for
-file rendering and Live Output. The packaged release runtimes were separately
-checked for their expected GPU providers. CUDA rendering and Live Output were
-also verified locally on an NVIDIA RTX 4070.
+An independent physical tester validated the release candidate on Windows 11
+with a Radeon RX 9060 XT: the DirectML badge was active and Preview,
+short-video Render, and OBS Live Output all passed with no blocking regression.
+The packaged release runtimes are separately checked for their expected GPU
+providers; CUDA rendering and Live Output were also verified locally on an
+NVIDIA RTX 4070.
 
 ## Source and license
 
@@ -54,7 +51,7 @@ exact binary release is attached and identified by the source ref above.
 The source archive is produced with:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.0 -GitRef HEAD
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.1 -GitRef HEAD
 ```
 
 This release preserves attribution to the original project:
@@ -104,7 +101,7 @@ Completed local evidence is included in the uploaded release documents:
 - Installer smoke install/uninstall checks.
 - Model download/checksum and forbidden-model scans.
 - CUDA and DirectML file-render checks.
-- Radeon 6900 XT and NVIDIA RTX 4070 Live Output checks.
+- Radeon RX 9060 XT DirectML and NVIDIA RTX 4070 CUDA Live Output checks.
 
 Remaining publish blockers:
 

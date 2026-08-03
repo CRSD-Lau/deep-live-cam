@@ -6,6 +6,15 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-08-03
+
+### Added
+
+- Added reproducible CUDA and DirectML dependency locks, strict provider
+  verification, and expanded release evidence for both Windows runtimes.
+- Added repository governance, security-reporting, support, contribution, and
+  dependency-update policies, plus structured issue and pull-request forms.
+
 ### Changed
 
 - Promoted the social-preview artwork to the README hero and moved the real
@@ -29,6 +38,15 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   feathering argument without changing runtime behavior.
 - Kept the DirectML test build manually dispatchable while removing its stale
   trigger for the retired AMD issue branch.
+- Refactored high-complexity UI and frame-pipeline orchestration behind
+  characterization tests while preserving Preview, Render, and Live Output
+  behavior.
+
+### Fixed
+
+- Confirmed the DirectML release candidate on Windows 11 with a Radeon RX 9060
+  XT: DirectML active, Preview passed, short-video Render passed, OBS Live
+  Output passed, and no blocking regression was reported.
 
 ### Removed
 
@@ -83,6 +101,7 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed alpha-channel preview frames before face detection and swap inference.
 - Fixed packaged desktop startup on clean Windows laptops.
 
-[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.1.9...v2.2.0
 [2.1.9]: https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.9

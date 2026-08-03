@@ -1,6 +1,6 @@
 # Windows Release Report
 
-Release: `2.2.0`
+Release: `2.2.1`
 
 ## Packaging Approach
 
@@ -23,16 +23,16 @@ one environment.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator Cuda
-powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.2.0
+powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.2.1
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator DirectML
-powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.0 -Accelerator DirectML
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.0 -GitRef v2.2.0
+powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.1 -Accelerator DirectML
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.1 -GitRef RELEASE_COMMIT
 ```
 
 ## Installer Output
 
-- `DeepLiveCamStudio-2.2.0-x64-setup.exe`
-- `DeepLiveCamStudio-2.2.0-DirectML-x64-portable.zip`
+- `DeepLiveCamStudio-2.2.1-x64-setup.exe`
+- `DeepLiveCamStudio-2.2.1-DirectML-x64-portable.zip`
 - matching SHA-256 sidecars
 - exact source ZIP, source SHA-256, and source manifest
 
