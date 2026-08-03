@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - windows-obs-virtualcam-runtime
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests and security checks
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements-directml.txt
+            requirements-dev.txt
+
+      - name: Install test environment
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-directml.txt -r requirements-dev.txt
+
+      - name: Run test suite
+        run: python -m pytest -q
+
+      - name: Audit CUDA dependency profile
+        run: python -m pip_audit -r requirements.txt --progress-spinner off
+
+      - name: Audit DirectML dependency profile
+        run: python -m pip_audit -r requirements-directml.txt --progress-spinner off
+
+      - name: Scan Python security issues
+        run: python -m bandit -r modules tools run.py DeepLiveCamStudio.pyw -ll
+
+      - name: Check critical Python errors
+        run: python -m ruff check modules tools tests run.py DeepLiveCamStudio.pyw --select E9,F63,F7,F82 --output-format github

@@ -1,26 +1,56 @@
-***[Remove this]The issue would be closed without notice and be considered spam if the template is not followed.***
+---
+name: Bug report
+about: Report a reproducible problem in Deep Live Cam Studio
+title: "[Bug] "
+labels: bug
+assignees: ""
+---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## What happened?
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+Describe the problem and what you expected instead.
 
-**Error Message**
+## Steps to reproduce
 
-`<The error message in terminal>`
+1.
+2.
+3.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. Windows]
- - Version [e.g. 22]
- - GPU
- - CPU
+## System details
 
-**Additional context**
-Add any other context about the problem here.
+- Deep Live Cam Studio version:
+- Windows version:
+- CPU:
+- GPU(s):
+- GPU driver version:
+- Download used: CUDA installer / DirectML portable / source checkout
+- Selected execution provider:
+- Selected DirectML adapter ID, if applicable:
 
-**Confirmation (Mandatory)**
-- [ ] I have followed the template
-- [ ] This is not a query about how to increase performance
-- [ ] I have checked the issues page, and this is not a duplicate
+## Logs and screenshots
 
+Paste the relevant terminal/provider output and attach screenshots or a short
+screen recording. Remove personal paths, faces, and other private information
+before posting.
+
+```text
+Paste relevant output here.
+```
+
+## Scope
+
+- [ ] Preview or file render
+- [ ] Live Output or OBS Virtual Camera
+- [ ] Model setup
+- [ ] Startup or installation
+- [ ] Other
+
+## Confirmation
+
+- [ ] I tested the latest published release.
+- [ ] I searched existing issues for the same problem.
+- [ ] I did not include credentials, private media, or model/checkpoint files.
+- [ ] This is a bug report, not a performance-tuning question.
+
+For a suspected security vulnerability, stop here and follow
+[`SECURITY.md`](../../SECURITY.md) instead of filing a public issue.

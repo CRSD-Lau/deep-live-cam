@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.11"
           cache: "pip"
@@ -70,7 +70,7 @@ jobs:
         run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version "${{ inputs.app_version }}" --require-git-ref-source
 
       - name: Download DirectML release asset
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: DeepLiveCamStudio-${{ inputs.app_version }}-DirectML-x64-portable
           path: build/windows/portable
@@ -84,7 +84,7 @@ jobs:
         run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --release-assets-dir build\windows\release-assets\${{ inputs.app_version }} --app-version "${{ inputs.app_version }}" --require-git-ref-source --require-directml-portable
 
       - name: Upload installer artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup
           path: |
@@ -99,10 +99,10 @@ jobs:
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.11"
           cache: "pip"
@@ -120,7 +120,7 @@ jobs:
         run: powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion "${{ inputs.app_version }}" -Accelerator DirectML -SkipAcceleratorProbe
 
       - name: Upload DirectML release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: DeepLiveCamStudio-${{ inputs.app_version }}-DirectML-x64-portable
           path: |

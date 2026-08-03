@@ -11,7 +11,7 @@ $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $IsDirectML = $Accelerator -eq "DirectML"
 $ExistingVenv = Join-Path $RepoRoot $(if ($IsDirectML) { ".venv-directml" } else { "venv" })
 $BuildVenv = Join-Path $RepoRoot $(if ($IsDirectML) { ".venv-build-windows-directml" } else { ".venv-build-windows" })
-$Venv = if (($UseExistingVenv -or (Test-Path (Join-Path $ExistingVenv "Scripts\python.exe"))) -and (Test-Path (Join-Path $ExistingVenv "Scripts\python.exe"))) { $ExistingVenv } else { $BuildVenv }
+$Venv = if ($UseExistingVenv) { $ExistingVenv } else { $BuildVenv }
 $PythonExe = Join-Path $Venv "Scripts\python.exe"
 $BundleName = if ($IsDirectML) { "DeepLiveCamStudio-DirectML" } else { "DeepLiveCamStudio" }
 $DistDir = Join-Path $RepoRoot "dist\$BundleName"
@@ -33,6 +33,10 @@ function Invoke-Checked {
 }
 
 Set-Location $RepoRoot
+
+if ($UseExistingVenv -and -not (Test-Path -LiteralPath $PythonExe)) {
+    throw "-UseExistingVenv was requested, but the expected environment does not exist: $PythonExe"
+}
 
 if (-not (Test-Path $PythonExe)) {
     Invoke-Checked $Python @("-m", "venv", $Venv)

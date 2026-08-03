@@ -35,8 +35,11 @@ function Get-ReleaseAssetName {
 
 $Targets = @(
     (Join-Path $RepoRoot "build\windows\pyinstaller-work"),
+    (Join-Path $RepoRoot "build\windows\pyinstaller-work-directml"),
     (Join-Path $RepoRoot "build\windows\installer"),
-    (Join-Path $RepoRoot "dist\DeepLiveCamStudio")
+    (Join-Path $RepoRoot "build\windows\portable"),
+    (Join-Path $RepoRoot "dist\DeepLiveCamStudio"),
+    (Join-Path $RepoRoot "dist\DeepLiveCamStudio-DirectML")
 )
 
 if ($PruneStaleInstallerArtifacts) {
