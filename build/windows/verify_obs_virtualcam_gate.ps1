@@ -37,7 +37,7 @@ try {
     $Os = Get-CimInstance Win32_OperatingSystem
     Write-Host "Windows: $($Os.Caption) $($Os.Version) build $($Os.BuildNumber)"
 
-    & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "test_environment.ps1") -RequireObsVirtualCam
+    & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "test_environment.ps1") -Python $CheckPython -RequireObsVirtualCam
     if ($LASTEXITCODE -ne 0) {
         throw "OBS virtual camera environment preflight failed with exit code $LASTEXITCODE."
     }

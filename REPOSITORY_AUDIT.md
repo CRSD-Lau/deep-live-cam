@@ -12,7 +12,7 @@ documentation, and repository security settings.
 
 | Area | Result |
 | --- | --- |
-| Source tests | 456 passed on Python 3.11 and Windows after hardening |
+| Source tests | 457 passed on Python 3.11 and Windows after hardening |
 | Coverage | 48.9% overall before this hardening change |
 | Dependency audit | ONNX 1.21.0 and Pillow 12.2.0 findings remediated in 2.2.0; both runtime profiles then returned no known vulnerabilities |
 | Dependency alert triage | GHSA-rrmf-rvhw-rf47 affects `torch.jit.script`; the app never imports or ships the PyTorch package and only copies its CUDA runtime DLLs. The official CUDA 12.8 index had no patched stable wheel on 2026-08-02, so the low alert was dismissed as not used and remains on the upgrade watchlist. |
@@ -36,6 +36,8 @@ documentation, and repository security settings.
   CUDA and DirectML outputs.
 - Made corresponding-source packaging peel annotated tags to their commit so
   manifests and archive names record the reproducible source commit.
+- Made the OBS evidence wrapper forward its verified Python environment into
+  the clean-worktree preflight.
 - Added a security policy and replaced stale contribution and bug-report
   instructions.
 - Enabled GitHub private vulnerability reporting, Dependabot security updates,

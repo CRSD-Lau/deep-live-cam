@@ -114,3 +114,11 @@ def test_source_packaging_peels_annotated_tags_to_commits():
     assert '$CommitRef = "$GitRef^{commit}"' in script
     assert "git rev-parse --verify $CommitRef" in script
     assert "$LASTEXITCODE -ne 0" in script
+
+
+def test_obs_evidence_gate_forwards_selected_python_to_preflight():
+    script = Path("build/windows/verify_obs_virtualcam_gate.ps1").read_text(
+        encoding="utf-8"
+    )
+
+    assert "-Python $CheckPython -RequireObsVirtualCam" in script
