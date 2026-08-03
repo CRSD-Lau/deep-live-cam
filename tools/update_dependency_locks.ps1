@@ -80,7 +80,7 @@ function Write-CudaRuntimeLock {
         ("torch==$TorchVersion+cu128 " + [char]92),
         "    --hash=sha256:$($WheelMatch.Groups[1].Value)",
         ""
-    ) -join "`n"
+    ) -join [Environment]::NewLine
     [System.IO.File]::WriteAllText($Output, $Contents, [System.Text.UTF8Encoding]::new($false))
     [System.IO.File]::WriteAllText(
         $AuditOutput,
