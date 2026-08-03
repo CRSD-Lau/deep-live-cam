@@ -108,6 +108,13 @@ def test_cuda_build_isolates_the_build_only_torch_wheel():
     assert "DLC_CUDA_RUNTIME_TORCH_LIB" in spec
 
 
+def test_release_checks_expose_isolated_torch_metadata_to_license_tools():
+    script = Path("build/windows/run_release_checks.ps1").read_text(encoding="utf-8")
+
+    assert '".venv-build-windows-cuda-runtime\\Lib\\site-packages"' in script
+    assert "$env:PYTHONPATH" in script
+
+
 def test_clean_build_covers_both_accelerator_outputs():
     script = Path("build/windows/clean_build.ps1").read_text(encoding="utf-8")
 
