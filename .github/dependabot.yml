@@ -25,10 +25,23 @@ updates:
         versions:
           - "26.2"
       # The CUDA bundle uses a reviewed +cu128 wheel as a DLL source. A
-      # standalone audit-file bump is not a valid runtime upgrade.
+      # generic PyPI wheel or standalone audit bump is not a valid upgrade.
       - dependency-name: torch
         versions:
+          - "2.12.1"
           - "2.13.0"
+      # These updates change model, provider, or physical-camera behavior and
+      # need complete locks, licence evidence, packaged builds, and matching
+      # hardware validation before adoption.
+      - dependency-name: tensorflow
+        versions:
+          - "2.21.0"
+      - dependency-name: onnxruntime-directml
+        versions:
+          - "1.24.3"
+      - dependency-name: cv2-enumerate-cameras
+        versions:
+          - "1.3.3"
       - dependency-name: "*"
         update-types:
           - version-update:semver-major
