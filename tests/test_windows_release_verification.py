@@ -99,6 +99,28 @@ def test_publish_ready_requires_completed_manual_evidence(tmp_path, monkeypatch)
     assert "Ready to publish without remaining manual gates: **YES**" in text
 
 
+def test_named_release_checks_are_stable_and_pass_when_ready(tmp_path, monkeypatch):
+    repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
+    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
+    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
+
+    context = verification.collect_verification_context(
+        repo_root, dist_dir, output_dir, "2.1.7"
+    )
+    checks = verification.evaluate_release_checks(context)
+
+    assert [check.name for check in checks] == [
+        "installer-automation",
+        "working-tree-source",
+        "corresponding-source",
+        "release-cutover",
+        *[f"manual-gate:{gate}" for gate in verification.MANUAL_GATES],
+    ]
+    assert all(check.passed for check in checks)
+    assert all(not check.failures for check in checks)
+
+
 def test_publish_ready_requires_matching_source_hash_sidecar(tmp_path, monkeypatch):
     repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
 
