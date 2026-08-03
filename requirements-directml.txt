@@ -12,7 +12,7 @@ pillow==12.3.0
 tqdm>=4.66.5
 onnxruntime-directml==1.23.0; sys_platform == 'win32'
 tensorflow==2.19.1; sys_platform == 'win32'
-opennsfw2==0.10.2
+opennsfw2==0.18.0
 protobuf==5.29.6
 pygrabber; sys_platform == 'win32'
 pyvirtualcam==0.15.0
