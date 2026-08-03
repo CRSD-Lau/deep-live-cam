@@ -25,7 +25,7 @@ def test_release_locks_are_hashed_and_keep_onnx_runtimes_isolated():
         "requirements-locks/windows-cuda-runtime-audit-py311.txt"
     )
 
-    assert "onnxruntime-gpu==1.23.2" in cuda
+    assert "onnxruntime-gpu==1.24.3" in cuda
     assert "onnxruntime-directml" not in cuda
     assert "torch==" not in cuda
     assert "setuptools==83.0.0" in cuda
@@ -57,6 +57,22 @@ def test_release_builds_install_only_hash_locked_profiles():
     assert "python_dependencies_directml.md" in build
 
 
+def test_dependency_sources_match_reviewed_release_versions():
+    cuda = read("requirements.txt")
+    directml = read("requirements-directml.txt")
+    build = read("requirements-build-windows.txt")
+    dev = read("requirements-dev.txt")
+
+    assert "onnxruntime-gpu==1.24.3" in cuda
+    assert "opennsfw2==0.18.0" in cuda
+    assert "opennsfw2==0.18.0" in directml
+    assert "pyside6>=6.11.1,<7" in cuda
+    assert "pyside6>=6.11.1,<7" in directml
+    assert "pyinstaller==6.21.0" in build
+    assert "pyinstaller-hooks-contrib==2026.6" in build
+    assert "pytest==9.1.1" in dev
+
+
 def test_workflows_pin_python_and_validate_maintained_locks():
     ci = read(".github/workflows/ci.yml")
     release = read(".github/workflows/windows-release.yml")
@@ -71,3 +87,7 @@ def test_workflows_pin_python_and_validate_maintained_locks():
     assert "--ignore-vuln pysec-2025-194" in ci
     assert "version-update:semver-major" in dependabot
     assert "windows-build-toolchain:" in dependabot
+    assert "dependency-name: pip" in dependabot
+    assert '"26.2"' in dependabot
+    assert "dependency-name: torch" in dependabot
+    assert '"2.13.0"' in dependabot

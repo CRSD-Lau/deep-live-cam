@@ -1,24 +1,28 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: opennsfw2
-Version: 0.10.2
-Summary: TensorFlow 2 implementation of the Yahoo Open-NSFW model
+Version: 0.18.0
+Summary: Keras implementation of the Yahoo Open-NSFW model
 Home-page: https://github.com/bhky/opennsfw2
 Author: attr: opennsfw2.__author__
-Author-email: xtorch501@gmail.com
+Author-email: bhky.dev@gmail.com
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
-Requires-Python: >=3.8
+Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: gdown (>=4.2.0)
-Requires-Dist: matplotlib (>=3.0.0)
-Requires-Dist: numpy (>=1.22.0)
-Requires-Dist: opencv-python (>=4.0.0.0)
-Requires-Dist: Pillow (>=8.0.0)
-Requires-Dist: scikit-image (>=0.18.0)
-Requires-Dist: tensorflow (>=2.0.0)
-Requires-Dist: tqdm (>=4.62)
+Requires-Dist: gdown>=4.2.0
+Requires-Dist: matplotlib>=3.0.0
+Requires-Dist: numpy>=1.22.0
+Requires-Dist: opencv-python>=4.0.0.0
+Requires-Dist: Pillow>=8.0.0
+Requires-Dist: scikit-image>=0.18.0
+Requires-Dist: tqdm>=4.62
+Provides-Extra: keras3
+Requires-Dist: keras>=3.0.0; extra == "keras3"
+Provides-Extra: tf-keras
+Requires-Dist: tf-keras>=2.14.0; extra == "tf-keras"
+Dynamic: license-file
 
 ![logo](logo/opennsfw2_logo.png)
 
@@ -37,26 +41,48 @@ is now discontinued and Caffe is also becoming less popular.
 Please see the description on the Yahoo project page for
 the context, definitions, and model training details.
 
-This **Open-NSFW 2** project provides a TensorFlow 2 implementation of the
+This **Open-NSFW 2** project provides a Keras implementation of the
 Yahoo model, with references to its previous third-party 
 [TensorFlow 1 implementation](https://github.com/mdietrichstein/tensorflow-open_nsfw).
+**Keras 3** (TensorFlow and JAX backends) and **tf-keras** are both supported.
 
 A simple API is provided for making predictions on images and videos.
 
 # Installation
 
-Tested for Python 3.8, 3.9, and 3.10.
+Tested with Python 3.9 to 3.12.
 
-The best way to install Open-NSFW 2 with its dependencies is from PyPI:
+Install with your preferred Keras backend:
+
+**Keras 3** (TensorFlow or JAX backend):
 ```shell
-python3 -m pip install --upgrade opennsfw2
+python3 -m pip install "opennsfw2[keras3]"
 ```
+
+**tf-keras** (TensorFlow-integrated Keras):
+```shell
+python3 -m pip install "opennsfw2[tf-keras]"
+```
+
 Alternatively, to obtain the latest version from this repository:
 ```shell
 git clone git@github.com:bhky/opennsfw2.git
 cd opennsfw2
-python3 -m pip install .
+python3 -m pip install ".[keras3]"  # or ".[tf-keras]"
 ```
+
+If both Keras versions are installed, Keras 3 is used by default.
+To force tf-keras, set the environment variable before importing:
+```shell
+OPENNSFW2_KERAS=tf-keras python3 your_script.py
+```
+
+A note on the PyTorch backend (Keras 3 only):
+
+The model can run on PyTorch, but inference output differs noticeably from
+TensorFlow and JAX, and inference is slower due to PyTorch using
+`channels_first` while this model uses `channels_last`.
+Therefore, PyTorch is not recommended.
 
 # Usage
 
@@ -68,21 +94,23 @@ For more details, please refer to the [API](#api) section.
 ```python
 import opennsfw2 as n2
 
-# To get the NSFW probability of a single image.
-image_path = "path/to/your/image.jpg"
+# To get the NSFW probability of a single image, provide your image file path,
+# or a `PIL.Image.Image` object.
+image_handle = "path/to/your/image.jpg"
 
-nsfw_probability = n2.predict_image(image_path)
+nsfw_probability = n2.predict_image(image_handle)
 
-# To get the NSFW probabilities of a list of images.
-# This is better than looping with `predict_image` as the model will only be instantiated once
-# and batching is used during inference.
-image_paths = [
+# To get the NSFW probabilities of a list of images, provide a list of file paths,
+# or a list of `PIL.Image.Image` objects.
+# Using this function is better than looping with `predict_image` as the model
+# will only be instantiated once and batching is done during inference.
+image_handles = [
   "path/to/your/image1.jpg",
   "path/to/your/image2.jpg",
   # ...
 ]
 
-nsfw_probabilities = n2.predict_images(image_paths)
+nsfw_probabilities = n2.predict_images(image_handles)
 ```
 
 ## Video
@@ -97,7 +125,9 @@ video_path = "path/to/your/video.mp4"
 elapsed_seconds, nsfw_probabilities = n2.predict_video_frames(video_path)
 ```
 
-## Lower level with TensorFlow / Keras
+## Lower level with Keras
+
+### Inference
 
 ```python
 import numpy as np
@@ -114,7 +144,7 @@ image = n2.preprocess_image(pil_image, n2.Preprocessing.YAHOO)
 # By default, this call will search for the pre-trained weights file from path:
 # $HOME/.opennsfw2/weights/open_nsfw_weights.h5
 # If not exists, the file will be downloaded from this repository.
-# The model is a `tf.keras.Model` object.
+# The model is a `keras.Model` object.
 model = n2.make_open_nsfw_model()
 
 # Make predictions.
@@ -126,16 +156,73 @@ predictions = model.predict(inputs)
 sfw_probability, nsfw_probability = predictions[0]
 ```
 
+### Training / Fine-tuning with TensorFlow backend
+
+```python
+import opennsfw2 as n2
+import tensorflow as tf
+
+# Prepare a list of image file paths and corresponding labels.
+# Labels: 0 for SFW, 1 for NSFW.
+image_paths = [
+  "path/to/your/image1.jpg",
+  "path/to/your/image2.jpg",
+  # ...
+]
+labels = [0, 1, ...]
+
+# Build a tf.data pipeline with per-sample preprocessing.
+dataset = tf.data.Dataset.from_tensor_slices((image_paths, labels))
+
+def load_and_preprocess(image_path, label):
+  image = tf.io.read_file(image_path)
+  image = tf.io.decode_jpeg(image, channels=3)
+  # The preprocessed image is a tensor of shape (224, 224, 3).
+  image = n2.preprocess_image_tensor(image, n2.Preprocessing.YAHOO)
+  return image, label
+
+dataset = (
+  dataset
+  .map(load_and_preprocess, num_parallel_calls=tf.data.AUTOTUNE)
+  .batch(32)
+  .prefetch(tf.data.AUTOTUNE)
+)
+
+# For fine-tuning, load the pre-trained weights (default behaviour).
+# For training from scratch, pass weights_path=None.
+model = n2.make_open_nsfw_model()
+
+# Compile and train.
+model.compile(
+  optimizer="adam",
+  loss="sparse_categorical_crossentropy",
+  metrics=["accuracy"],
+)
+model.fit(dataset, epochs=10)
+```
+
+
 # API
 
 ### `preprocess_image`
 Apply necessary preprocessing to the input image.
 - Parameters:
-  - `pil_image` (`PIL.Image`): Input as a Pillow image.
+  - `pil_image` (`PIL.Image.Image`): Input as a Pillow image.
   - `preprocessing` (`Preprocessing` enum, default `Preprocessing.YAHOO`): 
     See [preprocessing details](#preprocessing-details).
 - Return:
   - NumPy array of shape `(224, 224, 3)`.
+
+### `preprocess_image_tensor`
+Tensor-based preprocessing equivalent of `preprocess_image`, suitable for use with
+dataset pipelines (e.g., `tf.data.Dataset.map`).
+Note that the JPEG round-trip in the `YAHOO` pipeline is intentionally omitted.
+- Parameters:
+  - `image` (Keras tensor of shape `(H, W, C)`, `uint8`): Input as a single RGB image tensor.
+  - `preprocessing` (`Preprocessing` enum, default `Preprocessing.YAHOO`):
+    See [preprocessing details](#preprocessing-details).
+- Return:
+  - Keras tensor of shape `(224, 224, 3)`.
 
 ### `Preprocessing`
 Enum class for preprocessing options.
@@ -154,20 +241,22 @@ Create an instance of the NSFW model, optionally with pre-trained weights from Y
     Users can provide path if the default is not preferred. 
     The environment variable `OPENNSFW2_HOME` can also be used to indicate
     where the `.opennsfw2/` directory should be located.
+  - `name` (`str`, default `opennsfw2`): Model name to be used for the Keras model object.
 - Return:
-  - `tf.keras.Model` object.
+  - `keras.Model` object.
 
 ### `predict_image`
 End-to-end pipeline function from the input image to the predicted NSFW probability.
 - Parameters:
-  - `image_path` (`str`): Path to the input image file. 
-    The image format must be supported by Pillow.
+  - `image_handle` (`Union[str, PIL.Image.Image]`):
+    Path to the input image file with a format supported by Pillow, or a `PIL.Image.Image` object.
   - `preprocessing`: Same as that in `preprocess_image`.
   - `weights_path`: Same as that in `make_open_nsfw_model`.
   - `grad_cam_path` (`Optional[str]`, default `None`): If not `None`, e.g., `cam.jpg`,
     a [Gradient-weighted Class Activation Mapping (Grad-CAM)](https://keras.io/examples/vision/grad_cam/) 
     overlay plot will be saved, which highlights the important region(s) of the 
     (preprocessed) input image that lead to the prediction.
+    Note that this feature is currently only supported by the TensorFlow backend.
   - `alpha` (`float`, default `0.8`): Opacity of the Grad-CAM layer of the plot,
     only valid if `grad_cam_path` is not `None`.
 - Return:
@@ -176,8 +265,9 @@ End-to-end pipeline function from the input image to the predicted NSFW probabil
 ### `predict_images`
 End-to-end pipeline function from the input images to the predicted NSFW probabilities.
 - Parameters:
-  - `image_paths` (`Sequence[str]`): List of paths to the input image files. 
-    The image format must be supported by Pillow.
+  - `image_handles` (`Union[Sequence[str], Sequence[PIL.Image.Image]]`):
+    List of paths to the input image files with formats supported by Pillow,
+    or list of `PIL.Image.Image` objects.
   - `batch_size` (`int`, default `8`): Batch size to be used for model inference. 
     Choose a value that works the best with your device resources.
   - `preprocessing`: Same as that in `preprocess_image`.
@@ -185,6 +275,7 @@ End-to-end pipeline function from the input images to the predicted NSFW probabi
   - `grad_cam_paths` (`Optional[Sequence[str]]`, default `None`): If not `None`,
     the corresponding Grad-CAM plots for the input images will be saved.
     See the description in `predict_image`.
+    Note that this feature is currently only supported by the TensorFlow backend.
   - `alpha`: Same as that in `predict_image`.
 - Return:
   - `nsfw_probabilities` (`List[float]`): Predicted NSFW probabilities of the images.
@@ -235,8 +326,6 @@ End-to-end pipeline function from the input video to predictions.
 
 # Preprocessing details
 
-## Options
-
 This implementation provides the following preprocessing options.
 - `YAHOO`: The default option which was used in the original 
   [Yahoo's Caffe](https://github.com/yahoo/open_nsfw/blob/master/classify_nsfw.py#L19-L80) 
@@ -257,25 +346,6 @@ This implementation provides the following preprocessing options.
   - Swap the colour channels to BGR.
   - Subtract the training dataset mean value of each channel: `[104, 117, 123]`.
 
-## Comparison
+# HTTP service
 
-Using 521 private test images, the NSFW probabilities given by 
-three different settings are compared:
-- [TensorFlow 1 implementation](https://github.com/mdietrichstein/tensorflow-open_nsfw) with `YAHOO` preprocessing.
-- TensorFlow 2 implementation with `YAHOO` preprocessing.
-- TensorFlow 2 implementation with `SIMPLE` preprocessing.
-
-The following figure shows the result:
-
-![NSFW probabilities comparison](docs/nsfw_probabilities_comparison.png)
-
-The current TensorFlow 2 implementation with `YAHOO` preprocessing
-can totally reproduce the well-tested TensorFlow 1 result, 
-with small floating point errors only.
-
-With `SIMPLE` preprocessing the result is different, where the model tends 
-to give lower probabilities over the current test images.
-
-Note that this comparison does not conclude which preprocessing method is 
-"better", it only shows their discrepancies. However, users that prefer the
-original Yahoo result should go for the default `YAHOO` preprocessing.
+See the [HTTP service README](README-HTTP.md).

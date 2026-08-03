@@ -16,6 +16,7 @@ def test_classifies_release_mixed_and_unknown_paths():
             "CHANGELOG.md",
             "modules/metadata.py",
             "modules/model_manager.py",
+            "requirements-dev.txt",
             "modules/compositing/blend.py",
             "scratch.txt",
         ]
@@ -26,6 +27,7 @@ def test_classifies_release_mixed_and_unknown_paths():
         "build/windows/run_release_checks.ps1",
         "modules/metadata.py",
         "modules/model_manager.py",
+        "requirements-dev.txt",
     ]
     assert mixed_paths == ["modules/compositing/blend.py"]
     assert unknown_paths == ["scratch.txt"]

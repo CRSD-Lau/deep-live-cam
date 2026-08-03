@@ -29,7 +29,7 @@ if (-not (Test-Path $Gui)) {
 $OnnxRuntimeLicense = if ($Accelerator -eq "DirectML") {
     "LICENSES\THIRD_PARTY_LICENSES\onnxruntime-directml-1.23.0\package\LICENSE"
 } else {
-    "LICENSES\THIRD_PARTY_LICENSES\onnxruntime-gpu-1.23.2\package\LICENSE"
+    "LICENSES\THIRD_PARTY_LICENSES\onnxruntime-gpu-1.24.3\package\LICENSE"
 }
 
 $RequiredFiles = @(
@@ -56,7 +56,7 @@ $RequiredFiles = @(
     $OnnxRuntimeLicense,
     "LICENSES\THIRD_PARTY_LICENSES\opencv-python-4.10.0.84\package\LICENSE-3RD-PARTY.txt",
     "LICENSES\THIRD_PARTY_LICENSES\onnx-1.22.0\licenses\LICENSE",
-    "LICENSES\THIRD_PARTY_LICENSES\opennsfw2-0.10.2\LICENSE",
+    "LICENSES\THIRD_PARTY_LICENSES\opennsfw2-0.18.0\licenses\LICENSE",
     "LICENSES\THIRD_PARTY_LICENSES\PySide6-6.11.1\METADATA",
     "LICENSES\THIRD_PARTY_LICENSES\PySide6-6.11.1\licenses\LicenseRef-Qt-Commercial.txt",
     "LICENSES\THIRD_PARTY_LICENSES\shiboken6-6.11.1\METADATA",
