@@ -27,7 +27,7 @@
   <a href="SECURITY.md">Security</a>
 </p>
 
-![Deep Live Cam Studio main window](docs/images/deep-live-cam-studio-main.png)
+![Deep Live Cam Studio — Windows face-swap studio with CUDA, DirectML, and OBS Live Output](docs/images/social-preview.png)
 
 > [!IMPORTANT]
 > Download the app from [GitHub Releases](https://github.com/CRSD-Lau/deep-live-cam/releases/latest), not from the green **Code** button. Source archives are for developers and do not install the application.
@@ -93,6 +93,8 @@ Close and reopen the app after installation so the new commands are available.
 See [DirectML testing](docs/DIRECTML_TESTING.md) and [OBS Virtual Camera](docs/OBS_VIRTUAL_CAMERA.md) for provider-specific setup and troubleshooting.
 
 ## Using the Studio
+
+![Deep Live Cam Studio main window](docs/images/deep-live-cam-studio-main.png)
 
 ### Files
 
