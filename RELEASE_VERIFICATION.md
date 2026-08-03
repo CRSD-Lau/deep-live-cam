@@ -1,6 +1,6 @@
 # Windows Release Verification
 
-App version: `2.2.0`
+App version: `2.2.1`
 
 Status: RELEASE PREPARATION
 
@@ -10,10 +10,10 @@ and source hashes used for publication.
 
 - Local installer automation passed: PENDING FINAL TAGGED BUILD
 - DirectML portable runtime validation passed: PENDING FINAL TAGGED BUILD
-- Public-release source archive from clean Git ref: PENDING `v2.2.0`
+- Public-release source archive from clean Git ref: PENDING FINAL MERGED COMMIT
 - Manual clean-install gate: PASS (risk-based delta revalidation required on final asset)
-- Manual OBS/Live Output gate: PASS (CUDA and Radeon DirectML hardware evidence)
-- Manual legal/compliance gate: PASS (DirectML dependency delta documented)
+- Manual OBS/Live Output gate: PASS (CUDA and two Radeon DirectML hardware records)
+- Manual legal/compliance gate: PASS (2.2.0 and 2.2.1 dependency deltas documented)
 - Ready to publish without remaining manual gates: NO — FINAL ASSET AND PUBLIC-DOWNLOAD VERIFICATION REQUIRED
 
 The final release workflow and strict local checks overwrite this preparation

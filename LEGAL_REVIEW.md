@@ -2,7 +2,7 @@
 
 Status: PASS
 
-Release: `2.2.0`
+Release: `2.2.1`
 
 This is a release-management record, not legal advice. Publisher acceptance is
 recorded by project owner Neil Mitchell; exact final hashes and source refs are
@@ -44,8 +44,21 @@ kept in the release asset manifest rather than embedded in installed files.
   for the runtime DLL allow-list. The Python `torch` package is excluded from
   the installer, while its `LICENSE`, `NOTICE`, and metadata remain bundled.
 
+## 2.2.1 delta review
+
+- The reviewed runtime refresh updates ONNX Runtime GPU to 1.24.3 and other
+  already-shipped Python dependencies; regenerated locks and licence snapshots
+  remain part of both release profiles.
+- The DirectML package, model-download policy, source-distribution scope, and
+  external binary families are unchanged from 2.2.0.
+- PyTorch remains a build-only CUDA DLL source at 2.11.0+cu128 and is not
+  imported or shipped as a Python runtime. The two dismissed Torch advisories
+  therefore remain documented as not used rather than open release alerts.
+- UI/frame-pipeline refactoring and repository-administration changes add no
+  model weights, codecs, or separately licensed binary payloads.
+
 Generate the final evidence packet with:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.2.0
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.2.1
 ```
