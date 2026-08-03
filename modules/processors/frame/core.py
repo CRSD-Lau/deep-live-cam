@@ -147,7 +147,6 @@ def process_video_in_memory(source_path: str, target_path: str, fps: float) -> b
     Returns True on success, False on failure (caller should fall back to the
     disk-based pipeline).
     """
-    import cv2
     from modules.face_analyser import get_one_face
     from modules.utilities import (
         get_video_dimensions,

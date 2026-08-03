@@ -85,7 +85,6 @@ def estimate_blur_amount(bgr_crop: np.ndarray) -> float:
 
 def get_adaptive_feather_settings(
     *,
-    face_size: int,
     crop_shape: tuple[int, int] | tuple[int, int, int],
     frame_shape: tuple[int, int] | tuple[int, int, int],
     edge_contrast: float = 0.0,

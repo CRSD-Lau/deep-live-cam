@@ -61,14 +61,12 @@ def test_estimate_blur_amount_ignores_flat_crops_and_crisp_sparse_edges():
 
 def test_adaptive_feather_increases_blur_for_high_contrast():
     low = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         edge_contrast=0.0,
         base_blur_ratio=0.05,
     )
     high = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         edge_contrast=1.0,
@@ -81,14 +79,12 @@ def test_adaptive_feather_increases_blur_for_high_contrast():
 
 def test_adaptive_feather_increases_blur_for_motion_blur():
     sharp = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         blur_amount=0.0,
         blur_strength=0.35,
     )
     blurred = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         blur_amount=1.0,
@@ -101,14 +97,12 @@ def test_adaptive_feather_increases_blur_for_motion_blur():
 
 def test_adaptive_feather_blur_strength_zero_preserves_settings():
     sharp = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         blur_amount=0.0,
         blur_strength=0.0,
     )
     blurred = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         blur_amount=1.0,
@@ -120,14 +114,12 @@ def test_adaptive_feather_blur_strength_zero_preserves_settings():
 
 def test_adaptive_feather_increases_blur_for_motion():
     still = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         motion_amount=0.0,
         motion_strength=0.35,
     )
     moving = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         motion_amount=1.0,
@@ -140,14 +132,12 @@ def test_adaptive_feather_increases_blur_for_motion():
 
 def test_adaptive_feather_increases_blur_for_side_profile():
     frontal = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         profile_amount=0.0,
         profile_strength=0.35,
     )
     profile = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         profile_amount=1.0,
@@ -160,14 +150,12 @@ def test_adaptive_feather_increases_blur_for_side_profile():
 
 def test_adaptive_feather_profile_strength_zero_preserves_settings():
     frontal = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         profile_amount=0.0,
         profile_strength=0.0,
     )
     profile = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         profile_amount=1.0,
@@ -179,14 +167,12 @@ def test_adaptive_feather_profile_strength_zero_preserves_settings():
 
 def test_adaptive_feather_motion_strength_zero_preserves_settings():
     still = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         motion_amount=0.0,
         motion_strength=0.0,
     )
     moving = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(120, 120, 3),
         frame_shape=(720, 1280, 3),
         motion_amount=1.0,
@@ -198,12 +184,10 @@ def test_adaptive_feather_motion_strength_zero_preserves_settings():
 
 def test_adaptive_feather_responds_to_face_scale_and_cache_key():
     small = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(80, 80, 3),
         frame_shape=(1080, 1920, 3),
     )
     large = get_adaptive_feather_settings(
-        face_size=128,
         crop_shape=(600, 600, 3),
         frame_shape=(1080, 1920, 3),
     )

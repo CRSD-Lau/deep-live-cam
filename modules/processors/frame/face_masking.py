@@ -11,7 +11,7 @@ from modules.expression_regions import (
     RIGHT_EYEBROW_INDICES,
     extract_region_points,
 )
-from modules.gpu_processing import gpu_gaussian_blur, gpu_resize, gpu_cvt_color
+from modules.gpu_processing import gpu_gaussian_blur, gpu_resize
 
 def apply_color_transfer(source, target):
     """
@@ -347,10 +347,6 @@ def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, t
         ):
             return mask, eyebrows_cutout, eyebrows_box, eyebrows_polygon
         
-        # Calculate centers and dimensions for each eyebrow
-        left_center = np.mean(left_eyebrow, axis=0)
-        right_center = np.mean(right_eyebrow, axis=0)
-        
         # Calculate bounding box with padding adjusted by size
         all_points = np.vstack([left_eyebrow, right_eyebrow])
         padding_factor = getattr(modules.globals, "eyebrows_mask_size", 1.0)
@@ -466,7 +462,7 @@ def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, t
             ]).astype(np.int32)
             eyebrows_box = (min_x, min_y, max_x, max_y)
             
-        except Exception as e:
+        except Exception:
             # Fallback to simple polygons if curve fitting fails
             left_local = left_eyebrow - [min_x, min_y]
             right_local = right_eyebrow - [min_x, min_y]
@@ -559,7 +555,7 @@ def apply_mask_area(
         final_blend = blended * face_mask_3channel + roi * (np.float32(1.0) - face_mask_3channel)
 
         frame[min_y:max_y, min_x:max_x] = final_blend.astype(np.uint8)
-    except Exception as e:
+    except Exception:
         pass
 
     return frame
@@ -599,7 +595,7 @@ def draw_mask_visualization(
                 # Draw the ellipses
                 cv2.ellipse(vis_frame, left_ellipse, (0, 255, 0), 2)
                 cv2.ellipse(vis_frame, right_ellipse, (0, 255, 0), 2)
-        except Exception as e:
+        except Exception:
             # If ellipse fitting fails, draw simple rectangles as fallback
             left_rect = cv2.boundingRect(left_points)
             right_rect = cv2.boundingRect(right_points)

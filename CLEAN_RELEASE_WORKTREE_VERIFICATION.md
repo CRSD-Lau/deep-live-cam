@@ -4,9 +4,8 @@ Release: `2.2.0`
 
 Status: READY FOR RELEASE-CANDIDATE BUILD
 
-The release is prepared in the isolated worktree
-`C:\Projects\deep-live-cam-release-2.2.0`. The original checkout's Voice Lab
-work and the prior DirectML test worktree are outside this release scope.
+The release was prepared in an isolated worktree. Unrelated local work and the
+prior DirectML test worktree were outside the release scope.
 
 ## Completed source proof
 

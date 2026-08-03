@@ -12,13 +12,13 @@ documentation, and repository security settings.
 
 | Area | Result |
 | --- | --- |
-| Source tests | 457 passed on Python 3.11 and Windows after hardening |
+| Source tests | 460 passed on Python 3.11 and Windows after repository cleanup |
 | Coverage | 48.9% overall before this hardening change |
 | Dependency audit | ONNX 1.21.0 and Pillow 12.2.0 findings remediated in 2.2.0; both runtime profiles then returned no known vulnerabilities |
 | Dependency alert triage | GHSA-rrmf-rvhw-rf47 affects `torch.jit.script`; the app never imports or ships the PyTorch package and only copies its CUDA runtime DLLs. The official CUDA 12.8 index had no patched stable wheel on 2026-08-02, so the low alert was dismissed as not used and remains on the upgrade watchlist. |
 | Static security | Three medium findings remediated; Bandit then reported zero medium/high findings |
 | Secret history | Gitleaks 8.30.1 scanned 672 commits and found no leaks |
-| Code quality | Ruff reported 413 existing findings, primarily annotations, broad exceptions, and import ordering |
+| Code quality | High-confidence dead-code checks are clean; Ruff reports 386 broader findings, primarily annotations, broad exceptions, and import ordering |
 | Complexity | Highest-risk functions are in face swapping, UI processing, pipe processing, and release verification |
 | Documentation | Internal Markdown links passed; contributor and issue instructions were stale |
 | GitHub security | Secret scanning, push protection, Dependabot alerts/security updates, private vulnerability reporting, and CodeQL default setup enabled; branch protection follows the first CI run |
@@ -43,6 +43,18 @@ documentation, and repository security settings.
 - Enabled GitHub private vulnerability reporting, Dependabot security updates,
   and CodeQL default scanning; the APIs reported zero open Dependabot alerts at
   enablement.
+
+## Repository Cleanup Follow-Up
+
+- Removed local agent and Spec Kit scaffolding from the product repository.
+- Removed obsolete duplicate launchers, a redundant CUDA wrapper, and the
+  superseded standalone benchmark entry point.
+- Removed high-confidence unused imports, locals, package exports, and a
+  redundant internal function argument.
+- Removed stale ignore rules and the retired AMD issue-branch workflow trigger
+  while preserving the manually dispatchable DirectML test build.
+- Added regression checks that prevent the removed scaffolding and entry points
+  from being tracked again.
 
 ## Deferred Work Requiring Isolated Regression Plans
 
