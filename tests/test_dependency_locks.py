@@ -68,6 +68,8 @@ def test_dependency_sources_match_reviewed_release_versions():
     assert "opennsfw2==0.18.0" in directml
     assert "pyside6>=6.11.1,<7" in cuda
     assert "pyside6>=6.11.1,<7" in directml
+    assert "typing-extensions>=4.16.0" in cuda
+    assert "typing-extensions>=4.16.0" in directml
     assert "tqdm>=4.70.0" in cuda
     assert "tqdm>=4.70.0" in directml
     assert "pyinstaller==6.21.0" in build
@@ -89,14 +91,18 @@ def test_workflows_pin_python_and_validate_maintained_locks():
     assert "--ignore-vuln pysec-2025-194" in ci
     assert "version-update:semver-major" in dependabot
     assert "windows-build-toolchain:" in dependabot
+    assert "allow:" in dependabot
+    for managed_dependency in (
+        "pip-tools",
+        "setuptools",
+        "wheel",
+        "pyinstaller",
+        "pyinstaller-hooks-contrib",
+        "bandit",
+        "pip-audit",
+        "pytest",
+        "ruff",
+    ):
+        assert f"dependency-name: {managed_dependency}" in dependabot
     assert "dependency-name: pip" in dependabot
     assert '"26.2"' in dependabot
-    assert "dependency-name: torch" in dependabot
-    assert '"2.12.1"' in dependabot
-    assert '"2.13.0"' in dependabot
-    assert "dependency-name: tensorflow" in dependabot
-    assert '"2.21.0"' in dependabot
-    assert "dependency-name: onnxruntime-directml" in dependabot
-    assert '"1.24.3"' in dependabot
-    assert "dependency-name: cv2-enumerate-cameras" in dependabot
-    assert '"1.3.3"' in dependabot

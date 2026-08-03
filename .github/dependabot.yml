@@ -11,6 +11,21 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - dependencies
+    # Runtime changes must update custom CUDA/DirectML locks, bundled licence
+    # evidence, packaged assets, and sometimes physical hardware validation.
+    # Keep automated version PRs to tools the bot can update coherently;
+    # runtime vulnerabilities remain visible through Dependabot alerts and CI.
+    allow:
+      - dependency-name: pip
+      - dependency-name: pip-tools
+      - dependency-name: setuptools
+      - dependency-name: wheel
+      - dependency-name: pyinstaller
+      - dependency-name: pyinstaller-hooks-contrib
+      - dependency-name: bandit
+      - dependency-name: pip-audit
+      - dependency-name: pytest
+      - dependency-name: ruff
     groups:
       windows-build-toolchain:
         patterns:
@@ -24,24 +39,6 @@ updates:
       - dependency-name: pip
         versions:
           - "26.2"
-      # The CUDA bundle uses a reviewed +cu128 wheel as a DLL source. A
-      # generic PyPI wheel or standalone audit bump is not a valid upgrade.
-      - dependency-name: torch
-        versions:
-          - "2.12.1"
-          - "2.13.0"
-      # These updates change model, provider, or physical-camera behavior and
-      # need complete locks, licence evidence, packaged builds, and matching
-      # hardware validation before adoption.
-      - dependency-name: tensorflow
-        versions:
-          - "2.21.0"
-      - dependency-name: onnxruntime-directml
-        versions:
-          - "1.24.3"
-      - dependency-name: cv2-enumerate-cameras
-        versions:
-          - "1.3.3"
       - dependency-name: "*"
         update-types:
           - version-update:semver-major
