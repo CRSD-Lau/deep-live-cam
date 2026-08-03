@@ -1,0 +1,55 @@
+name: Feature request
+description: Propose a concrete improvement to Deep Live Cam Studio.
+title: "[Feature]: "
+labels:
+  - enhancement
+  - needs-triage
+body:
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight
+      options:
+        - label: I searched existing issues and discussions for this request.
+          required: true
+        - label: This request describes a lawful and consent-based use case.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Explain the user problem before describing a solution.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe what success looks like for a user.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: Optional implementation or interface ideas.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Desktop UI
+        - Preview or rendering
+        - Live Output or OBS
+        - CUDA or DirectML
+        - Model setup
+        - Packaging or release
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation and risks
+      description: Note affected hardware, privacy, safety, security, licence, or compatibility concerns.

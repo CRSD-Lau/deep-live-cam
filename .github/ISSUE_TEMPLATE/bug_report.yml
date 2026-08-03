@@ -1,0 +1,100 @@
+name: Bug report
+description: Report a reproducible problem in the latest Deep Live Cam Studio release.
+title: "[Bug]: "
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Deep Live Cam Studio. Remove private faces, videos, credentials, model files, and sensitive paths before submitting.
+
+        Security vulnerabilities must be reported through [private vulnerability reporting](https://github.com/CRSD-Lau/deep-live-cam/security/advisories/new), not this form.
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight
+      options:
+        - label: I tested the latest published release.
+          required: true
+        - label: I searched existing issues and discussions for this problem.
+          required: true
+        - label: I removed private media, credentials, model files, and sensitive paths.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and what you expected instead.
+      placeholder: The app did... I expected...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start the app with...
+        2. Select...
+        3. Observe...
+    validations:
+      required: true
+  - type: dropdown
+    id: distribution
+    attributes:
+      label: Distribution
+      options:
+        - CUDA installer
+        - DirectML portable archive
+        - Source checkout
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Deep Live Cam Studio version
+      placeholder: v2.x.x or commit SHA
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 23H2
+    validations:
+      required: true
+  - type: textarea
+    id: hardware
+    attributes:
+      label: Hardware and driver
+      description: Include CPU, all GPUs, GPU driver version, selected provider, and DirectML adapter ID when applicable.
+      placeholder: CPU; GPU(s); driver; provider; adapter ID
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected workflow
+      multiple: true
+      options:
+        - Startup or installation
+        - Model setup
+        - Preview
+        - File render
+        - Live Output or OBS Virtual Camera
+        - Provider detection
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized logs or screenshots
+      description: Paste only the relevant provider output or logs. Attach screenshots only when they do not contain private media.
+      render: text
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Include workarounds, frequency, or regression information.

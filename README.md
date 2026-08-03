@@ -1,394 +1,187 @@
 <p align="center">
-  <img src="Logo.png" width="112" alt="Deep Live Cam Studio logo">
+  <img src="Logo.png" width="104" alt="Deep Live Cam Studio logo">
 </p>
 
 <h1 align="center">Deep Live Cam Studio</h1>
 
 <p align="center">
-  Windows-focused Deep-Live-Cam build with a packaged installer, in-app model setup, CUDA and DirectML runtime profiles, and OBS virtual-camera workflow docs.
+  A Windows face-swap studio for file rendering and live camera output, with
+  dedicated CUDA and DirectML builds.
 </p>
 
 <p align="center">
-  <a href="https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.0">
-    <img src="https://img.shields.io/badge/release-2.2.0-2f80ed" alt="Release 2.2.0">
-  </a>
-  <img src="https://img.shields.io/badge/platform-Windows%20x64-4353ff" alt="Windows x64">
-  <img src="https://img.shields.io/badge/license-AGPL--3.0-111827" alt="AGPL-3.0">
-  <img src="https://img.shields.io/badge/models-user%20download-f59e0b" alt="Models downloaded by user">
-  <a href="https://github.com/CRSD-Lau/deep-live-cam/actions/workflows/ci.yml">
-    <img src="https://github.com/CRSD-Lau/deep-live-cam/actions/workflows/ci.yml/badge.svg" alt="CI status">
-  </a>
+  <a href="https://github.com/CRSD-Lau/deep-live-cam/releases/latest"><img src="https://img.shields.io/github/v/release/CRSD-Lau/deep-live-cam?sort=semver&display_name=tag&style=flat-square" alt="Latest release"></a>
+  <a href="https://github.com/CRSD-Lau/deep-live-cam/releases"><img src="https://img.shields.io/github/downloads/CRSD-Lau/deep-live-cam/total?style=flat-square" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20x64-4353ff?style=flat-square" alt="Windows x64">
+  <a href="https://github.com/CRSD-Lau/deep-live-cam/actions/workflows/ci.yml"><img src="https://github.com/CRSD-Lau/deep-live-cam/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="https://github.com/CRSD-Lau/deep-live-cam/security"><img src="https://img.shields.io/badge/security-policy-0e8a16?style=flat-square" alt="Security policy"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-111827?style=flat-square" alt="AGPL-3.0"></a>
 </p>
 
 <p align="center">
   <a href="#download">Download</a> ·
-  <a href="#quick-start">Quick Start</a> ·
-  <a href="#model-setup">Models</a> ·
-  <a href="#obs-and-virtual-camera">OBS</a> ·
-  <a href="#build-from-source">Build</a> ·
-  <a href="#license-and-compliance">Compliance</a>
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#documentation">Documentation</a> ·
+  <a href="CONTRIBUTING.md">Contribute</a> ·
+  <a href="SECURITY.md">Security</a>
 </p>
 
 ![Deep Live Cam Studio main window](docs/images/deep-live-cam-studio-main.png)
 
 > [!IMPORTANT]
-> Download the NVIDIA installer or AMD/Intel DirectML portable build from the GitHub Release page, not from the green **Code** button. Source archives are for developers and do not install the app.
+> Download the app from [GitHub Releases](https://github.com/CRSD-Lau/deep-live-cam/releases/latest), not from the green **Code** button. Source archives are for developers and do not install the application.
 
-> [!WARNING]
-> The installer does not include face-swap model files. After installing, open the app and click **Set Up Models** so you can review model sources, license notes, and checksums before download.
+> [!CAUTION]
+> Use face-swap software only with consent and for lawful purposes. Do not use it for impersonation, fraud, harassment, non-consensual sexual content, or misleading media.
 
-<details>
-<summary>Table of contents</summary>
+## Features
 
-- [Download](#download)
-- [Quick Start](#quick-start)
-- [What The Downloads Include](#what-the-downloads-include)
-- [Latest Release](#latest-release)
-- [Install And Update](#install-and-update)
-- [Windows Runtime Notes](#windows-runtime-notes)
-- [Model Setup](#model-setup)
-- [Usage](#usage)
-- [OBS And Virtual Camera](#obs-and-virtual-camera)
-- [Build From Source](#build-from-source)
-- [Build The Windows Installer](#build-the-windows-installer)
-- [Signing](#signing)
-- [Release Process](#release-process)
-- [Safety And Responsible Use](#safety-and-responsible-use)
-- [Security](#security)
-- [Contributing](#contributing)
-- [Upstream Attribution](#upstream-attribution)
-- [License And Compliance](#license-and-compliance)
-
-</details>
+| Capability | What it provides |
+| --- | --- |
+| Windows desktop studio | A native PySide6 interface for source selection, preview, rendering, refinement, and live output. |
+| NVIDIA acceleration | A packaged CUDA installer with the reviewed runtime libraries required by ONNX Runtime GPU. |
+| AMD and Intel acceleration | A separate DirectML portable build for DirectX 12-capable Windows GPUs. |
+| OBS and virtual cameras | Process a camera feed and send it to OBS, meeting apps, or other virtual-camera consumers. |
+| Consent-based model setup | Models are excluded from releases and downloaded only after the user reviews their source, licence notes, and checksums. |
+| Reproducible releases | Versioned dependency locks, SHA-256 sidecars, corresponding-source archives, and automated release checks. |
 
 ## Download
 
-Current release:
+Open the [latest release](https://github.com/CRSD-Lau/deep-live-cam/releases/latest), expand **Assets**, and choose the build that matches your hardware:
 
-[Deep Live Cam Studio 2.2.0](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.0)
+| Hardware | Download | Packaging |
+| --- | --- | --- |
+| NVIDIA GPU | `DeepLiveCamStudio-<version>-x64-setup.exe` | Per-user Windows installer with CUDA runtime support |
+| AMD or Intel GPU | `DeepLiveCamStudio-<version>-DirectML-x64-portable.zip` | Extract-and-run DirectML package |
+| Developers | Corresponding-source archive | Exact source and packaging scripts for the release |
 
-Choose the build for your GPU:
+DirectML also works on supported NVIDIA GPUs, but CUDA is the recommended NVIDIA profile.
 
-- **NVIDIA (CUDA) installer:** [DeepLiveCamStudio-2.2.0-x64-setup.exe](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.2.0/DeepLiveCamStudio-2.2.0-x64-setup.exe)
-- **AMD/Intel (DirectML) portable:** [DeepLiveCamStudio-2.2.0-DirectML-x64-portable.zip](https://github.com/CRSD-Lau/deep-live-cam/releases/download/v2.2.0/DeepLiveCamStudio-2.2.0-DirectML-x64-portable.zip)
-
-The DirectML build also works on DirectX 12-capable NVIDIA GPUs, but CUDA remains the recommended NVIDIA option.
-
-On the release page, expand **Assets** and choose one of:
-
-```text
-DeepLiveCamStudio-2.2.0-x64-setup.exe
-DeepLiveCamStudio-2.2.0-DirectML-x64-portable.zip
-```
-
-Windows may show Microsoft Defender SmartScreen because the public installer is not signed by a paid code-signing certificate. Choose **More info** and then **Run anyway** only if the file came from the release link above.
+Release assets include SHA-256 sidecars and a combined `SHA256SUMS.txt`. Windows may show Microsoft Defender SmartScreen because the public installer does not yet have paid code-signing reputation. Proceed only when the file came from this repository and its checksum matches the release page.
 
 ## Quick Start
 
-1. Download the CUDA installer for NVIDIA, or the DirectML ZIP for AMD/Intel.
-2. Run the installer, or unzip the DirectML package into a new folder.
-3. Open **Deep Live Cam Studio** from the Start Menu or extracted folder.
-4. Click **Set Up Models** in the app header.
-5. Follow the model source, license, and checksum prompts.
+1. Download the CUDA installer for NVIDIA or the DirectML ZIP for AMD/Intel.
+2. Run the installer, or extract the DirectML ZIP into a new folder.
+3. Start **Deep Live Cam Studio**.
+4. Select **Set Up Models** and review the model sources, licence notes, and checksums.
+5. Select a source face and target image, video, or camera.
+6. Use **Preview**, **Start Render**, or **Start Live**.
 
-That is enough for the installed app and required face-swap model setup.
+![Set Up Models in the app header](docs/images/set-up-models-header-highlight.png)
 
-![Zoomed view of the Set Up Models button in the app header](docs/images/set-up-models-header-highlight.png)
-
-For video files, install `ffmpeg` and `ffprobe`:
+Video processing requires `ffmpeg` and `ffprobe`:
 
 ```powershell
 winget install Gyan.FFmpeg
 ```
 
-![Windows PowerShell winget install FFmpeg walkthrough](docs/images/ffmpeg-winget-install-windows.gif)
+Close and reopen the app after installation so the new commands are available.
 
-Close and reopen Deep Live Cam Studio after installing FFmpeg. OBS Virtual Camera is optional and only needed when sending live output into Discord, Zoom, Teams, OBS, or similar apps.
+## Requirements
 
-## What The Downloads Include
+| Requirement | Notes |
+| --- | --- |
+| Operating system | 64-bit Windows 10 22H2, Windows 11 23H2, or newer |
+| NVIDIA profile | Supported NVIDIA GPU and a current production driver |
+| DirectML profile | AMD, Intel, or NVIDIA DirectX 12-capable GPU with a current vendor driver |
+| Video files | `ffmpeg` and `ffprobe` on `PATH` |
+| Live output | Camera access and an installed virtual-camera consumer such as OBS |
+| Models | Downloaded separately with explicit consent; not bundled in releases |
 
-| Included in both downloads | Installer only | Not included |
-| --- | --- | --- |
-| Deep Live Cam Studio desktop app | Start Menu and optional desktop shortcuts | Face-swap model/checkpoint files |
-| Packaged Python runtime and app dependencies | Per-user install/uninstall | `ffmpeg` and `ffprobe` |
-| CLI diagnostics and model setup | CUDA 12/cuDNN 9 runtime for NVIDIA | OBS Virtual Camera |
-| GPU profile matching the download | Versioned installed folder | Paid code-signing reputation |
+See [DirectML testing](docs/DIRECTML_TESTING.md) and [OBS Virtual Camera](docs/OBS_VIRTUAL_CAMERA.md) for provider-specific setup and troubleshooting.
 
-## Latest Release
+## Using the Studio
 
-Version `2.2.0` adds:
+### Files
 
-- A verified DirectML build for AMD and Intel DirectX 12 GPUs.
-- Stable Radeon processing by keeping face analysis on CPU while face swapping and enhancement use DirectML.
-- Strict provider checks and DirectML adapter selection for multi-GPU systems.
-- A fix for Preview/Start Render re-entry that could freeze both CUDA and DirectML builds.
-- Complete portable packaging of hidden runtime dependencies required by scikit-learn.
-- Hardware validation on a Radeon 6900 XT and an NVIDIA RTX 4070, including Live Output.
+Choose a source face and target image or video. Preview the result, adjust the quality and refinement controls, then select **Start Render**. Video output retains audio when `ffmpeg` is available and **Keep audio** is enabled.
 
-## Install And Update
+### Live Output
 
-Default install path:
+Select a camera, configure the processing options, and choose **Start Live**. The processed feed can be consumed by OBS or another virtual-camera application. Stop live output before changing providers or closing the app.
 
-```text
-%LOCALAPPDATA%\Programs\DeepLiveCamStudio\2.2.0
-```
+### Command Line
 
-Model storage:
-
-```text
-%LOCALAPPDATA%\DeepLiveCamStudio\models
-```
-
-Updates install into a new versioned folder. You do not need to uninstall the previous version first. Once the new version is working, older versions can be removed from Windows Installed Apps.
-
-## Windows Runtime Notes
-
-- CUDA acceleration requires compatible NVIDIA drivers.
-- The installer bundles the CUDA 12/cuDNN 9 runtime DLLs needed by `onnxruntime-gpu`.
-- The installer contains CUDA and CPU providers for NVIDIA systems.
-- The separate DirectML release ZIP supports AMD and Intel GPUs. Face analysis runs on CPU for compatibility while the heavier swap and enhancement models remain GPU-accelerated.
-- Provider checks fail instead of silently claiming success after an unintended CPU fallback.
-- `ffmpeg` and `ffprobe` are required for video processing and audio restore.
-- OBS Virtual Camera is optional and must be installed/configured through OBS.
-- Desktop launch logs are written to `%LOCALAPPDATA%\DeepLiveCamStudio\logs`.
-- UI switch state is written to `%LOCALAPPDATA%\DeepLiveCamStudio\switch_states.json`.
-
-## Model Setup
-
-From the installed app, click **Set Up Models** in the header.
-
-For terminal setup, open a shell in the installed app folder and run:
+The packaged app includes a diagnostic and automation CLI:
 
 ```powershell
-DeepLiveCamStudioCLI.exe --download-models
-```
-
-From a source checkout:
-
-```powershell
-python run.py --download-models
-```
-
-Use `DLC_MODELS_DIR` to point the app at a different reviewed model folder.
-
-> [!CAUTION]
-> Do not upload model binaries to GitHub Releases unless redistribution rights are confirmed for every model file.
-
-## Usage
-
-Launch the desktop app from the Start Menu or installed folder.
-
-For CLI processing:
-
-```powershell
+DeepLiveCamStudioCLI.exe --check-execution-provider --execution-provider cuda
 DeepLiveCamStudioCLI.exe --source source.png --target target.png --output output.png --execution-provider cuda
 ```
 
-For source checkout usage:
+DirectML users can select a particular adapter:
 
 ```powershell
-python run.py --execution-provider cuda
+DeepLiveCamStudioCLI.exe --check-execution-provider --execution-provider directml --directml-device-id 0
 ```
 
-Useful CLI flags:
+Provider checks fail when the requested accelerator is unavailable instead of silently treating CPU fallback as success.
 
-```text
---download-models
---execution-provider cuda
---execution-provider cpu
---execution-provider directml
---directml-device-id 0
---check-execution-provider
---virtual-cam
---camera-width 1280
---camera-height 720
---camera-fps 60
---virtual-cam-width 1920
---virtual-cam-height 1080
---virtual-cam-fps 60
-```
+## Models and Privacy
 
-## OBS And Virtual Camera
+- Face-swap and enhancement models are not bundled with the installer or portable archive.
+- Model downloads require explicit consent and are checked against reviewed SHA-256 values.
+- Media stays on the local machine unless the user moves or shares it.
+- Treat faces, media files, third-party models, and logs as sensitive or untrusted input.
+- Never attach private faces, videos, credentials, or model binaries to a public GitHub issue.
 
-Deep Live Cam Studio can send processed live output directly to a virtual camera:
+Model sources and redistribution constraints are documented in [the model licence audit](LICENSES/MODEL_LICENSE_AUDIT.md).
 
-```powershell
-python run.py --execution-provider cuda --virtual-cam
-```
+## Documentation
 
-Example 720p60 processing with 1080p60 virtual-camera output:
+Start with the [documentation index](docs/README.md).
 
-```powershell
-python run.py --execution-provider cuda --virtual-cam --camera-width 1280 --camera-height 720 --camera-fps 60 --virtual-cam-width 1920 --virtual-cam-height 1080 --virtual-cam-fps 60
-```
+### Users
 
-OBS's built-in virtual camera is a single device. Use direct virtual-camera output for Discord, Zoom, or Teams, or use OBS Window Capture on the `Deep-Live-Cam Live Preview` window when OBS needs to rebroadcast the scene.
+- [DirectML setup and provider verification](docs/DIRECTML_TESTING.md)
+- [OBS and virtual-camera setup](docs/OBS_VIRTUAL_CAMERA.md)
+- [Support and troubleshooting routes](SUPPORT.md)
+- [Security policy](SECURITY.md)
 
-See [docs/OBS_VIRTUAL_CAMERA.md](docs/OBS_VIRTUAL_CAMERA.md) for setup and troubleshooting.
+### Developers and Maintainers
+
+- [Build from source](docs/BUILDING.md)
+- [Dependency locks and supported runtime matrix](docs/DEPENDENCY_LOCKS.md)
+- [Contribution guide](CONTRIBUTING.md)
+- [Release checklist](RELEASE_CHECKLIST.md)
+- [Governance and maintenance policy](GOVERNANCE.md)
+- [Licence and release compliance](COMPLIANCE.md)
 
 ## Build From Source
 
-Recommended Windows setup:
+Use Python 3.11 on Windows. The CUDA and DirectML profiles are intentionally isolated because their ONNX Runtime packages conflict.
 
 ```powershell
 py -3.11 -m venv venv
-venv\Scripts\activate
-python -m pip install -r requirements.txt
-python -m pip install --no-deps -r requirements-build-windows-cuda.txt
+venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
+venv\Scripts\python.exe run.py --execution-provider cuda
 ```
 
-For CUDA source runs:
+For DirectML, packaged builds, tests, and release commands, follow [docs/BUILDING.md](docs/BUILDING.md).
 
-Verify CUDA with `python tools/check_cuda_provider.py --execution-provider cuda --strict`.
+## Security and Release Integrity
 
-For AMD or Intel GPUs on Windows, create the isolated DirectML environment:
+- Report vulnerabilities through [GitHub private vulnerability reporting](https://github.com/CRSD-Lau/deep-live-cam/security/advisories/new), never a public issue.
+- Download only from this repository's release page.
+- Verify release hashes before installing on a sensitive system.
+- Public binary releases include the corresponding source and licence evidence required by AGPL-3.0.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools\setup_directml.ps1
-run-directml.bat
-```
-
-Validate a particular Windows GPU adapter without opening the UI:
-
-```powershell
-.venv-directml\Scripts\python.exe run.py --execution-provider directml --directml-device-id 0 --check-execution-provider
-```
-
-DirectML and CUDA use mutually exclusive ONNX Runtime Python packages, so the
-setup script deliberately keeps DirectML in `.venv-directml` instead of
-overwriting the normal CUDA environment. See
-[`docs/DIRECTML_TESTING.md`](docs/DIRECTML_TESTING.md) for DirectML setup,
-provider verification, and troubleshooting.
-
-Release dependency versions, supported Windows/GPU requirements, and the
-reviewable lock update command are documented in
-[`docs/DEPENDENCY_LOCKS.md`](docs/DEPENDENCY_LOCKS.md).
-
-Run from source:
-
-```powershell
-python run.py --download-models
-python run.py --execution-provider cuda
-```
-
-## Build The Windows Installer
-
-Build the PyInstaller bundle:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1
-```
-
-Build and package the portable DirectML release:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator DirectML
-powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.0 -Accelerator DirectML
-```
-
-The DirectML bundle is built under `dist\DeepLiveCamStudio-DirectML`; the
-release ZIP and SHA-256 sidecar are written under `build\windows\portable`.
-
-Run local preflight checks:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\test_packaged_runtime.ps1
-powershell -ExecutionPolicy Bypass -File build\windows\test_environment.ps1
-```
-
-Package the installer:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.2.0
-```
-
-Installer output:
-
-```text
-build\windows\installer\DeepLiveCamStudio-2.2.0-x64-setup.exe
-```
-
-## Signing
-
-For a real public publisher name, sign with a trusted Authenticode code-signing certificate:
-
-```powershell
-$env:DLC_SIGN_CERT_PASSWORD = "<pfx-password>"
-powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.2.0 -SignCertPath "C:\path\to\certificate.pfx"
-```
-
-For local-only testing without a paid certificate, self-sign and trust the certificate for the current Windows user:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\self_sign_installer.ps1 -AppVersion 2.2.0 -TrustForCurrentUser
-```
-
-Self-signing does not create public SmartScreen reputation. Other users must import and trust the exported `.cer` file themselves.
-
-## Release Process
-
-Run the standard local release gate:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.0 -GitRef <release-tag-or-commit>
-```
-
-Package corresponding source for the exact release tag or commit:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.0 -GitRef <release-tag-or-commit>
-```
-
-Assemble upload assets:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.2.0 -RequireGitRefSource
-```
-
-The release asset set includes the CUDA installer, DirectML portable ZIP, hashes, corresponding source archive and manifest, release notes, compliance evidence, `RELEASE_ASSETS.md`, and `SHA256SUMS.txt`.
-
-## Safety And Responsible Use
-
-Use this software responsibly and legally. If using a real person's face, obtain consent and clearly label generated output when sharing. Do not use the tool for impersonation, fraud, harassment, non-consensual sexual content, or other harmful activity.
-
-The app includes content-safety checks, but users remain responsible for their own use.
-
-## Security
-
-Report vulnerabilities privately and review the supported release policy in
-[`SECURITY.md`](SECURITY.md). Do not place exploit details, credentials, or
-private media in a public issue.
+See [SECURITY.md](SECURITY.md) for supported versions, response targets, and reporting guidance.
 
 ## Contributing
 
-Development setup, required checks, and hardware validation expectations are
-documented in [`CONTRIBUTING.md`](CONTRIBUTING.md). The current engineering
-audit and deferred refactor work are recorded in
-[`REPOSITORY_AUDIT.md`](REPOSITORY_AUDIT.md).
+Issues and pull requests are welcome when they are reproducible, scoped, and safe. Hardware-facing changes must distinguish automated provider checks from physical CUDA/DirectML/OBS validation.
 
-## Upstream Attribution
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. Use [GitHub Discussions](https://github.com/CRSD-Lau/deep-live-cam/discussions) for questions and ideas; use issues for confirmed bugs and planned work.
 
-This project is a modified Windows Studio build of [Deep-Live-Cam](https://github.com/hacksider/Deep-Live-Cam), which is licensed under AGPL-3.0.
+## Project Scope and Attribution
 
-Important upstream and ecosystem credits include:
+This repository is a Windows-focused derivative of [hacksider/Deep-Live-Cam](https://github.com/hacksider/Deep-Live-Cam). It prioritizes packaged Windows releases, reproducible dependency profiles, hardware-provider validation, and OBS live output. Upstream history and contributors remain part of the project history.
 
-- [hacksider/Deep-Live-Cam](https://github.com/hacksider/Deep-Live-Cam), the upstream application.
-- [deepinsight/insightface](https://github.com/deepinsight/insightface), used for face analysis and model ecosystem support.
-- [ffmpeg](https://ffmpeg.org/), used for video workflows.
-- The upstream Deep-Live-Cam contributors listed in the original project history.
+## Licence and Compliance
 
-## License And Compliance
+The application is licensed under [GNU AGPL-3.0](LICENSE). Model files and third-party components may have separate terms. Anyone distributing a modified binary must provide the complete corresponding source for that binary and preserve applicable notices.
 
-Deep-Live-Cam is AGPL-3.0. If you distribute a Windows installer or executable, publish the complete corresponding source for the exact binary release, including packaging scripts and modifications.
-
-Release compliance files:
-
-- [COMPLIANCE.md](COMPLIANCE.md)
-- [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-- [LICENSES/BUNDLED_BINARY_OBLIGATIONS.md](LICENSES/BUNDLED_BINARY_OBLIGATIONS.md)
-- [LICENSES/MODEL_LICENSE_AUDIT.md](LICENSES/MODEL_LICENSE_AUDIT.md)
-- [LICENSES/PYTHON_DEPENDENCIES.md](LICENSES/PYTHON_DEPENDENCIES.md)
-- [LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md](LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md)
-- [LICENSES/WINDOWS_BUNDLE_MANIFEST.md](LICENSES/WINDOWS_BUNDLE_MANIFEST.md)
-
-Model files have separate license and redistribution considerations. The installer excludes model/checkpoint files and requires explicit user download with visible source and license notes.
+Review [COMPLIANCE.md](COMPLIANCE.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and the [licence evidence index](LICENSES/README.md) before redistributing the application.

@@ -2,12 +2,7 @@
 
 ## Supported Versions
 
-Security fixes are applied to the latest published release line.
-
-| Version | Supported |
-| --- | --- |
-| 2.2.x | Yes |
-| 2.1.x and older | No; upgrade to the latest release |
+Security fixes are applied to the [latest stable release](https://github.com/CRSD-Lau/deep-live-cam/releases/latest). Older releases, development branches, and locally modified builds are not supported unless a security advisory explicitly says otherwise.
 
 ## Reporting A Vulnerability
 
@@ -21,8 +16,31 @@ and include:
 - affected files or functions;
 - suggested mitigation, if known.
 
-You should receive an acknowledgement within seven days. Please allow time to
-validate, patch, package, and coordinate disclosure before publishing details.
+### Response Targets
+
+- acknowledgement within seven days;
+- initial severity and scope assessment within fourteen days when reproducible;
+- coordinated remediation and disclosure timing based on impact, packaging, and release complexity.
+
+These are response targets rather than guaranteed resolution times. Please allow time to validate, patch, package, and coordinate disclosure before publishing details.
+
+## In Scope
+
+- model-download consent, transport, and checksum verification;
+- processing of untrusted images, videos, model files, and metadata;
+- local file access, command execution, or privilege-boundary issues;
+- installer, updater, release-asset, and corresponding-source integrity;
+- dependency or packaged-runtime vulnerabilities reachable through shipped application behaviour.
+
+Reports about an unshipped development dependency should explain how the vulnerable code reaches the packaged application or release process.
+
+## Out of Scope
+
+- social engineering, phishing, or physical attacks against maintainers;
+- denial-of-service tests that create avoidable cost or disruption;
+- reports that require publishing private faces, videos, credentials, or model files;
+- unsupported operating systems or substantially modified third-party builds;
+- findings that identify only a vulnerable version string without a reachable application or release path.
 
 ## Security Boundaries
 
@@ -37,3 +55,7 @@ validate, patch, package, and coordinate disclosure before publishing details.
 
 Security reports do not override the separate model licences and usage
 restrictions documented in `LICENSES/MODEL_LICENSE_AUDIT.md`.
+
+## Safe Harbour
+
+Good-faith research that follows this policy, avoids privacy violations and service disruption, and provides reasonable time for remediation will be treated as authorised security research for this project. This statement cannot authorise activity against third-party services or software.
