@@ -10,6 +10,15 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/CRSD-Lau/deep-live-cam/releases/latest"><img src="https://img.shields.io/badge/DOWNLOAD_FOR_WINDOWS-LATEST_RELEASE-2563eb?style=for-the-badge&logo=windows11&logoColor=white" alt="Download Deep Live Cam Studio for Windows"></a>
+</p>
+
+<p align="center">
+  <strong>NVIDIA:</strong> choose the setup <code>.exe</code> &nbsp;·&nbsp;
+  <strong>AMD or Intel:</strong> choose the DirectML <code>.zip</code>
+</p>
+
+<p align="center">
   <a href="https://github.com/CRSD-Lau/deep-live-cam/releases/latest"><img src="https://img.shields.io/github/v/release/CRSD-Lau/deep-live-cam?sort=semver&display_name=tag&style=flat-square" alt="Latest release"></a>
   <a href="https://github.com/CRSD-Lau/deep-live-cam/releases"><img src="https://img.shields.io/github/downloads/CRSD-Lau/deep-live-cam/total?style=flat-square" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20x64-4353ff?style=flat-square" alt="Windows x64">
@@ -30,21 +39,10 @@
 ![Deep Live Cam Studio — Windows face-swap studio with CUDA, DirectML, and OBS Live Output](docs/images/social-preview.png)
 
 > [!IMPORTANT]
-> Download the app from [GitHub Releases](https://github.com/CRSD-Lau/deep-live-cam/releases/latest), not from the green **Code** button. Source archives are for developers and do not install the application.
+> Select **Download for Windows** above, then expand **Assets** if necessary. Do not use the green **Code** button—its source archives do not install the application.
 
 > [!CAUTION]
 > Use face-swap software only with consent and for lawful purposes. Do not use it for impersonation, fraud, harassment, non-consensual sexual content, or misleading media.
-
-## Features
-
-| Capability | What it provides |
-| --- | --- |
-| Windows desktop studio | A native PySide6 interface for source selection, preview, rendering, refinement, and live output. |
-| NVIDIA acceleration | A packaged CUDA installer with the reviewed runtime libraries required by ONNX Runtime GPU. |
-| AMD and Intel acceleration | A separate DirectML portable build for DirectX 12-capable Windows GPUs. |
-| OBS and virtual cameras | Process a camera feed and send it to OBS, meeting apps, or other virtual-camera consumers. |
-| Consent-based model setup | Models are excluded from releases and downloaded only after the user reviews their source, licence notes, and checksums. |
-| Reproducible releases | Versioned dependency locks, SHA-256 sidecars, corresponding-source archives, and automated release checks. |
 
 ## Download
 
@@ -59,6 +57,17 @@ Open the [latest release](https://github.com/CRSD-Lau/deep-live-cam/releases/lat
 DirectML also works on supported NVIDIA GPUs, but CUDA is the recommended NVIDIA profile.
 
 Release assets include SHA-256 sidecars and a combined `SHA256SUMS.txt`. Windows may show Microsoft Defender SmartScreen because the public installer does not yet have paid code-signing reputation. Proceed only when the file came from this repository and its checksum matches the release page.
+
+## Features
+
+| Capability | What it provides |
+| --- | --- |
+| Windows desktop studio | A native PySide6 interface for source selection, preview, rendering, refinement, and live output. |
+| NVIDIA acceleration | A packaged CUDA installer with the reviewed runtime libraries required by ONNX Runtime GPU. |
+| AMD and Intel acceleration | A separate DirectML portable build for DirectX 12-capable Windows GPUs. |
+| OBS and virtual cameras | Process a camera feed and send it to OBS, meeting apps, or other virtual-camera consumers. |
+| Consent-based model setup | Models are excluded from releases and downloaded only after the user reviews their source, licence notes, and checksums. |
+| Reproducible releases | Versioned dependency locks, SHA-256 sidecars, corresponding-source archives, and automated release checks. |
 
 ## Quick Start
 
