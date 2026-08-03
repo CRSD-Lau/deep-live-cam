@@ -42,6 +42,7 @@ REQUIRED_RELEASE_PATHS = {
     "requirements-directml.txt",
     "requirements-build-windows.txt",
     "requirements-build-windows-cuda.txt",
+    "requirements-dev.txt",
     "requirements-lock-tools.txt",
     "requirements-locks/windows-cuda-py311.lock",
     "requirements-locks/windows-cuda-runtime-py311.lock",

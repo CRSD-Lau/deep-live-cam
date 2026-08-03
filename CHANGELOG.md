@@ -8,6 +8,12 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Refreshed the reviewed Windows dependency set: ONNX Runtime GPU 1.24.3,
+  OpenNSFW2 0.18.0, PyInstaller 6.21.0, PyInstaller hooks 2026.6,
+  PySide6 6.11.1, and pytest 9.1.1, with regenerated CUDA and DirectML locks.
+- Kept the lock generator on pip 26.1.2 and the CUDA DLL source on Torch
+  2.11.0+cu128 until their proposed upgrades are compatible with the release
+  pipeline and reviewed as complete runtime changes.
 - Removed unused imports, locals, package exports, and an obsolete adaptive
   feathering argument without changing runtime behavior.
 - Kept the DirectML test build manually dispatchable while removing its stale

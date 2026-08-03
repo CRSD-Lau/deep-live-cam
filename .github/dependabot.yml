@@ -19,6 +19,16 @@ updates:
           - "pyinstaller"
           - "pyinstaller-hooks-contrib"
     ignore:
+      # pip 26.2 removes an internal API still imported by pip-tools 7.6.0.
+      # Revisit when pip-tools publishes a compatible release.
+      - dependency-name: pip
+        versions:
+          - "26.2"
+      # The CUDA bundle uses a reviewed +cu128 wheel as a DLL source. A
+      # standalone audit-file bump is not a valid runtime upgrade.
+      - dependency-name: torch
+        versions:
+          - "2.13.0"
       - dependency-name: "*"
         update-types:
           - version-update:semver-major
