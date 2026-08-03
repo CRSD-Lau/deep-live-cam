@@ -4,6 +4,21 @@ All notable changes to this Windows Studio distribution are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Removed unused imports, locals, package exports, and an obsolete adaptive
+  feathering argument without changing runtime behavior.
+- Kept the DirectML test build manually dispatchable while removing its stale
+  trigger for the retired AMD issue branch.
+
+### Removed
+
+- Removed repository-local agent/Spec Kit scaffolding, obsolete duplicate
+  launch scripts, the undocumented CUDA batch wrapper, and the superseded
+  standalone benchmark script.
+
 ## [2.2.0] - 2026-08-02
 
 ### Added
@@ -51,5 +66,6 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed alpha-channel preview frames before face detection and swap inference.
 - Fixed packaged desktop startup on clean Windows laptops.
 
+[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.0...HEAD
 [2.2.0]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.1.9...v2.2.0
 [2.1.9]: https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.9

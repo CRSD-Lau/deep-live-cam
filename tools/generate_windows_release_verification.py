@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import datetime as _datetime
 import hashlib
 import subprocess
 import zipfile

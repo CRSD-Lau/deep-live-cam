@@ -34,7 +34,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
 
 
 def parse_args() -> None:
-    signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
+    signal.signal(signal.SIGINT, lambda _signal_number, _frame: destroy())
     program = argparse.ArgumentParser()
     program.add_argument('-s', '--source', help='select an source image', dest='source_path')
     program.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
@@ -417,12 +417,10 @@ def start() -> None:
         if not modules.globals.map_faces:
             update_status('Falling back to disk-based processing...')
 
-        extraction_start = time.time()
         if not modules.globals.map_faces:
             create_temp(modules.globals.target_path)
             update_status('Extracting frames...')
             extract_frames(modules.globals.target_path)
-        extraction_time = time.time() - extraction_start
 
         temp_frame_paths = get_temp_frame_paths(modules.globals.target_path)
         total_frames = len(temp_frame_paths)

@@ -59,7 +59,7 @@ from modules.utilities import (
 )
 from modules.paths import MODELS_DIR
 from modules.cluster_analysis import find_closest_centroid
-from modules.gpu_processing import gpu_gaussian_blur, gpu_sharpen, gpu_add_weighted, gpu_resize, gpu_cvt_color
+from modules.gpu_processing import gpu_gaussian_blur, gpu_sharpen, gpu_add_weighted, gpu_resize
 import os
 from collections import deque
 import time
@@ -892,7 +892,6 @@ def _fast_paste_back(
     target_crop = target_img[y1p:y2p, x1p:x2p]
     profile_amount = estimate_profile_score(target_face)
     feather_settings = get_adaptive_feather_settings(
-        face_size=face_h,
         crop_shape=target_crop.shape,
         frame_shape=target_img.shape,
         edge_contrast=estimate_edge_contrast(target_crop),
@@ -2429,14 +2428,10 @@ def create_lower_mouth_mask(
             # print("Warning: Invalid mouth mask bounding box after padding/clamping.") # Optional debug
             pass
 
-    except IndexError as idx_e:
-        # print(f"Warning: Landmark index out of bounds during mouth mask creation: {idx_e}") # Optional debug
+    except IndexError:
         pass
-    except Exception as e:
-        print(f"Error in create_lower_mouth_mask: {e}") # Print unexpected errors
-        # import traceback
-        # traceback.print_exc()
-        pass
+    except Exception as exc:
+        print(f"Error in create_lower_mouth_mask: {exc}")
 
     # Return values, ensuring defaults if errors occurred
     return mask, mouth_cutout, mouth_box, lower_lip_polygon
@@ -2491,8 +2486,7 @@ def draw_mouth_mask_visualization(
     try:
         cv2.putText(vis_frame, "Mouth Mask", (label_pos_x, label_pos_y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-    except Exception as e:
-        # print(f"Error drawing text for visualization: {e}") # Optional debug
+    except Exception:
         pass
 
 
@@ -2826,13 +2820,9 @@ def apply_color_transfer(source, target):
         # Convert back to uint8 [0, 255]
         result_bgr = (result_bgr_float * 255.0).astype("uint8")
 
-    except cv2.error as e:
-         # print(f"OpenCV error during color transfer: {e}. Returning original source.") # Optional debug
-         return source # Return original source if conversion fails
-    except Exception as e:
-         # print(f"Unexpected color transfer error: {e}. Returning original source.") # Optional debug
-         # import traceback
-         # traceback.print_exc()
-         return source
+    except cv2.error:
+        return source # Return original source if conversion fails
+    except Exception:
+        return source
 
     return result_bgr

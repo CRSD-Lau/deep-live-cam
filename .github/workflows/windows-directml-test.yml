@@ -1,9 +1,6 @@
 name: Windows DirectML Test Build
 
 on:
-  push:
-    branches:
-      - codex/amd-directml-test
   workflow_dispatch:
 
 jobs:
