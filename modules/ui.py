@@ -19,7 +19,8 @@ import threading
 import time
 import traceback
 import webbrowser
-from typing import Callable, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Callable, List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -1616,6 +1617,325 @@ class _CaptureWorker(threading.Thread):
             traceback.print_exc()
 
 
+@dataclass
+class _LiveProcessingRuntime:
+    frame_processors: list[Any]
+    face_tracker: FaceTracker | None
+    detection_interval: int
+    metrics: PipelineMetrics | None
+    metrics_context: dict[str, Any]
+    metrics_writer: MetricsJsonlWriter | None
+    source_image: Any = None
+    last_source_path: str | None = None
+    previous_fps_time: float = 0.0
+    frame_count: int = 0
+    fps: float = 0.0
+    detection_count: int = 0
+    cached_target_face: Any = None
+    cached_many_faces: list[Any] | None = None
+
+
+def _live_face_tracker() -> FaceTracker | None:
+    if not getattr(modules.globals, "face_tracking_enabled", True):
+        return None
+    return FaceTracker(
+        current_weight=getattr(
+            modules.globals, "face_tracking_current_weight", 0.7
+        ),
+        jump_reset_ratio=getattr(
+            modules.globals, "face_tracking_reset_ratio", 1.2
+        ),
+        max_missed=getattr(modules.globals, "face_tracking_max_missed", 1),
+        confidence_weight=getattr(
+            modules.globals, "face_tracking_confidence_weight", 0.0
+        ),
+        confidence_reference=getattr(
+            modules.globals, "face_tracking_confidence_reference", 0.75
+        ),
+        confidence_min_weight=getattr(
+            modules.globals, "face_tracking_confidence_min_weight", 0.35
+        ),
+        min_detection_confidence=getattr(
+            modules.globals, "face_tracking_min_detection_confidence", 0.0
+        ),
+        prediction_strength=getattr(
+            modules.globals, "face_tracking_prediction_strength", 0.0
+        ),
+        prediction_decay=getattr(
+            modules.globals, "face_tracking_prediction_decay", 0.5
+        ),
+    )
+
+
+def _live_processor_names(frame_processors: list[Any]) -> list[str]:
+    return [
+        getattr(processor, "NAME", None)
+        or getattr(processor, "__name__", type(processor).__name__).split(".")[-1]
+        for processor in frame_processors
+    ]
+
+
+def _create_live_runtime(
+    frame_processors: list[Any],
+    camera_fps: float,
+    capture_queue: queue.Queue,
+    processed_queue: queue.Queue,
+    virtual_cam: Optional[VirtualCameraSink],
+    metrics: PipelineMetrics | None,
+) -> _LiveProcessingRuntime:
+    if metrics is None and getattr(modules.globals, "benchmark_pipeline", False):
+        metrics = PipelineMetrics("live")
+    context = {
+        "quality_mode": getattr(modules.globals, "quality_mode", None),
+        "frame_processors": _live_processor_names(frame_processors),
+        "camera_fps": camera_fps,
+        "virtual_cam": virtual_cam is not None,
+        "mode": "live",
+        "live_process_latest_frame": getattr(
+            modules.globals, "live_process_latest_frame", True
+        ),
+        "capture_queue_maxsize": capture_queue.maxsize,
+        "processed_queue_maxsize": processed_queue.maxsize,
+        "execution_providers": list(modules.globals.execution_providers),
+        "execution_provider_config": provider_config_summary(
+            modules.globals.execution_providers
+        ),
+    }
+    metrics_writer = (
+        MetricsJsonlWriter(modules.globals.benchmark_output_path)
+        if metrics and getattr(modules.globals, "benchmark_output_path", None)
+        else None
+    )
+    detection_interval = max(
+        1,
+        round(
+            camera_fps
+            * getattr(modules.globals, "live_detection_interval_ratio", 0.08)
+        ),
+    )
+    return _LiveProcessingRuntime(
+        frame_processors=frame_processors,
+        face_tracker=_live_face_tracker(),
+        detection_interval=detection_interval,
+        metrics=metrics,
+        metrics_context=context,
+        metrics_writer=metrics_writer,
+        previous_fps_time=time.time(),
+    )
+
+
+def _dequeue_live_frame(
+    capture_queue: queue.Queue, runtime: _LiveProcessingRuntime
+) -> Any | None:
+    started = time.perf_counter()
+    try:
+        if getattr(modules.globals, "live_process_latest_frame", True):
+            frame, skipped = get_latest(capture_queue, timeout=0.05)
+        else:
+            frame = capture_queue.get(timeout=0.05)
+            skipped = 0
+    except queue.Empty:
+        return None
+    if runtime.metrics:
+        runtime.metrics.observe("queue_wait", time.perf_counter() - started)
+        runtime.metrics.drop_frames("capture_stale_queue", skipped)
+        runtime.metrics.observe_queue_depth(
+            "capture_queue_depth_after_get", capture_queue.qsize()
+        )
+    return frame
+
+
+def _refresh_live_detection(
+    runtime: _LiveProcessingRuntime,
+    frame: np.ndarray,
+    detect_many_faces_fast: Callable[[np.ndarray], list[Any]],
+    detect_one_face_fast: Callable[[np.ndarray], Any],
+    reset_temporal_state: Callable[[list[Any]], None],
+) -> None:
+    runtime.detection_count += 1
+    if runtime.detection_count % runtime.detection_interval != 0:
+        return
+    started = time.perf_counter()
+    if modules.globals.many_faces:
+        if runtime.face_tracker is not None:
+            runtime.face_tracker.reset()
+            reset_temporal_state(runtime.frame_processors)
+        runtime.cached_target_face = None
+        runtime.cached_many_faces = detect_many_faces_fast(frame)
+    else:
+        detected_face = detect_one_face_fast(frame)
+        runtime.cached_target_face = (
+            runtime.face_tracker.update(detected_face, runtime.detection_count)
+            if runtime.face_tracker is not None
+            else detected_face
+        )
+        runtime.cached_many_faces = None
+    if runtime.metrics:
+        runtime.metrics.observe("detect_faces", time.perf_counter() - started)
+
+
+def _cached_live_faces(runtime: _LiveProcessingRuntime) -> list[Any] | None:
+    if runtime.cached_many_faces:
+        return runtime.cached_many_faces
+    if runtime.cached_target_face is not None:
+        return [runtime.cached_target_face]
+    return None
+
+
+def _process_live_swapper(
+    processor: Any,
+    source_image: Any,
+    frame: np.ndarray,
+    runtime: _LiveProcessingRuntime,
+) -> np.ndarray:
+    if source_image is None:
+        return frame
+    swapped_bboxes = []
+    swapped_faces = []
+    if modules.globals.many_faces and runtime.cached_many_faces:
+        result = frame.copy()
+        for target_face in runtime.cached_many_faces:
+            result = processor.swap_face(source_image, target_face, result)
+            if hasattr(target_face, "bbox") and target_face.bbox is not None:
+                swapped_bboxes.append(target_face.bbox.astype(int))
+                swapped_faces.append(target_face)
+        frame = result
+    elif runtime.cached_target_face is not None:
+        target_face = runtime.cached_target_face
+        frame = processor.swap_face(source_image, target_face, frame)
+        if hasattr(target_face, "bbox") and target_face.bbox is not None:
+            swapped_bboxes.append(target_face.bbox.astype(int))
+            swapped_faces.append(target_face)
+    return processor.apply_post_processing(frame, swapped_bboxes, swapped_faces)
+
+
+def _process_standard_live_frame(
+    runtime: _LiveProcessingRuntime,
+    frame: np.ndarray,
+    detect_many_faces_fast: Callable[[np.ndarray], list[Any]],
+    detect_one_face_fast: Callable[[np.ndarray], Any],
+    reset_temporal_state: Callable[[list[Any]], None],
+) -> np.ndarray:
+    source_path = modules.globals.source_path
+    if source_path and source_path != runtime.last_source_path:
+        runtime.last_source_path = source_path
+        runtime.source_image = _load_source_face(source_path)
+        reset_temporal_state(runtime.frame_processors)
+    _refresh_live_detection(
+        runtime,
+        frame,
+        detect_many_faces_fast,
+        detect_one_face_fast,
+        reset_temporal_state,
+    )
+    cached_faces = _cached_live_faces(runtime)
+    for processor in runtime.frame_processors:
+        started = time.perf_counter()
+        enhancer_key = enhancer_key_for_processor_name(processor.NAME)
+        if enhancer_key is not None:
+            if modules.globals.fp_ui.get(enhancer_key, False):
+                frame = processor.process_frame(
+                    None, frame, detected_faces=cached_faces
+                )
+        elif processor.NAME == "DLC.FACE-SWAPPER":
+            if runtime.source_image is None:
+                continue
+            frame = _process_live_swapper(
+                processor, runtime.source_image, frame, runtime
+            )
+        else:
+            frame = processor.process_frame(runtime.source_image, frame)
+        if runtime.metrics:
+            runtime.metrics.observe(
+                processor.NAME, time.perf_counter() - started
+            )
+    return frame
+
+
+def _process_mapped_live_frame(
+    runtime: _LiveProcessingRuntime, frame: np.ndarray
+) -> np.ndarray:
+    modules.globals.target_path = None
+    for processor in runtime.frame_processors:
+        started = time.perf_counter()
+        enhancer_key = enhancer_key_for_processor_name(processor.NAME)
+        if enhancer_key is None or modules.globals.fp_ui.get(enhancer_key, False):
+            frame = processor.process_frame_v2(frame)
+        if runtime.metrics:
+            runtime.metrics.observe(
+                processor.NAME, time.perf_counter() - started
+            )
+    return frame
+
+
+def _update_live_fps(runtime: _LiveProcessingRuntime) -> float:
+    now = time.time()
+    runtime.frame_count += 1
+    if now - runtime.previous_fps_time >= 0.5:
+        runtime.fps = runtime.frame_count / (now - runtime.previous_fps_time)
+        runtime.frame_count = 0
+        runtime.previous_fps_time = now
+    return runtime.fps
+
+
+def _publish_live_frame(
+    processed_queue: queue.Queue,
+    virtual_cam: Optional[VirtualCameraSink],
+    frame: np.ndarray,
+    runtime: _LiveProcessingRuntime,
+) -> None:
+    if virtual_cam is not None:
+        if runtime.metrics:
+            with runtime.metrics.track("virtual_cam_send"):
+                virtual_cam.send(frame)
+        else:
+            virtual_cam.send(frame)
+    if runtime.metrics:
+        runtime.metrics.observe_queue_depth(
+            "processed_queue_depth_before_put", processed_queue.qsize()
+        )
+    try:
+        processed_queue.put_nowait(frame)
+    except queue.Full:
+        try:
+            processed_queue.get_nowait()
+            if runtime.metrics:
+                runtime.metrics.drop_frame("processed_output_queue")
+        except queue.Empty:
+            pass
+        try:
+            processed_queue.put_nowait(frame)
+        except queue.Full:
+            pass
+
+
+def _record_live_frame_metrics(runtime: _LiveProcessingRuntime) -> None:
+    if not runtime.metrics:
+        return
+    runtime.metrics.frame_complete()
+    if runtime.metrics.should_report(modules.globals.benchmark_log_interval):
+        print(format_metrics(runtime.metrics), flush=True)
+        safe_write_metrics_snapshot(
+            runtime.metrics_writer,
+            runtime.metrics,
+            event="periodic",
+            extra=runtime.metrics_context,
+        )
+        runtime.metrics.mark_reported()
+
+
+def _finalize_live_metrics(runtime: _LiveProcessingRuntime) -> None:
+    if not runtime.metrics:
+        return
+    print(format_metrics(runtime.metrics), flush=True)
+    safe_write_metrics_snapshot(
+        runtime.metrics_writer,
+        runtime.metrics,
+        event="final",
+        extra=runtime.metrics_context,
+    )
+
+
 class _ProcessingWorker(threading.Thread):
     """Pulls raw frames, runs detect/swap/enhance, pushes processed frames."""
 
@@ -1646,268 +1966,46 @@ class _ProcessingWorker(threading.Thread):
 
             frame_processors = get_frame_processors_modules(modules.globals.frame_processors)
             reset_frame_processor_temporal_state(frame_processors)
-            source_image = None
-            last_source_path = None
-            prev_time = time.time()
-            fps_update_interval = 0.5
-            frame_count = 0
-            fps = 0.0
-            det_count = 0
-            cached_target_face = None
-            cached_many_faces = None
-            face_tracker = (
-                FaceTracker(
-                    current_weight=getattr(
-                        modules.globals, "face_tracking_current_weight", 0.7
-                    ),
-                    jump_reset_ratio=getattr(
-                        modules.globals, "face_tracking_reset_ratio", 1.2
-                    ),
-                    max_missed=getattr(
-                        modules.globals, "face_tracking_max_missed", 1
-                    ),
-                    confidence_weight=getattr(
-                        modules.globals, "face_tracking_confidence_weight", 0.0
-                    ),
-                    confidence_reference=getattr(
-                        modules.globals, "face_tracking_confidence_reference", 0.75
-                    ),
-                    confidence_min_weight=getattr(
-                        modules.globals, "face_tracking_confidence_min_weight", 0.35
-                    ),
-                    min_detection_confidence=getattr(
-                        modules.globals, "face_tracking_min_detection_confidence", 0.0
-                    ),
-                    prediction_strength=getattr(
-                        modules.globals, "face_tracking_prediction_strength", 0.0
-                    ),
-                    prediction_decay=getattr(
-                        modules.globals, "face_tracking_prediction_decay", 0.5
-                    ),
-                )
-                if getattr(modules.globals, "face_tracking_enabled", True)
-                else None
-            )
-            det_interval = max(
-                1,
-                round(
-                    self._fps
-                    * getattr(modules.globals, "live_detection_interval_ratio", 0.08)
-                ),
-            )
-            metrics = self._metrics
-            if metrics is None and getattr(modules.globals, "benchmark_pipeline", False):
-                metrics = PipelineMetrics("live")
-            metrics_context = {
-                "quality_mode": getattr(modules.globals, "quality_mode", None),
-                "frame_processors": [
-                    getattr(fp, "NAME", None)
-                    or getattr(fp, "__name__", type(fp).__name__).split(".")[-1]
-                    for fp in frame_processors
-                ],
-                "camera_fps": self._fps,
-                "virtual_cam": self._virtual_cam is not None,
-                "mode": "live",
-                "live_process_latest_frame": getattr(
-                    modules.globals,
-                    "live_process_latest_frame",
-                    True,
-                ),
-                "capture_queue_maxsize": self._cq.maxsize,
-                "processed_queue_maxsize": self._pq.maxsize,
-                "execution_providers": list(modules.globals.execution_providers),
-                "execution_provider_config": provider_config_summary(
-                    modules.globals.execution_providers
-                ),
-            }
-            metrics_writer = (
-                MetricsJsonlWriter(modules.globals.benchmark_output_path)
-                if metrics
-                and getattr(modules.globals, "benchmark_output_path", None)
-                else None
+            runtime = _create_live_runtime(
+                frame_processors,
+                self._fps,
+                self._cq,
+                self._pq,
+                self._virtual_cam,
+                self._metrics,
             )
 
             while not self._stop_event.is_set():
-                queue_started = time.perf_counter()
-                try:
-                    if getattr(modules.globals, "live_process_latest_frame", True):
-                        frame, skipped_stale_frames = get_latest(
-                            self._cq,
-                            timeout=0.05,
-                        )
-                    else:
-                        frame = self._cq.get(timeout=0.05)
-                        skipped_stale_frames = 0
-                except queue.Empty:
+                frame = _dequeue_live_frame(self._cq, runtime)
+                if frame is None:
                     continue
-                if metrics:
-                    metrics.observe("queue_wait", time.perf_counter() - queue_started)
-                    metrics.drop_frames(
-                        "capture_stale_queue",
-                        skipped_stale_frames,
-                    )
-                    metrics.observe_queue_depth(
-                        "capture_queue_depth_after_get",
-                        self._cq.qsize(),
-                    )
 
                 temp_frame = frame
                 if modules.globals.live_mirror:
                     temp_frame = gpu_flip(temp_frame, 1)
 
                 if not modules.globals.map_faces:
-                    if (
-                        modules.globals.source_path
-                        and modules.globals.source_path != last_source_path
-                    ):
-                        last_source_path = modules.globals.source_path
-                        source_image = _load_source_face(modules.globals.source_path)
-                        reset_frame_processor_temporal_state(frame_processors)
-
-                    det_count += 1
-                    if det_count % det_interval == 0:
-                        detect_started = time.perf_counter()
-                        if modules.globals.many_faces:
-                            if face_tracker is not None:
-                                face_tracker.reset()
-                                reset_frame_processor_temporal_state(frame_processors)
-                            cached_target_face = None
-                            cached_many_faces = detect_many_faces_fast(temp_frame)
-                        else:
-                            detected_face = detect_one_face_fast(temp_frame)
-                            if face_tracker is not None:
-                                cached_target_face = face_tracker.update(
-                                    detected_face, det_count
-                                )
-                            else:
-                                cached_target_face = detected_face
-                            cached_many_faces = None
-                        if metrics:
-                            metrics.observe(
-                                "detect_faces",
-                                time.perf_counter() - detect_started,
-                            )
-
-                    cached_faces = None
-                    if cached_many_faces:
-                        cached_faces = cached_many_faces
-                    elif cached_target_face is not None:
-                        cached_faces = [cached_target_face]
-
-                    for fp in frame_processors:
-                        processor_started = time.perf_counter()
-                        enhancer_key = enhancer_key_for_processor_name(fp.NAME)
-                        if enhancer_key is not None:
-                            if modules.globals.fp_ui.get(enhancer_key, False):
-                                temp_frame = fp.process_frame(
-                                    None, temp_frame, detected_faces=cached_faces
-                                )
-                        elif fp.NAME == "DLC.FACE-SWAPPER":
-                            if source_image is None:
-                                continue
-                            swapped_bboxes = []
-                            swapped_faces = []
-                            if modules.globals.many_faces and cached_many_faces:
-                                result = temp_frame.copy()
-                                for t_face in cached_many_faces:
-                                    result = fp.swap_face(source_image, t_face, result)
-                                    if hasattr(t_face, "bbox") and t_face.bbox is not None:
-                                        swapped_bboxes.append(t_face.bbox.astype(int))
-                                        swapped_faces.append(t_face)
-                                temp_frame = result
-                            elif cached_target_face is not None:
-                                temp_frame = fp.swap_face(
-                                    source_image, cached_target_face, temp_frame
-                                )
-                                if (
-                                    hasattr(cached_target_face, "bbox")
-                                    and cached_target_face.bbox is not None
-                                ):
-                                    swapped_bboxes.append(cached_target_face.bbox.astype(int))
-                                    swapped_faces.append(cached_target_face)
-                            temp_frame = fp.apply_post_processing(
-                                temp_frame, swapped_bboxes, swapped_faces
-                            )
-                        else:
-                            temp_frame = fp.process_frame(source_image, temp_frame)
-                        if metrics:
-                            metrics.observe(
-                                fp.NAME,
-                                time.perf_counter() - processor_started,
-                            )
+                    temp_frame = _process_standard_live_frame(
+                        runtime,
+                        temp_frame,
+                        detect_many_faces_fast,
+                        detect_one_face_fast,
+                        reset_frame_processor_temporal_state,
+                    )
                 else:
-                    modules.globals.target_path = None
-                    for fp in frame_processors:
-                        processor_started = time.perf_counter()
-                        enhancer_key = enhancer_key_for_processor_name(fp.NAME)
-                        if enhancer_key is not None:
-                            if modules.globals.fp_ui.get(enhancer_key, False):
-                                temp_frame = fp.process_frame_v2(temp_frame)
-                        else:
-                            temp_frame = fp.process_frame_v2(temp_frame)
-                        if metrics:
-                            metrics.observe(
-                                fp.NAME,
-                                time.perf_counter() - processor_started,
-                            )
+                    temp_frame = _process_mapped_live_frame(runtime, temp_frame)
 
-                current_time = time.time()
-                frame_count += 1
-                if current_time - prev_time >= fps_update_interval:
-                    fps = frame_count / (current_time - prev_time)
-                    frame_count = 0
-                    prev_time = current_time
-
+                live_fps = _update_live_fps(runtime)
                 if modules.globals.show_fps:
                     cv2.putText(
-                        temp_frame, f"FPS: {fps:.1f}", (10, 30),
+                        temp_frame, f"FPS: {live_fps:.1f}", (10, 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
                     )
-
-                if self._virtual_cam is not None:
-                    if metrics:
-                        with metrics.track("virtual_cam_send"):
-                            self._virtual_cam.send(temp_frame)
-                    else:
-                        self._virtual_cam.send(temp_frame)
-
-                if metrics:
-                    metrics.observe_queue_depth(
-                        "processed_queue_depth_before_put",
-                        self._pq.qsize(),
-                    )
-                try:
-                    self._pq.put_nowait(temp_frame)
-                except queue.Full:
-                    try:
-                        self._pq.get_nowait()
-                        if metrics:
-                            metrics.drop_frame("processed_output_queue")
-                    except queue.Empty:
-                        pass
-                    try:
-                        self._pq.put_nowait(temp_frame)
-                    except queue.Full:
-                        pass
-                if metrics:
-                    metrics.frame_complete()
-                    if metrics.should_report(modules.globals.benchmark_log_interval):
-                        print(format_metrics(metrics), flush=True)
-                        safe_write_metrics_snapshot(
-                            metrics_writer,
-                            metrics,
-                            event="periodic",
-                            extra=metrics_context,
-                        )
-                        metrics.mark_reported()
-            if metrics:
-                print(format_metrics(metrics), flush=True)
-                safe_write_metrics_snapshot(
-                    metrics_writer,
-                    metrics,
-                    event="final",
-                    extra=metrics_context,
+                _publish_live_frame(
+                    self._pq, self._virtual_cam, temp_frame, runtime
                 )
+                _record_live_frame_metrics(runtime)
+            _finalize_live_metrics(runtime)
         except Exception:
             self._stop_event.set()
             traceback.print_exc()

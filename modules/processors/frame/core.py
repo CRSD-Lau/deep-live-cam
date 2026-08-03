@@ -271,6 +271,338 @@ def process_video_in_memory(source_path: str, target_path: str, fps: float) -> b
     return False
 
 
+def _ffmpeg_pipe_commands(
+    target_path: str,
+    temp_output_path: str,
+    fps: float,
+    width: int,
+    height: int,
+    encoder: str,
+    encoder_options: List[str],
+) -> tuple[list[str], list[str]]:
+    reader_cmd = [
+        'ffmpeg', '-hide_banner', '-hwaccel', 'auto', '-i', target_path,
+        '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-v', 'error', '-',
+    ]
+    writer_cmd = [
+        'ffmpeg', '-hide_banner', '-f', 'rawvideo', '-pix_fmt', 'bgr24',
+        '-s', f'{width}x{height}', '-r', str(fps), '-i', '-', '-c:v', encoder,
+        *encoder_options,
+        '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+        '-vf', 'colorspace=bt709:iall=bt601-6-625:fast=1',
+        '-v', 'error', '-y', temp_output_path,
+    ]
+    return reader_cmd, writer_cmd
+
+
+def _kill_pipe_processes(*processes: Any) -> None:
+    for process in processes:
+        if process is None:
+            continue
+        try:
+            process.kill()
+        except Exception:
+            pass
+
+
+def _start_ffmpeg_pipes(
+    reader_cmd: list[str], writer_cmd: list[str]
+) -> tuple[Any | None, Any | None]:
+    reader = None
+    writer = None
+    try:
+        reader = subprocess.Popen(
+            reader_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        writer = subprocess.Popen(
+            writer_cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        return reader, writer
+    except Exception as exc:
+        print(f"[DLC.CORE] Failed to start FFmpeg pipes: {exc}")
+        _kill_pipe_processes(reader, writer)
+        return None, None
+
+
+def _processor_names(frame_processors: List[Any]) -> list[str]:
+    return [
+        getattr(processor, "NAME", None)
+        or getattr(processor, "__name__", type(processor).__name__).split(".")[-1]
+        for processor in frame_processors
+    ]
+
+
+def _video_metrics(
+    target_path: str,
+    encoder: str,
+    fps: float,
+    width: int,
+    height: int,
+    frame_processors: List[Any],
+) -> tuple[PipelineMetrics | None, MetricsJsonlWriter | None, dict[str, Any]]:
+    metrics = (
+        PipelineMetrics("video")
+        if getattr(modules.globals, "benchmark_pipeline", False)
+        else None
+    )
+    context = {
+        "quality_mode": getattr(modules.globals, "quality_mode", None),
+        "frame_processors": _processor_names(frame_processors),
+        "target_path": target_path,
+        "encoder": encoder,
+        "fps": fps,
+        "resolution": [width, height],
+        "mode": "in-memory",
+        "execution_providers": list(modules.globals.execution_providers),
+        "execution_provider_config": provider_config_summary(
+            modules.globals.execution_providers
+        ),
+    }
+    writer = (
+        MetricsJsonlWriter(modules.globals.benchmark_output_path)
+        if metrics and getattr(modules.globals, "benchmark_output_path", None)
+        else None
+    )
+    return metrics, writer, context
+
+
+def _visual_qa_sessions(
+    target_path: str,
+    encoder: str,
+    fps: float,
+    frame_processors: List[Any],
+) -> tuple[VisualQACaptureSession | None, TemporalQACaptureSession | None]:
+    output_dir = getattr(modules.globals, "visual_qa_output_dir", None)
+    if not output_dir:
+        return None, None
+    notes = {
+        "quality_mode": getattr(modules.globals, "quality_mode", None),
+        "frame_processors": _processor_names(frame_processors),
+        "target_path": target_path,
+        "encoder": encoder,
+        "fps": fps,
+    }
+    frame_indices = getattr(modules.globals, "visual_qa_frame_indices", [0])
+    visual = VisualQACaptureSession(output_dir, frame_indices, notes=notes)
+    temporal = (
+        TemporalQACaptureSession(output_dir, frame_indices, notes=notes)
+        if getattr(modules.globals, "visual_qa_temporal", False)
+        else None
+    )
+    return visual, temporal
+
+
+def _pipeline_progress(total_frames: int) -> Any:
+    bar_fmt = ('{l_bar}{bar}| {n_fmt}/{total_fmt} '
+               '[{elapsed}<{remaining}, {rate_fmt}{postfix}]')
+    progress = tqdm(
+        total=total_frames,
+        desc='Processing',
+        unit='frame',
+        dynamic_ncols=True,
+        bar_format=bar_fmt,
+    )
+    progress.set_postfix({
+        'execution_providers': modules.globals.execution_providers,
+        'threads': modules.globals.execution_threads,
+        'mode': 'in-memory',
+    })
+    return progress
+
+
+def _pipeline_face_tracker(use_pipeline: bool) -> FaceTracker | None:
+    if not use_pipeline or not getattr(
+        modules.globals, "face_tracking_enabled", True
+    ):
+        return None
+    return FaceTracker(
+        current_weight=getattr(
+            modules.globals, "face_tracking_current_weight", 0.7
+        ),
+        jump_reset_ratio=getattr(
+            modules.globals, "face_tracking_reset_ratio", 1.2
+        ),
+        max_missed=getattr(modules.globals, "face_tracking_max_missed", 1),
+        confidence_weight=getattr(
+            modules.globals, "face_tracking_confidence_weight", 0.0
+        ),
+        confidence_reference=getattr(
+            modules.globals, "face_tracking_confidence_reference", 0.75
+        ),
+        confidence_min_weight=getattr(
+            modules.globals, "face_tracking_confidence_min_weight", 0.35
+        ),
+        min_detection_confidence=getattr(
+            modules.globals, "face_tracking_min_detection_confidence", 0.0
+        ),
+    )
+
+
+def _read_pipe_frame(
+    reader: Any,
+    frame_size: int,
+    width: int,
+    height: int,
+    metrics: PipelineMetrics | None,
+) -> np.ndarray | None:
+    started = time.perf_counter()
+    raw = reader.stdout.read(frame_size)
+    if metrics:
+        metrics.observe("decode_read", time.perf_counter() - started)
+    if len(raw) != frame_size:
+        return None
+    return np.frombuffer(raw, dtype=np.uint8).reshape((height, width, 3)).copy()
+
+
+def _pipeline_target_face(
+    frame: np.ndarray,
+    frame_index: int,
+    use_pipeline: bool,
+    pending_detect: Any,
+    detect_executor: ThreadPoolExecutor,
+    face_tracker: FaceTracker | None,
+    metrics: PipelineMetrics | None,
+) -> tuple[Any, Any]:
+    if not use_pipeline:
+        return None, pending_detect
+    if pending_detect is None:
+        detection_frame_index = frame_index
+        started = time.perf_counter()
+        detected_face = get_one_face(frame)
+        if metrics:
+            metrics.observe("detect_direct", time.perf_counter() - started)
+    else:
+        pending_future, detection_frame_index = pending_detect
+        started = time.perf_counter()
+        detected_face = pending_future.result()
+        if metrics:
+            metrics.observe("detect_wait", time.perf_counter() - started)
+    target_face = (
+        face_tracker.update(detected_face, detection_frame_index)
+        if face_tracker is not None
+        else detected_face
+    )
+    next_detect = (
+        detect_executor.submit(get_one_face, frame.copy()),
+        frame_index,
+    )
+    return target_face, next_detect
+
+
+def _process_pipe_frame(
+    frame_processors: List[Any],
+    source_face: Any,
+    frame: np.ndarray,
+    target_face: Any,
+    metrics: PipelineMetrics | None,
+) -> np.ndarray:
+    for processor in frame_processors:
+        started = time.perf_counter()
+        try:
+            frame = process_frame_with_target(
+                processor, source_face, frame, target_face
+            )
+        finally:
+            if metrics:
+                metrics.observe(
+                    processor.NAME, time.perf_counter() - started
+                )
+    return frame
+
+
+def _visual_qa_before(
+    session: VisualQACaptureSession | None,
+    frame_index: int,
+    frame: np.ndarray,
+) -> np.ndarray | None:
+    if session and session.should_capture(frame_index):
+        return frame.copy()
+    return None
+
+
+def _capture_pipeline_qa(
+    visual_session: VisualQACaptureSession | None,
+    temporal_session: TemporalQACaptureSession | None,
+    frame_index: int,
+    before: np.ndarray | None,
+    frame: np.ndarray,
+) -> None:
+    if before is not None and visual_session is not None:
+        try:
+            visual_session.capture(frame_index, before, frame)
+        except Exception as exc:
+            print(
+                f"[DLC.CORE] Visual QA capture failed for frame {frame_index}: {exc}",
+                flush=True,
+            )
+    if temporal_session and temporal_session.should_capture(frame_index):
+        try:
+            temporal_session.capture(frame_index, frame)
+        except Exception as exc:
+            print(
+                f"[DLC.CORE] Temporal QA capture failed for frame {frame_index}: {exc}",
+                flush=True,
+            )
+
+
+def _write_pipe_frame(
+    writer: Any,
+    frame: np.ndarray,
+    metrics: PipelineMetrics | None,
+    metrics_writer: MetricsJsonlWriter | None,
+    metrics_context: dict[str, Any],
+) -> None:
+    started = time.perf_counter()
+    writer.stdin.write(frame.tobytes())
+    if not metrics:
+        return
+    metrics.observe("encode_write", time.perf_counter() - started)
+    metrics.frame_complete()
+    if metrics.should_report(modules.globals.benchmark_log_interval):
+        print(format_metrics(metrics), flush=True)
+        safe_write_metrics_snapshot(
+            metrics_writer,
+            metrics,
+            event="periodic",
+            extra=metrics_context,
+        )
+        metrics.mark_reported()
+
+
+def _writer_succeeded(writer: Any) -> bool:
+    if writer.returncode == 0:
+        return True
+    stderr_out = writer.stderr.read().decode(errors='ignore').strip()
+    if stderr_out:
+        print(f"[DLC.CORE] FFmpeg encoder error: {stderr_out}")
+    return False
+
+
+def _export_temporal_qa(session: TemporalQACaptureSession | None) -> None:
+    if session is None:
+        return
+    try:
+        result = session.export()
+        if result is not None:
+            print(
+                f"[DLC.CORE] Temporal QA export written to {result.output_dir}",
+                flush=True,
+            )
+    except Exception as exc:
+        print(f"[DLC.CORE] Temporal QA export failed: {exc}", flush=True)
+
+
+def _finalize_pipeline_metrics(
+    metrics: PipelineMetrics | None,
+    writer: MetricsJsonlWriter | None,
+    context: dict[str, Any],
+) -> None:
+    if not metrics:
+        return
+    print(format_metrics(metrics), flush=True)
+    safe_write_metrics_snapshot(writer, metrics, event="final", extra=context)
+
+
 def _run_pipe_pipeline(
     target_path: str,
     temp_output_path: str,
@@ -285,304 +617,82 @@ def _run_pipe_pipeline(
     encoder_options: List[str],
 ) -> bool:
     """Run the FFmpeg-pipe read → process → encode pipeline once."""
-
-    # --- Reader: decode source video to raw BGR24 on stdout ---
-    reader_cmd = [
-        'ffmpeg', '-hide_banner',
-        '-hwaccel', 'auto',
-        '-i', target_path,
-        '-f', 'rawvideo',
-        '-pix_fmt', 'bgr24',
-        '-v', 'error',
-        '-',
-    ]
-
-    # --- Writer: encode raw BGR24 from stdin ---
-    writer_cmd = [
-        'ffmpeg', '-hide_banner',
-        '-f', 'rawvideo',
-        '-pix_fmt', 'bgr24',
-        '-s', f'{width}x{height}',
-        '-r', str(fps),
-        '-i', '-',
-        '-c:v', encoder,
-    ]
-    writer_cmd.extend(encoder_options)
-    writer_cmd.extend([
-        '-pix_fmt', 'yuv420p',
-        '-movflags', '+faststart',
-        '-vf', 'colorspace=bt709:iall=bt601-6-625:fast=1',
-        '-v', 'error',
-        '-y', temp_output_path,
-    ])
-
-    reader = None
-    writer = None
-    try:
-        reader = subprocess.Popen(
-            reader_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        )
-        writer = subprocess.Popen(
-            writer_cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
-        )
-    except Exception as e:
-        print(f"[DLC.CORE] Failed to start FFmpeg pipes: {e}")
-        for proc in (reader, writer):
-            if proc:
-                try:
-                    proc.kill()
-                except Exception:
-                    pass
+    reader_cmd, writer_cmd = _ffmpeg_pipe_commands(
+        target_path,
+        temp_output_path,
+        fps,
+        width,
+        height,
+        encoder,
+        encoder_options,
+    )
+    reader, writer = _start_ffmpeg_pipes(reader_cmd, writer_cmd)
+    if reader is None or writer is None:
         return False
 
+    metrics, metrics_writer, metrics_context = _video_metrics(
+        target_path, encoder, fps, width, height, frame_processors
+    )
+    visual_qa_session, temporal_qa_session = _visual_qa_sessions(
+        target_path, encoder, fps, frame_processors
+    )
+    detect_executor = None
     processed_count = 0
-    metrics = (
-        PipelineMetrics("video")
-        if getattr(modules.globals, "benchmark_pipeline", False)
-        else None
-    )
-    metrics_context = {
-        "quality_mode": getattr(modules.globals, "quality_mode", None),
-        "frame_processors": [
-            getattr(fp, "NAME", None)
-            or getattr(fp, "__name__", type(fp).__name__).split(".")[-1]
-            for fp in frame_processors
-        ],
-        "target_path": target_path,
-        "encoder": encoder,
-        "fps": fps,
-        "resolution": [width, height],
-        "mode": "in-memory",
-        "execution_providers": list(modules.globals.execution_providers),
-        "execution_provider_config": provider_config_summary(
-            modules.globals.execution_providers
-        ),
-    }
-    metrics_writer = (
-        MetricsJsonlWriter(modules.globals.benchmark_output_path)
-        if metrics
-        and getattr(modules.globals, "benchmark_output_path", None)
-        else None
-    )
-    visual_qa_session = None
-    temporal_qa_session = None
-    visual_qa_output_dir = getattr(modules.globals, "visual_qa_output_dir", None)
-    if visual_qa_output_dir:
-        visual_qa_notes = {
-            "quality_mode": getattr(modules.globals, "quality_mode", None),
-            "frame_processors": [
-                getattr(fp, "NAME", None)
-                or getattr(fp, "__name__", type(fp).__name__).split(".")[-1]
-                for fp in frame_processors
-            ],
-            "target_path": target_path,
-            "encoder": encoder,
-            "fps": fps,
-        }
-        visual_qa_session = VisualQACaptureSession(
-            visual_qa_output_dir,
-            getattr(modules.globals, "visual_qa_frame_indices", [0]),
-            notes=visual_qa_notes,
-        )
-        if getattr(modules.globals, "visual_qa_temporal", False):
-            temporal_qa_session = TemporalQACaptureSession(
-                visual_qa_output_dir,
-                getattr(modules.globals, "visual_qa_frame_indices", [0]),
-                notes=visual_qa_notes,
-            )
-    bar_fmt = ('{l_bar}{bar}| {n_fmt}/{total_fmt} '
-               '[{elapsed}<{remaining}, {rate_fmt}{postfix}]')
-
     try:
-        with tqdm(total=total_frames, desc='Processing', unit='frame',
-                  dynamic_ncols=True, bar_format=bar_fmt) as progress:
-            progress.set_postfix({
-                'execution_providers': modules.globals.execution_providers,
-                'threads': modules.globals.execution_threads,
-                'mode': 'in-memory',
-            })
-
-            # Pipelined detection: while processing frame N (swap on
-            # ANE), start detecting the face in the next frame
-            # (detection on GPU).  They use different hardware units
-            # so the work overlaps.
+        with _pipeline_progress(total_frames) as progress:
             detect_executor = ThreadPoolExecutor(max_workers=1)
             pending_detect = None
             use_pipeline = not modules.globals.many_faces
-            face_tracker = (
-                FaceTracker(
-                    current_weight=getattr(
-                        modules.globals, "face_tracking_current_weight", 0.7
-                    ),
-                    jump_reset_ratio=getattr(
-                        modules.globals, "face_tracking_reset_ratio", 1.2
-                    ),
-                    max_missed=getattr(
-                        modules.globals, "face_tracking_max_missed", 1
-                    ),
-                    confidence_weight=getattr(
-                        modules.globals, "face_tracking_confidence_weight", 0.0
-                    ),
-                    confidence_reference=getattr(
-                        modules.globals, "face_tracking_confidence_reference", 0.75
-                    ),
-                    confidence_min_weight=getattr(
-                        modules.globals, "face_tracking_confidence_min_weight", 0.35
-                    ),
-                    min_detection_confidence=getattr(
-                        modules.globals, "face_tracking_min_detection_confidence", 0.0
-                    ),
-                )
-                if use_pipeline
-                and getattr(modules.globals, "face_tracking_enabled", True)
-                else None
-            )
-
+            face_tracker = _pipeline_face_tracker(use_pipeline)
             while True:
-                frame_index = processed_count
-                read_started = time.perf_counter()
-                raw = reader.stdout.read(frame_size)
-                if metrics:
-                    metrics.observe("decode_read", time.perf_counter() - read_started)
-                if len(raw) != frame_size:
-                    break
-
-                frame = np.frombuffer(raw, dtype=np.uint8).reshape(
-                    (height, width, 3)
-                ).copy()
-                visual_qa_before = (
-                    frame.copy()
-                    if visual_qa_session
-                    and visual_qa_session.should_capture(frame_index)
-                    else None
+                frame = _read_pipe_frame(
+                    reader, frame_size, width, height, metrics
                 )
-
-                # Get the detection result for THIS frame
-                if use_pipeline:
-                    if pending_detect is not None:
-                        pending_future, detection_frame_index = pending_detect
-                        detect_wait_started = time.perf_counter()
-                        detected_face = pending_future.result()
-                        if metrics:
-                            metrics.observe(
-                                "detect_wait",
-                                time.perf_counter() - detect_wait_started,
-                            )
-                    else:
-                        detection_frame_index = frame_index
-                        detect_started = time.perf_counter()
-                        detected_face = get_one_face(frame)
-                        if metrics:
-                            metrics.observe(
-                                "detect_direct",
-                                time.perf_counter() - detect_started,
-                            )
-                    if face_tracker is not None:
-                        target_face = face_tracker.update(
-                            detected_face, detection_frame_index
-                        )
-                    else:
-                        target_face = detected_face
-                    # Start detecting on THIS frame eagerly — the result
-                    # will be used for the next iteration.  At video
-                    # frame rates the face barely moves between frames.
-                    # Hand the detector its own copy: the frame processors
-                    # below mutate `frame` in place (paste-back), which
-                    # would otherwise race with detection.
-                    pending_detect = (
-                        detect_executor.submit(get_one_face, frame.copy()),
-                        frame_index,
-                    )
-                else:
-                    target_face = None
-
-                # Run frame through every active processor
-                for fp in frame_processors:
-                    processor_started = time.perf_counter()
-                    try:
-                        frame = process_frame_with_target(
-                            fp, source_face, frame, target_face
-                        )
-                    finally:
-                        if metrics:
-                            metrics.observe(
-                                fp.NAME,
-                                time.perf_counter() - processor_started,
-                            )
-
-                if visual_qa_before is not None:
-                    try:
-                        visual_qa_session.capture(
-                            frame_index, visual_qa_before, frame
-                        )
-                    except Exception as exc:
-                        print(
-                            f"[DLC.CORE] Visual QA capture failed for "
-                            f"frame {frame_index}: {exc}",
-                            flush=True,
-                        )
-                if temporal_qa_session and temporal_qa_session.should_capture(frame_index):
-                    try:
-                        temporal_qa_session.capture(frame_index, frame)
-                    except Exception as exc:
-                        print(
-                            f"[DLC.CORE] Temporal QA capture failed for "
-                            f"frame {frame_index}: {exc}",
-                            flush=True,
-                        )
-
-                encode_started = time.perf_counter()
-                writer.stdin.write(frame.tobytes())
-                if metrics:
-                    metrics.observe("encode_write", time.perf_counter() - encode_started)
-                    metrics.frame_complete()
-                    if metrics.should_report(modules.globals.benchmark_log_interval):
-                        print(format_metrics(metrics), flush=True)
-                        safe_write_metrics_snapshot(
-                            metrics_writer,
-                            metrics,
-                            event="periodic",
-                            extra=metrics_context,
-                        )
-                        metrics.mark_reported()
+                if frame is None:
+                    break
+                frame_index = processed_count
+                before = _visual_qa_before(
+                    visual_qa_session, frame_index, frame
+                )
+                target_face, pending_detect = _pipeline_target_face(
+                    frame,
+                    frame_index,
+                    use_pipeline,
+                    pending_detect,
+                    detect_executor,
+                    face_tracker,
+                    metrics,
+                )
+                frame = _process_pipe_frame(
+                    frame_processors, source_face, frame, target_face, metrics
+                )
+                _capture_pipeline_qa(
+                    visual_qa_session,
+                    temporal_qa_session,
+                    frame_index,
+                    before,
+                    frame,
+                )
+                _write_pipe_frame(
+                    writer,
+                    frame,
+                    metrics,
+                    metrics_writer,
+                    metrics_context,
+                )
                 processed_count += 1
                 progress.update(1)
 
-            detect_executor.shutdown(wait=True)
-
-        # Graceful shutdown
+        detect_executor.shutdown(wait=True)
+        detect_executor = None
         writer.stdin.close()
         writer.wait()
         reader.wait()
-
-        if writer.returncode != 0:
-            stderr_out = writer.stderr.read().decode(errors='ignore').strip()
-            if stderr_out:
-                print(f"[DLC.CORE] FFmpeg encoder error: {stderr_out}")
+        if not _writer_succeeded(writer):
             return False
-
-        if temporal_qa_session is not None:
-            try:
-                temporal_result = temporal_qa_session.export()
-                if temporal_result is not None:
-                    print(
-                        f"[DLC.CORE] Temporal QA export written to "
-                        f"{temporal_result.output_dir}",
-                        flush=True,
-                    )
-            except Exception as exc:
-                print(f"[DLC.CORE] Temporal QA export failed: {exc}", flush=True)
-
-        if metrics:
-            print(format_metrics(metrics), flush=True)
-            safe_write_metrics_snapshot(
-                metrics_writer,
-                metrics,
-                event="final",
-                extra=metrics_context,
-            )
+        _export_temporal_qa(temporal_qa_session)
+        _finalize_pipeline_metrics(metrics, metrics_writer, metrics_context)
         return processed_count > 0 and os.path.isfile(temp_output_path)
-
     except BrokenPipeError:
         print("[DLC.CORE] FFmpeg pipe broken (encoder may not be available).")
         return False
@@ -590,9 +700,6 @@ def _run_pipe_pipeline(
         print(f"[DLC.CORE] In-memory processing error: {e}")
         return False
     finally:
-        for proc in (reader, writer):
-            if proc:
-                try:
-                    proc.kill()
-                except Exception:
-                    pass
+        if detect_executor is not None:
+            detect_executor.shutdown(wait=True)
+        _kill_pipe_processes(reader, writer)
