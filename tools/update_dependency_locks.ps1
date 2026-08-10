@@ -108,12 +108,28 @@ if (-not (Test-Path -LiteralPath $LockPython)) {
 Assert-PythonVersion $LockPython
 Invoke-Checked $LockPython @("-m", "pip", "install", "--disable-pip-version-check", "-r", "requirements-lock-tools.txt")
 
+$MaintainedLocks = @(
+    "windows-cuda-py311.lock",
+    "windows-cuda-runtime-py311.lock",
+    "windows-cuda-runtime-audit-py311.txt",
+    "windows-directml-py311.lock"
+)
+
 if ($Check) {
     $OutputRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("deep-live-cam-lock-check-" + [guid]::NewGuid().ToString("N"))
 } else {
     $OutputRoot = $LockDir
 }
 New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
+
+if ($Check) {
+    foreach ($Name in $MaintainedLocks) {
+        $Existing = Join-Path $LockDir $Name
+        if (Test-Path -LiteralPath $Existing) {
+            Copy-Item -LiteralPath $Existing -Destination (Join-Path $OutputRoot $Name)
+        }
+    }
+}
 
 try {
     Compile-Lock `
@@ -126,7 +142,7 @@ try {
 
     if ($Check) {
         $Mismatches = @()
-        foreach ($Name in @("windows-cuda-py311.lock", "windows-cuda-runtime-py311.lock", "windows-cuda-runtime-audit-py311.txt", "windows-directml-py311.lock")) {
+        foreach ($Name in $MaintainedLocks) {
             $Expected = Join-Path $LockDir $Name
             $Generated = Join-Path $OutputRoot $Name
             if (-not (Test-Path -LiteralPath $Expected) -or
