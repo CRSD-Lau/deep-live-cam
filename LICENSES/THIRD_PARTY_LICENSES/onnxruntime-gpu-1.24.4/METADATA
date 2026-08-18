@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: onnxruntime-gpu
-Version: 1.24.3
+Version: 1.24.4
 Summary: ONNX Runtime is a runtime accelerator for Machine Learning models
 Home-page: https://onnxruntime.ai
 Download-URL: https://github.com/microsoft/onnxruntime/tags
@@ -26,7 +26,7 @@ Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
 Classifier: Programming Language :: Python :: 3.13
 Classifier: Programming Language :: Python :: 3.14
-Requires-Python: >=3.10
+Requires-Python: >=3.11
 Requires-Dist: flatbuffers
 Requires-Dist: numpy>=1.21.6
 Requires-Dist: packaging
@@ -49,6 +49,11 @@ For more information on ONNX Runtime, please see `aka.ms/onnxruntime <https://ak
 
 Changes
 -------
+
+1.24.4
+^^^^^^
+
+Release Notes : https://github.com/Microsoft/onnxruntime/releases/tag/v1.24.4
 
 1.24.3
 ^^^^^^

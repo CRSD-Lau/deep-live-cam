@@ -25,7 +25,7 @@ def test_release_locks_are_hashed_and_keep_onnx_runtimes_isolated():
         "requirements-locks/windows-cuda-runtime-audit-py311.txt"
     )
 
-    assert "onnxruntime-gpu==1.24.3" in cuda
+    assert "onnxruntime-gpu==1.24.4" in cuda
     assert "onnxruntime-directml" not in cuda
     assert "torch==" not in cuda
     assert "setuptools==83.0.0" in cuda
@@ -63,7 +63,7 @@ def test_dependency_sources_match_reviewed_release_versions():
     build = read("requirements-build-windows.txt")
     dev = read("requirements-dev.txt")
 
-    assert "onnxruntime-gpu==1.24.3" in cuda
+    assert "onnxruntime-gpu==1.24.4" in cuda
     assert "opennsfw2==0.18.0" in cuda
     assert "opennsfw2==0.18.0" in directml
     assert "pyside6>=6.11.1,<7" in cuda
@@ -72,7 +72,7 @@ def test_dependency_sources_match_reviewed_release_versions():
     assert "typing-extensions>=4.16.0" in directml
     assert "tqdm>=4.70.0" in cuda
     assert "tqdm>=4.70.0" in directml
-    assert "pyinstaller==6.21.0" in build
+    assert "pyinstaller==6.22.0" in build
     assert "pyinstaller-hooks-contrib==2026.6" in build
     assert "pytest==9.1.1" in dev
 

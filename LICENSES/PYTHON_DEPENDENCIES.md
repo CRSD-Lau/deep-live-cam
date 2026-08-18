@@ -51,7 +51,7 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `networkx` | `3.6.1` | BSD-3-Clause |
 | `numpy` | `1.26.4` | Copyright (c) 2005-2023, NumPy Developers. All rights reserved. Redistribution and use in source and binary forms, with or without modificat |
 | `onnx` | `1.22.0` | Apache-2.0 |
-| `onnxruntime-gpu` | `1.24.3` | MIT License |
+| `onnxruntime-gpu` | `1.24.4` | MIT License |
 | `opencv-python` | `4.10.0.84` | Apache 2.0 |
 | `opencv-python-headless` | `4.11.0.86` | Apache 2.0 |
 | `opennsfw2` | `0.18.0` | OSI Approved :: MIT License |
@@ -110,14 +110,14 @@ The local development environment may contain these packages, but they are build
 | `altgraph` | `0.17.5` | MIT | PyInstaller/build tooling dependency; not an app runtime dependency. |
 | `pefile` | `2024.8.26` | MIT | PyInstaller/build tooling dependency; not an app runtime dependency. |
 | `pip` | `24.0` | MIT | Build environment package manager; not an app runtime dependency. |
-| `pip` | `26.2` | MIT | Build environment package manager; not an app runtime dependency. |
-| `pyinstaller` | `6.21.0` | GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones | Build tooling only; not shipped as an app runtime dependency. |
+| `pip` | `26.2.1` | MIT | Build environment package manager; not an app runtime dependency. |
+| `pyinstaller` | `6.22.0` | GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones | Build tooling only; not shipped as an app runtime dependency. |
 | `pyinstaller-hooks-contrib` | `2026.6` | OSI Approved :: Apache Software License; OSI Approved :: GNU General Public License v2 (GPLv2) | Build tooling only; not shipped as an app runtime dependency. |
 | `pywin32-ctypes` | `0.2.3` | BSD-3-Clause | PyInstaller/build tooling dependency; not an app runtime dependency. |
 | `setuptools` | `65.5.0` | OSI Approved :: MIT License | Build environment package; may appear via vendored metadata but is not a declared app runtime dependency. |
 | `setuptools` | `83.0.0` | MIT | Build environment package; may appear via vendored metadata but is not a declared app runtime dependency. |
 | `torch` | `2.11.0+cu128` | BSD-3-Clause | Spec excludes torch; bundle scan checks _internal/torch is absent. |
-| `wheel` | `0.47.0` | MIT | Build environment package; not an app runtime dependency. |
+| `wheel` | `0.48.0` | MIT | Build environment package; not an app runtime dependency. |
 
 ## High-Attention Items
 

@@ -111,12 +111,12 @@ The local development environment may contain these packages, but they are build
 | --- | ---: | --- | --- |
 | `altgraph` | `0.17.5` | MIT | PyInstaller/build tooling dependency; not an app runtime dependency. |
 | `pefile` | `2024.8.26` | MIT | PyInstaller/build tooling dependency; not an app runtime dependency. |
-| `pip` | `26.2` | MIT | Build environment package manager; not an app runtime dependency. |
-| `pyinstaller` | `6.21.0` | GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones | Build tooling only; not shipped as an app runtime dependency. |
+| `pip` | `26.2.1` | MIT | Build environment package manager; not an app runtime dependency. |
+| `pyinstaller` | `6.22.0` | GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones | Build tooling only; not shipped as an app runtime dependency. |
 | `pyinstaller-hooks-contrib` | `2026.6` | OSI Approved :: Apache Software License; OSI Approved :: GNU General Public License v2 (GPLv2) | Build tooling only; not shipped as an app runtime dependency. |
 | `pywin32-ctypes` | `0.2.3` | BSD-3-Clause | PyInstaller/build tooling dependency; not an app runtime dependency. |
 | `setuptools` | `83.0.0` | MIT | Build environment package; may appear via vendored metadata but is not a declared app runtime dependency. |
-| `wheel` | `0.47.0` | MIT | Build environment package; not an app runtime dependency. |
+| `wheel` | `0.48.0` | MIT | Build environment package; not an app runtime dependency. |
 
 ## High-Attention Items
 
