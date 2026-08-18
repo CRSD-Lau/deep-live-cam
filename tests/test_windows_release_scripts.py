@@ -144,3 +144,33 @@ def test_obs_evidence_gate_forwards_selected_python_to_preflight():
     )
 
     assert "-Python $CheckPython -RequireObsVirtualCam" in script
+
+
+def test_installer_migrates_versioned_installs_to_one_stable_directory():
+    installer = Path("build/windows/installer.iss").read_text(encoding="utf-8")
+
+    assert "DefaultDirName={localappdata}\\Programs\\DeepLiveCamStudio\n" in installer
+    assert "DefaultDirName={localappdata}\\Programs\\DeepLiveCamStudio\\{#AppVersion}" not in installer
+    assert "UsePreviousAppDir=no" in installer
+    assert "DisableDirPage=yes" in installer
+    assert "AppId={#AppId}" in installer
+    assert "MigratePreviousInstallation" in installer
+    assert "RemoveLegacyVersionDirectories" in installer
+    assert "FILE_ATTRIBUTE_REPARSE_POINT" in installer
+    assert "{localappdata}\\DeepLiveCamStudio\\models" in installer
+
+
+def test_installer_smoke_test_uses_an_isolated_app_identity_and_upgrade_fixture():
+    script = Path("build/windows/test_installer.ps1").read_text(encoding="utf-8")
+    fixture = Path("build/windows/test_legacy_installer.iss").read_text(encoding="utf-8")
+
+    assert '$TestAppId = "{$TestAppGuid}"' in script
+    assert "$TestDirectiveAppId = '{' + $TestAppId" in script
+    assert '"/DAppId=$TestDirectiveAppId"' in script
+    assert '"/DAppIdRegistryValue=$TestAppId"' in script
+    assert "Installer smoke-test directory must be inside the current TEMP directory" in script
+    assert "Registered legacy installation directory survived migration" in script
+    assert "Orphaned version installation directory survived migration" in script
+    assert "Upgrade removed user model data sentinel" in script
+    assert "AppId={#TestAppId}" in fixture
+    assert "AppVersion=2.2.1" in fixture

@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.2.1",
+    [string]$AppVersion = "2.2.2",
     [string]$GitRef = "HEAD",
     [string]$OutputDir = "",
     [switch]$AllowDirty,
@@ -135,6 +135,7 @@ $RequiredEntries = @(
     "build/windows/verify_obs_virtualcam_gate.ps1",
     "build/windows/deep_live_cam_studio.spec",
     "build/windows/installer.iss",
+    "build/windows/test_legacy_installer.iss",
     "tools/check_cuda_provider.py",
     "tools/check_obs_virtualcam.py",
     "tools/check_windows_release_cutover.py",

@@ -6,15 +6,24 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.2] - 2026-08-18
+
 ### Changed
 
 - Updated the deterministic Windows packaging toolchain to pip 26.2.1, wheel
-  0.48.0, and PyInstaller 6.22.0.
+  0.48.0, PyInstaller 6.22.0, pip-tools 7.6.1, and Ruff 0.16.3.
+- Standardized NVIDIA/CUDA installs on one stable per-user directory and
+  documented the distinct installer and DirectML portable update paths.
 
 ### Fixed
 
 - Replaced the unavailable ONNX Runtime GPU 1.24.3 package with the compatible
   1.24.4 patch release and refreshed its lock and licence evidence.
+- Migrated registered version-named NVIDIA installations during upgrades,
+  removed recognizable orphaned version folders, refreshed stale packaged
+  runtime directories, and preserved models, settings, and logs.
+- Isolated installer smoke tests from real Windows app registrations and added
+  a functional legacy-layout upgrade fixture.
 
 ## [2.2.1] - 2026-08-03
 
@@ -111,7 +120,8 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed alpha-channel preview frames before face detection and swap inference.
 - Fixed packaged desktop startup on clean Windows laptops.
 
-[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.2...HEAD
+[2.2.2]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.1.9...v2.2.0
 [2.1.9]: https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.1.9

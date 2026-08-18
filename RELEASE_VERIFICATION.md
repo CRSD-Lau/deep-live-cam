@@ -1,6 +1,6 @@
 # Windows Release Verification
 
-App version: `2.2.1`
+App version: `2.2.2`
 
 Status: RELEASE PREPARATION
 
@@ -13,7 +13,7 @@ and source hashes used for publication.
 - Public-release source archive from clean Git ref: PENDING FINAL MERGED COMMIT
 - Manual clean-install gate: PASS (risk-based delta revalidation required on final asset)
 - Manual OBS/Live Output gate: PASS (CUDA and two Radeon DirectML hardware records)
-- Manual legal/compliance gate: PASS (2.2.0 and 2.2.1 dependency deltas documented)
+- Manual legal/compliance gate: PASS (2.2.0 through 2.2.2 deltas documented)
 - Ready to publish without remaining manual gates: NO — FINAL ASSET AND PUBLIC-DOWNLOAD VERIFICATION REQUIRED
 
 The final release workflow and strict local checks overwrite this preparation

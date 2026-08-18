@@ -2,7 +2,7 @@
 
 Status: PASS
 
-Release: `2.2.1`
+Release: `2.2.2`
 
 ## Required checks
 
@@ -26,7 +26,7 @@ Release: `2.2.1`
   https://github.com/CRSD-Lau/deep-live-cam/issues/3#issuecomment-5160009203
 - The automated OBS gate previously sent 150 frames through the `obs` backend
   to `OBS Virtual Camera`; the virtual-camera implementation is unchanged in
-  `2.2.1`.
+  `2.2.2`; this patch changes installer and dependency packaging only.
 - Final publication still verifies both downloadable runtime assets and their
   provider checks before the release is made public.
 

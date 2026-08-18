@@ -1,6 +1,6 @@
 # Release Completion Audit
 
-Release: `2.2.1`
+Release: `2.2.2`
 
 Status: READY FOR FINAL ARTIFACT VERIFICATION
 
@@ -13,6 +13,7 @@ Status: READY FOR FINAL ARTIFACT VERIFICATION
 | File render freeze fixed | Re-entry regression tests and local frozen-stack root-cause capture |
 | Live Output preserved | Project owner, issue reporter, and independent Radeon tester confirmation |
 | Reproducible Windows assets | Dual-job release workflow, portable packager, installer/source tooling |
+| Unambiguous NVIDIA updates | Stable install directory, registered legacy migration, orphan cleanup, isolated upgrade fixture |
 | Hidden runtime preserved | ZIP/artifact tests require `sklearn/.libs/vcomp140.dll` |
 | Model weights excluded | Runtime, portable ZIP, source, and release-asset scans |
 | Corresponding source | Git-ref source archive, hash, and manifest required by validator |

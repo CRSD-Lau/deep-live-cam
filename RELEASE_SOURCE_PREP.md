@@ -1,6 +1,6 @@
 # Release Source Preparation
 
-Release: `2.2.1`
+Release: `2.2.2`
 
 The AGPL corresponding-source archive must be created from the exact merged
 release commit after all release-owned source and documentation changes are
@@ -21,12 +21,12 @@ environments, model files, logs, and user data remain untracked and excluded.
 ## Package exact source
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.1 -GitRef RELEASE_COMMIT
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.2 -GitRef RELEASE_COMMIT
 ```
 
 Required output:
 
-- `DeepLiveCamStudio-2.2.1-source-<ref>.zip`
+- `DeepLiveCamStudio-2.2.2-source-<ref>.zip`
 - matching `.zip.sha256`
 - matching `.manifest.md`
 
@@ -36,7 +36,7 @@ required source entries, and a passing forbidden-model scan.
 ## Validate
 
 ```powershell
-python tools\validate_windows_release_artifacts.py --app-version 2.2.1 --require-git-ref-source
+python tools\validate_windows_release_artifacts.py --app-version 2.2.2 --require-git-ref-source
 ```
 
 The source must include application code, build and installer scripts, CUDA

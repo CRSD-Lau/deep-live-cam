@@ -1,6 +1,6 @@
 # Windows Release Report
 
-Release: `2.2.1`
+Release: `2.2.2`
 
 ## Packaging Approach
 
@@ -16,6 +16,8 @@ one environment.
   choice, and the CPU face-analysis compatibility path.
 - Added `build/windows/package_portable.ps1` and combined release CI.
 - Added strict portable ZIP, hidden-runtime, hash, and model-exclusion checks.
+- Replaced version-named NVIDIA install directories with one stable directory,
+  safe legacy migration, orphan cleanup, and an isolated upgrade fixture.
 - Updated version metadata, README, DirectML guide, changelog, release notes,
   source preparation, checklist, handoff, and gate evidence.
 
@@ -23,16 +25,16 @@ one environment.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator Cuda
-powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.2.1
+powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.2.2
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator DirectML
-powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.1 -Accelerator DirectML
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.1 -GitRef RELEASE_COMMIT
+powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.2 -Accelerator DirectML
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.2 -GitRef RELEASE_COMMIT
 ```
 
 ## Installer Output
 
-- `DeepLiveCamStudio-2.2.1-x64-setup.exe`
-- `DeepLiveCamStudio-2.2.1-DirectML-x64-portable.zip`
+- `DeepLiveCamStudio-2.2.2-x64-setup.exe`
+- `DeepLiveCamStudio-2.2.2-DirectML-x64-portable.zip`
 - matching SHA-256 sidecars
 - exact source ZIP, source SHA-256, and source manifest
 
