@@ -29,7 +29,7 @@ if (-not (Test-Path $Gui)) {
 $OnnxRuntimeLicense = if ($Accelerator -eq "DirectML") {
     "LICENSES\THIRD_PARTY_LICENSES\onnxruntime-directml-1.23.0\package\LICENSE"
 } else {
-    "LICENSES\THIRD_PARTY_LICENSES\onnxruntime-gpu-1.24.3\package\LICENSE"
+    "LICENSES\THIRD_PARTY_LICENSES\onnxruntime-gpu-1.24.4\package\LICENSE"
 }
 
 $RequiredFiles = @(

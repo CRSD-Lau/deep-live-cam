@@ -10,7 +10,7 @@ It collects high-attention license, notice, and package metadata files that PyIn
 
 - `tensorflow` `2.19.1`
 - `opencv-python` `4.10.0.84`
-- `onnxruntime-gpu` `1.24.3`
+- `onnxruntime-gpu` `1.24.4`
 - `torch` `2.11.0+cu128`
 - `onnx` `1.22.0`
 - `opennsfw2` `0.18.0`

@@ -6,6 +6,16 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Updated the deterministic Windows packaging toolchain to pip 26.2.1, wheel
+  0.48.0, and PyInstaller 6.22.0.
+
+### Fixed
+
+- Replaced the unavailable ONNX Runtime GPU 1.24.3 package with the compatible
+  1.24.4 patch release and refreshed its lock and licence evidence.
+
 ## [2.2.1] - 2026-08-03
 
 ### Added

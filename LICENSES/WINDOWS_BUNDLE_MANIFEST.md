@@ -34,7 +34,7 @@ This manifest is generated from the PyInstaller `dist/DeepLiveCamStudio` payload
 - [x] `LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/README.md`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/tensorflow-2.19.1/package/THIRD_PARTY_NOTICES.txt`
-- [x] `LICENSES/THIRD_PARTY_LICENSES/onnxruntime-gpu-1.24.3/package/LICENSE`
+- [x] `LICENSES/THIRD_PARTY_LICENSES/onnxruntime-gpu-1.24.4/package/LICENSE`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/opencv-python-4.10.0.84/package/LICENSE-3RD-PARTY.txt`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/onnx-1.22.0/licenses/LICENSE`
 - [x] `LICENSES/THIRD_PARTY_LICENSES/opennsfw2-0.18.0/licenses/LICENSE`

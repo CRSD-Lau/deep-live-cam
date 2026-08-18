@@ -9,7 +9,7 @@ Release builds install reviewed lock files rather than resolving ranged dependen
 | Architecture | Windows x64 | Windows x64 |
 | Operating system | Windows 10 22H2 or Windows 11 23H2 and newer | Windows 10 22H2 or Windows 11 23H2 and newer |
 | Python | CPython 3.11.9 | CPython 3.11.9 |
-| ONNX Runtime | `onnxruntime-gpu==1.24.3` | `onnxruntime-directml==1.23.0` |
+| ONNX Runtime | `onnxruntime-gpu==1.24.4` | `onnxruntime-directml==1.23.0` |
 | GPU runtime | CUDA 12.8, cuDNN 9 | DirectX 12 / DirectML |
 | Driver floor | NVIDIA Windows driver 528.33 or newer; current production driver recommended | Current vendor driver with DirectX 12 support |
 | Validated hardware | NVIDIA GPU with CUDA Execution Provider | AMD, Intel, or NVIDIA DirectX 12 adapter with DML Execution Provider |

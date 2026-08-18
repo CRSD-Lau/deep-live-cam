@@ -23,7 +23,7 @@ The table below highlights the primary runtime dependencies from `requirements.t
 | `PySide6` | 6.11.1 | LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only | Preserve Qt for Python notices and LGPL compliance path. |
 | `Pillow` | 12.1.1 | HPND/Pillow license metadata varies | Include wheel metadata in final release audit. |
 | `tqdm` | 4.67.3 | MPL-2.0 AND MIT | Progress display. |
-| `onnxruntime-gpu` | 1.24.3 | MIT | Bundles ONNX Runtime native DLLs; CUDA provider needs compatible NVIDIA runtime DLLs. |
+| `onnxruntime-gpu` | 1.24.4 | MIT | Bundles ONNX Runtime native DLLs; CUDA provider needs compatible NVIDIA runtime DLLs. |
 | `onnxruntime-directml` | 1.23.0 (DirectML test profile only) | MIT | Bundles ONNX Runtime and DirectML native DLLs for DirectX 12 GPU inference on Windows. |
 | `onnxruntime-silicon` | not installed on Windows | MIT/Apple Silicon package | macOS-only requirement marker. |
 | `tensorflow` | 2.19.1 observed | Apache-2.0 | Large dependency tree; PyInstaller may collect many transitive notices. |
