@@ -80,6 +80,7 @@ REQUIRED_SOURCE_ENTRIES = (
     "build/windows/verify_obs_virtualcam_gate.ps1",
     "build/windows/deep_live_cam_studio.spec",
     "build/windows/installer.iss",
+    "build/windows/test_legacy_installer.iss",
     "tools/check_cuda_provider.py",
     "tools/check_obs_virtualcam.py",
     "tools/check_windows_release_cutover.py",
@@ -662,7 +663,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate Windows release artifact set.")
     parser.add_argument("--output-dir", default="build/windows/installer", help="Installer output directory.")
     parser.add_argument("--release-assets-dir", help="Optional curated GitHub Release asset directory to validate.")
-    parser.add_argument("--app-version", default="2.2.1", help="Application version.")
+    parser.add_argument("--app-version", default="2.2.2", help="Application version.")
     parser.add_argument("--repo-root", default=".", help="Repository root containing RELEASE_VERIFICATION.md.")
     parser.add_argument(
         "--require-git-ref-source",

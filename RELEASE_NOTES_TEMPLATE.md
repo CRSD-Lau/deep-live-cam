@@ -1,13 +1,13 @@
-# Deep Live Cam Studio 2.2.1 Windows Release
+# Deep Live Cam Studio 2.2.2 Windows Release
 
-This maintenance release modernizes the Windows dependency set, hardens the
-release process, and safely refactors the UI/frame pipeline while preserving
-the CUDA and DirectML workflows introduced in 2.2.0.
+This maintenance release makes NVIDIA updates behave like a conventional app
+upgrade, clarifies the DirectML portable update path, and ships the reviewed
+Windows dependency patches merged since 2.2.1.
 
 ## Downloads
 
-- NVIDIA/CUDA installer: `DeepLiveCamStudio-2.2.1-x64-setup.exe`
-- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.2.1-x64-setup.exe.sha256`
+- NVIDIA/CUDA installer: `DeepLiveCamStudio-2.2.2-x64-setup.exe`
+- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.2.2-x64-setup.exe.sha256`
 - AMD/Intel DirectML portable ZIP: {{DIRECTML_PORTABLE_NAME}}
 - DirectML portable SHA-256: {{DIRECTML_PORTABLE_SHA256}}
 - Corresponding source archive: listed in the uploaded `RELEASE_ASSETS.md`
@@ -18,25 +18,33 @@ Use the CUDA installer for NVIDIA GPUs. Use the DirectML ZIP for AMD or Intel
 DirectX 12 GPUs: extract it into a new folder and run
 `DeepLiveCamStudio.exe`. Do not copy one runtime over another.
 
+To update an NVIDIA installation, close Deep Live Cam Studio and run the new
+setup EXE. It migrates earlier version-named installations into one stable
+per-user directory while preserving downloaded models, settings, and logs.
+DirectML remains portable: extract each update into a new folder and delete the
+old extracted folder after verifying the new copy.
+
 ## What Changed
 
 ### Changed
 
-- Refreshed the reviewed Windows dependency set and regenerated reproducible
-  CUDA and DirectML locks plus licence snapshots.
-- Refactored high-complexity UI and frame-pipeline orchestration behind
-  characterization tests while preserving user-visible behavior.
-- Modernized the repository README, documentation, issue forms, support and
-  security policies, dependency policy, and public project presentation.
+- Standardized NVIDIA installs on
+  `%LOCALAPPDATA%\Programs\DeepLiveCamStudio` instead of a version-named
+  directory.
+- Updated pip, wheel, PyInstaller, pip-tools, and Ruff in the deterministic
+  Windows build and test toolchain.
+- Documented the separate NVIDIA installer and DirectML portable update paths.
 
 ### Fixed
 
-- Removed stale release triggers, obsolete duplicate tooling, unused imports,
-  and retired scaffolding without changing supported workflows.
-- Kept strict provider checks so CPU fallback cannot be mistaken for a
-  successful CUDA or DirectML result.
+- The NVIDIA installer now removes the registered legacy installation and
+  recognizable orphaned version folders before completing the stable upgrade.
+- Installer tests now use an isolated app identity and validate a complete
+  2.2.1-layout to 2.2.2 migration without disturbing real installations.
+- Replaced the unavailable ONNX Runtime GPU 1.24.3 wheel with 1.24.4 and
+  refreshed locks and licence evidence.
 
-An independent physical tester validated the release candidate on Windows 11
+The unchanged DirectML application path was previously validated on Windows 11
 with a Radeon RX 9060 XT: the DirectML badge was active and Preview,
 short-video Render, and OBS Live Output all passed with no blocking regression.
 The packaged release runtimes are separately checked for their expected GPU
@@ -51,7 +59,7 @@ exact binary release is attached and identified by the source ref above.
 The source archive is produced with:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.1 -GitRef HEAD
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.2 -GitRef HEAD
 ```
 
 This release preserves attribution to the original project:
@@ -98,7 +106,7 @@ Completed local evidence is included in the uploaded release documents:
 
 - Full automated test suite.
 - Packaged CUDA and DirectML runtime/provider checks.
-- Installer smoke install/uninstall checks.
+- Clean-install, legacy-upgrade, registry, shortcut, and uninstall checks.
 - Model download/checksum and forbidden-model scans.
 - CUDA and DirectML file-render checks.
 - Radeon RX 9060 XT DirectML and NVIDIA RTX 4070 CUDA Live Output checks.

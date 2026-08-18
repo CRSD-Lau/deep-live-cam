@@ -19,6 +19,18 @@ another.
 The portable build stores downloaded models, settings, and logs under
 `%LOCALAPPDATA%\DeepLiveCamStudio`, just like the installed CUDA build.
 
+## Update a portable installation
+
+1. Close Deep Live Cam Studio.
+2. Extract the newer DirectML ZIP into a new folder instead of copying it over
+   the old folder.
+3. Start the new copy and verify the provider as described below.
+4. Delete the previous extracted folder after the new copy works.
+
+Downloaded models, settings, and logs remain in
+`%LOCALAPPDATA%\DeepLiveCamStudio`. Never extract the DirectML package over the
+CUDA installer directory.
+
 ## Verify GPU acceleration
 
 Open PowerShell in the extracted folder and run:
@@ -74,7 +86,7 @@ Build, validate, and package the portable release:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator DirectML
-powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.1 -Accelerator DirectML
+powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.2 -Accelerator DirectML
 ```
 
 The packaging step performs a strict provider probe, rejects bundled model

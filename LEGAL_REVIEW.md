@@ -2,7 +2,7 @@
 
 Status: PASS
 
-Release: `2.2.1`
+Release: `2.2.2`
 
 This is a release-management record, not legal advice. Publisher acceptance is
 recorded by project owner Neil Mitchell; exact final hashes and source refs are
@@ -57,8 +57,21 @@ kept in the release asset manifest rather than embedded in installed files.
 - UI/frame-pipeline refactoring and repository-administration changes add no
   model weights, codecs, or separately licensed binary payloads.
 
+## 2.2.2 delta review
+
+- ONNX Runtime GPU moves from the unavailable 1.24.3 wheel to its compatible
+  1.24.4 patch; the existing MIT licence remains bundled and the regenerated
+  dependency inventory records the exact shipped package.
+- Build-only updates to pip, wheel, PyInstaller, pip-tools, and Ruff do not add
+  a new runtime dependency family or model payload.
+- Stable-directory migration, legacy-install cleanup, and isolated installer
+  testing change Windows packaging behavior only. User models remain external
+  and neither release profile gains model/checkpoint files.
+- CUDA and DirectML remain separate downloads with exact corresponding source,
+  hashes, notices, and the previously accepted runtime licence posture.
+
 Generate the final evidence packet with:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.2.1
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.2.2
 ```

@@ -58,6 +58,20 @@ DirectML also works on supported NVIDIA GPUs, but CUDA is the recommended NVIDIA
 
 Release assets include SHA-256 sidecars and a combined `SHA256SUMS.txt`. Windows may show Microsoft Defender SmartScreen because the public installer does not yet have paid code-signing reputation. Proceed only when the file came from this repository and its checksum matches the release page.
 
+### Updating
+
+- **NVIDIA/CUDA installer:** Close Deep Live Cam Studio and run the newer setup
+  `.exe`. It replaces the registered installation, migrates older version-named
+  install folders to one stable location, and keeps downloaded models,
+  settings, and logs.
+- **AMD/Intel DirectML portable:** Close the app and extract the newer ZIP into
+  a new folder. After it starts successfully, delete the previous extracted
+  folder. Models, settings, and logs remain under
+  `%LOCALAPPDATA%\DeepLiveCamStudio`.
+
+Do not extract the DirectML package over the CUDA installation or mix files
+from the two packages.
+
 ## Features
 
 | Capability | What it provides |
@@ -72,7 +86,7 @@ Release assets include SHA-256 sidecars and a combined `SHA256SUMS.txt`. Windows
 ## Quick Start
 
 1. Download the CUDA installer for NVIDIA or the DirectML ZIP for AMD/Intel.
-2. Run the installer, or extract the DirectML ZIP into a new folder.
+2. Run the NVIDIA installer, or extract the DirectML ZIP into a new folder.
 3. Start **Deep Live Cam Studio**.
 4. Select **Set Up Models** and review the model sources, licence notes, and checksums.
 5. Select a source face and target image, video, or camera.
