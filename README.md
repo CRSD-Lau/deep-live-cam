@@ -121,7 +121,7 @@ See [DirectML testing](docs/DIRECTML_TESTING.md) and [OBS Virtual Camera](docs/O
 
 ### Files
 
-Choose a source face and target image or video. Preview the result, adjust the quality and refinement controls, then select **Start Render**. Video output retains audio when `ffmpeg` is available and **Keep audio** is enabled.
+Choose a source face and target image or video. Video previews start automatically; use **Play**/**Pause** or the timeline to inspect individual frames. Adjust the quality and refinement controls, then select **Start Render**. Video output retains audio when `ffmpeg` is available and **Keep audio** is enabled.
 
 ### Live Output
 
