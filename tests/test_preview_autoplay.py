@@ -130,6 +130,54 @@ def test_autoplay_waits_for_first_processed_frame_before_advancing(monkeypatch, 
         window.shutdown(block=True)
 
 
+def test_autoplay_waits_until_source_frame_deadline(monkeypatch, qapp):
+    configure_video_preview(monkeypatch)
+    monkeypatch.setattr(ui, "get_video_frame_rate", lambda _path: 2.0)
+    now = [260.0]
+    monkeypatch.setattr(ui.time, "monotonic", lambda: now[0])
+    window = ui.PreviewWindow()
+
+    try:
+        window.init_for_target()
+        initial_request = window._request_queue.get_nowait()
+        window._result_queue.put(
+            ui._PreviewFrameResult(
+                generation=initial_request.generation,
+                frame_number=0,
+                frame=np.zeros((1, 1, 3), dtype=np.uint8),
+            )
+        )
+        window._tick()
+
+        now[0] = 260.49
+        window._tick()
+        assert window._request_queue.empty()
+
+        now[0] = 260.5
+        window._tick()
+        assert window._request_queue.get_nowait().frame_number == 1
+    finally:
+        window.shutdown(block=True)
+
+
+def test_video_preview_reads_first_frame_when_count_metadata_is_missing(
+    monkeypatch, qapp
+):
+    configure_video_preview(monkeypatch)
+    monkeypatch.setattr(ui, "get_video_frame_total", lambda _path: 0)
+    window = ui.PreviewWindow()
+
+    try:
+        window.init_for_target()
+
+        request = window._request_queue.get_nowait()
+        assert request.frame_number == 0
+        assert window._frame_total == 1
+        assert not window.is_playing
+    finally:
+        window.shutdown(block=True)
+
+
 def test_repeated_video_frames_do_not_grow_preview_window(monkeypatch, qapp):
     configure_video_preview(monkeypatch)
     monkeypatch.setattr(ui.time, "monotonic", lambda: 275.0)
@@ -223,6 +271,62 @@ def test_preview_shutdown_stops_timer_and_joins_worker(monkeypatch, qapp):
     assert window._result_queue is None
 
 
+def test_paused_preview_stops_polling_and_restarts_for_a_seek(monkeypatch, qapp):
+    configure_video_preview(monkeypatch)
+    monkeypatch.setattr(ui.time, "monotonic", lambda: 375.0)
+    window = ui.PreviewWindow()
+
+    try:
+        window.init_for_target()
+        window._request_queue.get_nowait()
+        window.pause()
+        window._result_queue.put(
+            ui._PreviewFrameResult(
+                generation=window._generation,
+                frame_number=0,
+                frame=np.zeros((1, 1, 3), dtype=np.uint8),
+            )
+        )
+
+        window._tick()
+
+        assert not window._timer.isActive()
+        window.refresh_frame(4)
+        assert window._timer.isActive()
+        assert window._request_queue.get_nowait().frame_number == 4
+    finally:
+        window.shutdown(block=True)
+
+
+def test_worker_error_can_retry_the_same_frame(monkeypatch, qapp):
+    configure_video_preview(monkeypatch)
+    monkeypatch.setattr(ui.time, "monotonic", lambda: 400.0)
+    window = ui.PreviewWindow()
+
+    try:
+        window.init_for_target()
+        request = window._request_queue.get_nowait()
+        window._result_queue.put(
+            ui._PreviewFrameResult(
+                generation=request.generation,
+                frame_number=request.frame_number,
+                error="Preview failed: transient test error",
+            )
+        )
+
+        window._tick()
+        assert not window.is_playing
+        assert window._requested_frame is None
+        assert not window._timer.isActive()
+
+        window.play()
+        retry = window._request_queue.get_nowait()
+        assert retry.frame_number == request.frame_number
+        assert window.is_playing
+    finally:
+        window.shutdown(block=True)
+
+
 def test_preview_worker_processes_requested_frame(monkeypatch):
     request_queue = queue.Queue(maxsize=1)
     result_queue = queue.Queue(maxsize=1)
@@ -274,3 +378,62 @@ def test_preview_worker_processes_requested_frame(monkeypatch):
     assert result.frame_number == 4
     assert result.error is None
     np.testing.assert_array_equal(result.frame, np.full((1, 1, 3), 5, dtype=np.uint8))
+
+
+def test_preview_worker_resets_temporal_state_only_for_initial_and_jump(monkeypatch):
+    request_queue = queue.Queue(maxsize=1)
+    result_queue = queue.Queue(maxsize=1)
+    stop_event = threading.Event()
+    resets = []
+    processed = []
+
+    class Processor:
+        @staticmethod
+        def process_frame(_source_face, frame):
+            processed.append(int(frame[0, 0, 0]))
+            return frame
+
+    class FakeVideoFrameReader:
+        def __init__(self, _path):
+            self.closed = False
+
+        def read(self, number):
+            return np.full((1, 1, 3), number, dtype=np.uint8)
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setattr(ui, "_load_source_face", lambda _path: "source-face")
+    monkeypatch.setattr(ui, "VideoFrameReader", FakeVideoFrameReader)
+    monkeypatch.setattr(ui, "check_and_ignore_nsfw", lambda _frame: False)
+    monkeypatch.setattr(modules.globals, "frame_processors", ["test"])
+    monkeypatch.setattr(modules.globals, "nsfw_filter", False)
+
+    from modules.processors.frame import core as frame_core
+
+    monkeypatch.setattr(
+        frame_core, "get_frame_processors_modules", lambda _names: [Processor]
+    )
+    monkeypatch.setattr(
+        frame_core,
+        "reset_frame_processor_temporal_state",
+        lambda _processors: resets.append(tuple(processed)),
+    )
+    worker = ui._PreviewWorker(
+        "source.jpg", "target.mp4", request_queue, result_queue, stop_event
+    )
+    worker.start()
+
+    try:
+        for frame_number in (0, 1, 4):
+            request_queue.put(
+                ui._PreviewFrameRequest(generation=7, frame_number=frame_number)
+            )
+            result = result_queue.get(timeout=2)
+            assert result.frame_number == frame_number
+    finally:
+        stop_event.set()
+        worker.join(timeout=2)
+
+    assert not worker.is_alive()
+    assert resets == [(), (0, 1)]

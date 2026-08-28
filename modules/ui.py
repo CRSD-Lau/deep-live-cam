@@ -1452,6 +1452,8 @@ class MainWindow(QMainWindow):
             return
         if _PREVIEW.isVisible():
             _PREVIEW.hide()
+        elif _WEBCAM_PREVIEW is not None and _WEBCAM_PREVIEW.isVisible():
+            update_status("Stop live output before opening file Preview.")
         elif modules.globals.source_path and modules.globals.target_path:
             def refresh_and_show_preview() -> None:
                 _PREVIEW.init_for_target()
@@ -1717,7 +1719,10 @@ class PreviewWindow(QWidget):
             self._frame_rate = 30.0
             self._controls_widget.hide()
         elif is_video(target_path):
-            self._frame_total = max(0, get_video_frame_total(target_path))
+            # Some codecs do not expose CAP_PROP_FRAME_COUNT even though frame
+            # zero is readable. Keep Preview useful instead of showing a blank
+            # window; playback controls remain idle until a count is available.
+            self._frame_total = max(1, get_video_frame_total(target_path))
             self._frame_rate = get_video_frame_rate(target_path)
             self._set_slider_range(self._frame_total)
             self._controls_widget.show()
@@ -1774,6 +1779,7 @@ class PreviewWindow(QWidget):
             return
         self._playing = False
         self._play_button.setText(_("Play"))
+        self._timer.stop()
         self._generation += 1
         self._requested_frame = None
         self._requested_generation = None
@@ -1844,6 +1850,8 @@ class PreviewWindow(QWidget):
         )
         self._requested_frame = frame_number
         self._requested_generation = self._generation
+        if not self._timer.isActive():
+            self._timer.start()
 
     def _tick(self) -> None:
         self._display_latest_result()
@@ -1879,6 +1887,8 @@ class PreviewWindow(QWidget):
         if result.generation != self._generation:
             return
         if result.error:
+            self._requested_frame = None
+            self._requested_generation = None
             self._finish_playback()
             update_status(result.error)
             return
@@ -1899,11 +1909,14 @@ class PreviewWindow(QWidget):
             self._set_slider_value(result.frame_number)
         if self._playing and self._next_frame_due_time is None:
             self._restart_playback_pacing(wait_for_frame=False)
+        elif not self._playing:
+            self._timer.stop()
 
     def _finish_playback(self) -> None:
         self._playing = False
         self._next_frame_due_time = None
         self._play_button.setText(_("Play"))
+        self._timer.stop()
         update_status("Preview finished.")
 
     def _restart_playback_pacing(self, *, wait_for_frame: bool) -> None:
