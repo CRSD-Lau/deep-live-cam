@@ -64,3 +64,48 @@ def test_get_video_frame_rate_falls_back_for_invalid_metadata(
 
     assert fps == expected_fps
     assert fake.released
+
+
+def test_video_frame_reader_reuses_capture_for_sequential_frames(monkeypatch):
+    captures = []
+
+    class SequentialFakeCapture(FakeCapture):
+        def __init__(self):
+            super().__init__(frame_count=6)
+            self.position = 0
+
+        def set(self, prop, value):
+            super().set(prop, value)
+            if prop == capturer.cv2.CAP_PROP_POS_FRAMES:
+                self.position = int(value)
+            return True
+
+        def read(self):
+            frame_number = self.position
+            self.position += 1
+            return True, np.full((1, 1, 3), frame_number, dtype=np.uint8)
+
+    def make_capture(_path):
+        capture = SequentialFakeCapture()
+        captures.append(capture)
+        return capture
+
+    monkeypatch.setattr(capturer.cv2, "VideoCapture", make_capture)
+    monkeypatch.setattr(modules.globals, "color_correction", False)
+
+    with capturer.VideoFrameReader("target.mp4") as reader:
+        first = reader.read(0)
+        second = reader.read(1)
+        jumped = reader.read(4)
+
+    assert len(captures) == 1
+    position_calls = [
+        value
+        for prop, value in captures[0].set_calls
+        if prop == capturer.cv2.CAP_PROP_POS_FRAMES
+    ]
+    assert position_calls == [0, 4]
+    assert int(first[0, 0, 0]) == 0
+    assert int(second[0, 0, 0]) == 1
+    assert int(jumped[0, 0, 0]) == 4
+    assert captures[0].released

@@ -69,7 +69,7 @@ def test_video_preview_starts_playing_and_queues_first_frame(monkeypatch, qapp):
         window.shutdown(block=True)
 
 
-def test_autoplay_uses_media_time_and_drops_stale_requests(monkeypatch, qapp):
+def test_autoplay_advances_sequentially_when_processing_is_slow(monkeypatch, qapp):
     configure_video_preview(monkeypatch)
     now = [200.0]
     monkeypatch.setattr(ui.time, "monotonic", lambda: now[0])
@@ -91,8 +91,23 @@ def test_autoplay_uses_media_time_and_drops_stale_requests(monkeypatch, qapp):
         window._tick()
 
         request = window._request_queue.get_nowait()
-        assert request.frame_number == 15
+        assert request.frame_number == 1
+        now[0] = 201.0
+        window._tick()
         assert window._request_queue.empty()
+
+        window._result_queue.put(
+            ui._PreviewFrameResult(
+                generation=request.generation,
+                frame_number=request.frame_number,
+                frame=np.ones((1, 1, 3), dtype=np.uint8),
+            )
+        )
+        now[0] = 201.5
+        window._tick()
+
+        next_request = window._request_queue.get_nowait()
+        assert next_request.frame_number == 2
     finally:
         window.shutdown(block=True)
 
@@ -115,30 +130,41 @@ def test_autoplay_waits_for_first_processed_frame_before_advancing(monkeypatch, 
         window.shutdown(block=True)
 
 
-def test_video_frame_fits_above_playback_controls(monkeypatch, qapp):
+def test_repeated_video_frames_do_not_grow_preview_window(monkeypatch, qapp):
     configure_video_preview(monkeypatch)
     monkeypatch.setattr(ui.time, "monotonic", lambda: 275.0)
     window = ui.PreviewWindow()
 
     try:
         window.init_for_target()
+        window.pause()
         request = window._request_queue.get_nowait()
-        window._result_queue.put(
-            ui._PreviewFrameResult(
-                generation=request.generation,
-                frame_number=0,
-                frame=np.zeros((360, 640, 3), dtype=np.uint8),
-            )
-        )
+        window.show()
+        qapp.processEvents()
+        initial_size = (window.width(), window.height())
 
-        window._tick()
+        observed_sizes = []
+        for _ in range(6):
+            window._result_queue.put(
+                ui._PreviewFrameResult(
+                    generation=request.generation,
+                    frame_number=0,
+                    frame=np.zeros((360, 640, 3), dtype=np.uint8),
+                )
+            )
+            window._tick()
+            qapp.processEvents()
+            observed_sizes.append((window.width(), window.height()))
+
+        assert observed_sizes == [initial_size] * 6
 
         pixmap = window._image_label.pixmap()
-        available_height = window.height() - window._controls_widget.sizeHint().height()
-        assert pixmap.height() <= available_height
-        assert pixmap.width() <= window.width()
+        image_bounds = window._image_label.contentsRect().size()
+        assert pixmap.height() <= image_bounds.height()
+        assert pixmap.width() <= image_bounds.width()
     finally:
-        window.shutdown(block=True)
+        window.close()
+        qapp.processEvents()
 
 
 def test_play_button_pauses_without_leaving_future_requests(monkeypatch, qapp):
@@ -212,9 +238,17 @@ def test_preview_worker_processes_requested_frame(monkeypatch):
             return frame + 1
 
     monkeypatch.setattr(ui, "_load_source_face", lambda _path: "source-face")
-    monkeypatch.setattr(
-        ui, "get_video_frame", lambda _path, number: np.full((1, 1, 3), number, dtype=np.uint8)
-    )
+    class FakeVideoFrameReader:
+        def __init__(self, _path):
+            self.closed = False
+
+        def read(self, number):
+            return np.full((1, 1, 3), number, dtype=np.uint8)
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setattr(ui, "VideoFrameReader", FakeVideoFrameReader)
     monkeypatch.setattr(ui, "check_and_ignore_nsfw", lambda _frame: False)
     monkeypatch.setattr(modules.globals, "frame_processors", ["test"])
     monkeypatch.setattr(modules.globals, "nsfw_filter", False)

@@ -59,7 +59,7 @@ from PySide6.QtWidgets import (
 import modules.globals
 import modules.metadata
 from modules.capturer import (
-    get_video_frame,
+    VideoFrameReader,
     get_video_frame_rate,
     get_video_frame_total,
 )
@@ -1582,62 +1582,71 @@ class _PreviewWorker(threading.Thread):
     def run(self) -> None:
         source_face = None
         frame_processors = None
+        frame_reader: Optional[VideoFrameReader] = None
         last_frame_number: Optional[int] = None
 
-        while not self._stop_event.is_set():
-            try:
-                request, _skipped = get_latest(self._request_queue, timeout=0.05)
-            except queue.Empty:
-                continue
+        try:
+            while not self._stop_event.is_set():
+                try:
+                    request, _skipped = get_latest(self._request_queue, timeout=0.05)
+                except queue.Empty:
+                    continue
 
-            try:
-                if source_face is None or frame_processors is None:
-                    source_face = _load_source_face(self._source_path)
-                    if source_face is None:
-                        raise RuntimeError("the source face could not be loaded")
-                    from modules.processors.frame.core import (
-                        get_frame_processors_modules,
-                        reset_frame_processor_temporal_state,
+                try:
+                    if source_face is None or frame_processors is None:
+                        source_face = _load_source_face(self._source_path)
+                        if source_face is None:
+                            raise RuntimeError("the source face could not be loaded")
+                        from modules.processors.frame.core import (
+                            get_frame_processors_modules,
+                            reset_frame_processor_temporal_state,
+                        )
+
+                        frame_processors = get_frame_processors_modules(
+                            modules.globals.frame_processors
+                        )
+                        reset_frame_processor_temporal_state(frame_processors)
+                    elif (
+                        last_frame_number is not None
+                        and request.frame_number != last_frame_number + 1
+                    ):
+                        from modules.processors.frame.core import (
+                            reset_frame_processor_temporal_state,
+                        )
+
+                        reset_frame_processor_temporal_state(frame_processors)
+
+                    if frame_reader is None:
+                        frame_reader = VideoFrameReader(self._target_path)
+                    temp_frame = frame_reader.read(request.frame_number)
+                    if temp_frame is None:
+                        raise RuntimeError("the requested video frame could not be read")
+                    if modules.globals.nsfw_filter and check_and_ignore_nsfw(temp_frame):
+                        raise RuntimeError("the frame was blocked by the safety filter")
+                    for frame_processor in frame_processors:
+                        temp_frame = frame_processor.process_frame(source_face, temp_frame)
+                    last_frame_number = request.frame_number
+                    put_latest(
+                        self._result_queue,
+                        _PreviewFrameResult(
+                            generation=request.generation,
+                            frame_number=request.frame_number,
+                            frame=temp_frame,
+                        ),
                     )
-
-                    frame_processors = get_frame_processors_modules(
-                        modules.globals.frame_processors
+                except Exception as error:
+                    traceback.print_exc()
+                    put_latest(
+                        self._result_queue,
+                        _PreviewFrameResult(
+                            generation=request.generation,
+                            frame_number=request.frame_number,
+                            error=f"Preview failed: {error}",
+                        ),
                     )
-                    reset_frame_processor_temporal_state(frame_processors)
-                elif (
-                    last_frame_number is not None
-                    and request.frame_number != last_frame_number + 1
-                ):
-                    from modules.processors.frame.core import reset_frame_processor_temporal_state
-
-                    reset_frame_processor_temporal_state(frame_processors)
-
-                temp_frame = get_video_frame(self._target_path, request.frame_number)
-                if temp_frame is None:
-                    raise RuntimeError("the requested video frame could not be read")
-                if modules.globals.nsfw_filter and check_and_ignore_nsfw(temp_frame):
-                    raise RuntimeError("the frame was blocked by the safety filter")
-                for frame_processor in frame_processors:
-                    temp_frame = frame_processor.process_frame(source_face, temp_frame)
-                last_frame_number = request.frame_number
-                put_latest(
-                    self._result_queue,
-                    _PreviewFrameResult(
-                        generation=request.generation,
-                        frame_number=request.frame_number,
-                        frame=temp_frame,
-                    ),
-                )
-            except Exception as error:
-                traceback.print_exc()
-                put_latest(
-                    self._result_queue,
-                    _PreviewFrameResult(
-                        generation=request.generation,
-                        frame_number=request.frame_number,
-                        error=f"Preview failed: {error}",
-                    ),
-                )
+        finally:
+            if frame_reader is not None:
+                frame_reader.close()
 
 
 class PreviewWindow(QWidget):
@@ -1651,7 +1660,7 @@ class PreviewWindow(QWidget):
         self._image_label = QLabel()
         self._image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._image_label.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored
         )
         layout.addWidget(self._image_label, 1)
 
@@ -1688,8 +1697,7 @@ class PreviewWindow(QWidget):
         self._playing = False
         self._seeking = False
         self._resume_after_seek = False
-        self._playback_anchor_frame = 0
-        self._playback_anchor_time: Optional[float] = None
+        self._next_frame_due_time: Optional[float] = None
 
     @property
     def is_playing(self) -> bool:
@@ -1701,6 +1709,7 @@ class PreviewWindow(QWidget):
         self._requested_frame = None
         self._requested_generation = None
         self._displayed_frame = None
+        self._next_frame_due_time = None
         target_path = modules.globals.target_path
 
         if is_image(target_path):
@@ -1731,7 +1740,7 @@ class PreviewWindow(QWidget):
         _clear_queue(self._request_queue)
         self._request_frame(frame_number)
         if self._playing and not self._seeking:
-            self._restart_playback_clock(frame_number, wait_for_frame=True)
+            self._restart_playback_pacing(wait_for_frame=True)
 
     def toggle_playback(self) -> None:
         if self._playing:
@@ -1752,11 +1761,10 @@ class PreviewWindow(QWidget):
             self._set_slider_value(0)
         self._playing = True
         self._play_button.setText(_("Pause"))
-        self._restart_playback_clock(
-            frame_number,
-            wait_for_frame=self._displayed_frame != frame_number,
-        )
-        self._request_frame(frame_number)
+        wait_for_frame = self._displayed_frame != frame_number
+        self._restart_playback_pacing(wait_for_frame=wait_for_frame)
+        if wait_for_frame:
+            self._request_frame(frame_number)
         if not self._timer.isActive():
             self._timer.start()
         update_status("Preview playing.")
@@ -1769,6 +1777,7 @@ class PreviewWindow(QWidget):
         self._generation += 1
         self._requested_frame = None
         self._requested_generation = None
+        self._next_frame_due_time = None
         _clear_queue(self._request_queue)
         if self._displayed_frame is None:
             self._request_frame(self._slider.value())
@@ -1790,6 +1799,7 @@ class PreviewWindow(QWidget):
         self._result_queue = None
         self._requested_frame = None
         self._requested_generation = None
+        self._next_frame_due_time = None
 
     def _start_worker(self) -> bool:
         source_path = modules.globals.source_path
@@ -1839,15 +1849,25 @@ class PreviewWindow(QWidget):
         self._display_latest_result()
         if not self._playing or self._frame_total <= 1:
             return
-        if self._playback_anchor_time is None:
+        if self._displayed_frame is None:
             return
-        elapsed = max(0.0, time.monotonic() - self._playback_anchor_time)
-        frame_number = self._playback_anchor_frame + int(elapsed * self._frame_rate)
-        if frame_number >= self._frame_total:
-            self._request_frame(self._frame_total - 1)
+        if (
+            self._requested_generation == self._generation
+            and self._requested_frame != self._displayed_frame
+        ):
+            return
+        if self._displayed_frame >= self._frame_total - 1:
             self._finish_playback()
             return
-        self._request_frame(frame_number)
+        if self._next_frame_due_time is None:
+            self._restart_playback_pacing(wait_for_frame=False)
+            return
+
+        now = time.monotonic()
+        if now < self._next_frame_due_time:
+            return
+        self._request_frame(self._displayed_frame + 1)
+        self._next_frame_due_time += 1.0 / self._frame_rate
 
     def _display_latest_result(self) -> None:
         if self._result_queue is None:
@@ -1867,14 +1887,9 @@ class PreviewWindow(QWidget):
 
         temp_frame = result.frame
         h, w = temp_frame.shape[:2]
-        bound_w = min(PREVIEW_MAX_WIDTH, max(1, self.width()))
-        controls_height = (
-            0
-            if self._controls_widget.isHidden()
-            else self._controls_widget.sizeHint().height()
-        )
-        available_height = max(1, self.height() - controls_height)
-        bound_h = min(PREVIEW_MAX_HEIGHT, available_height)
+        image_bounds = self._image_label.contentsRect().size()
+        bound_w = min(PREVIEW_MAX_WIDTH, max(1, image_bounds.width()))
+        bound_h = min(PREVIEW_MAX_HEIGHT, max(1, image_bounds.height()))
         ratio = min(bound_w / w, bound_h / h)
         new_size = (max(1, int(w * ratio)), max(1, int(h * ratio)))
         temp_frame = cv2.resize(temp_frame, new_size, interpolation=cv2.INTER_LANCZOS4)
@@ -1882,24 +1897,19 @@ class PreviewWindow(QWidget):
         self._displayed_frame = result.frame_number
         if not self._seeking:
             self._set_slider_value(result.frame_number)
-        if self._playing and self._playback_anchor_time is None:
-            self._restart_playback_clock(result.frame_number)
+        if self._playing and self._next_frame_due_time is None:
+            self._restart_playback_pacing(wait_for_frame=False)
 
     def _finish_playback(self) -> None:
         self._playing = False
+        self._next_frame_due_time = None
         self._play_button.setText(_("Play"))
         update_status("Preview finished.")
 
-    def _restart_playback_clock(
-        self,
-        frame_number: int,
-        *,
-        wait_for_frame: bool = False,
-    ) -> None:
-        self._playback_anchor_frame = min(
-            max(0, int(frame_number)), max(0, self._frame_total - 1)
+    def _restart_playback_pacing(self, *, wait_for_frame: bool) -> None:
+        self._next_frame_due_time = (
+            None if wait_for_frame else time.monotonic() + 1.0 / self._frame_rate
         )
-        self._playback_anchor_time = None if wait_for_frame else time.monotonic()
 
     def _on_slider_value_changed(self, frame_number: int) -> None:
         self.refresh_frame(frame_number)
