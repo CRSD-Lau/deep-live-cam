@@ -83,3 +83,25 @@ def test_file_operation_gate_rejects_reentrant_preview_or_render_calls():
     assert calls == ["outer", "nested_started=False"]
     assert window._file_operation_running is False
     assert button_states == [False, False, True, True]
+
+
+def test_file_preview_does_not_start_while_live_output_is_open(monkeypatch):
+    class FakeWindow:
+        _file_operation_running = False
+
+        def _run_file_operation(self, *_args, **_kwargs):
+            raise AssertionError("file Preview must not start during Live Output")
+
+    preview = SimpleNamespace(isVisible=lambda: False)
+    live_preview = SimpleNamespace(isVisible=lambda: True)
+    statuses = []
+
+    monkeypatch.setattr(ui, "_PREVIEW", preview)
+    monkeypatch.setattr(ui, "_WEBCAM_PREVIEW", live_preview)
+    monkeypatch.setattr(ui, "update_status", statuses.append)
+    monkeypatch.setattr(ui.modules.globals, "source_path", "source.jpg")
+    monkeypatch.setattr(ui.modules.globals, "target_path", "target.mp4")
+
+    ui.MainWindow._on_toggle_preview(FakeWindow())
+
+    assert statuses == ["Stop live output before opening file Preview."]
