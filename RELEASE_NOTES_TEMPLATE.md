@@ -1,13 +1,13 @@
-# Deep Live Cam Studio 2.2.2 Windows Release
+# Deep Live Cam Studio 2.2.3 Windows Release
 
-This maintenance release makes NVIDIA updates behave like a conventional app
-upgrade, clarifies the DirectML portable update path, and ships the reviewed
-Windows dependency patches merged since 2.2.1.
+This patch release fixes processed video Preview autoplay and playback. Preview
+now starts without manual timeline scrubbing, keeps a stable window size, and
+shows processed frames in order at the hardware's achievable processing rate.
 
 ## Downloads
 
-- NVIDIA/CUDA installer: `DeepLiveCamStudio-2.2.2-x64-setup.exe`
-- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.2.2-x64-setup.exe.sha256`
+- NVIDIA/CUDA installer: `DeepLiveCamStudio-2.2.3-x64-setup.exe`
+- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.2.3-x64-setup.exe.sha256`
 - AMD/Intel DirectML portable ZIP: {{DIRECTML_PORTABLE_NAME}}
 - DirectML portable SHA-256: {{DIRECTML_PORTABLE_SHA256}}
 - Corresponding source archive: listed in the uploaded `RELEASE_ASSETS.md`
@@ -28,28 +28,30 @@ old extracted folder after verifying the new copy.
 
 ### Changed
 
-- Standardized NVIDIA installs on
-  `%LOCALAPPDATA%\Programs\DeepLiveCamStudio` instead of a version-named
-  directory.
-- Updated pip, wheel, PyInstaller, pip-tools, and Ruff in the deterministic
-  Windows build and test toolchain.
-- Documented the separate NVIDIA installer and DirectML portable update paths.
+- Processed target-video Preview starts automatically and includes Play, Pause,
+  and responsive timeline seeking.
+- Preview reuses one decoder and requests the next frame only after the current
+  processed frame is displayed. Slower hardware therefore shows every frame in
+  order at its achievable processing rate instead of skipping ahead.
 
 ### Fixed
 
-- The NVIDIA installer now removes the registered legacy installation and
-  recognizable orphaned version folders before completing the stable upgrade.
-- Installer tests now use an isolated app identity and validate a complete
-  2.2.1-layout to 2.2.2 migration without disturbing real installations.
-- Replaced the unavailable ONNX Runtime GPU 1.24.3 wheel with 1.24.4 and
-  refreshed locks and licence evidence.
+- Prevented the Preview window from growing on each displayed frame.
+- Removed per-frame decoder reopen/seek overhead and unnecessary temporal-state
+  resets during sequential playback.
+- Hardened Preview shutdown, worker-error retry, idle-timer restart, missing
+  frame-count metadata, and file/live-preview mutual exclusion.
 
-The unchanged DirectML application path was previously validated on Windows 11
-with a Radeon RX 9060 XT: the DirectML badge was active and Preview,
-short-video Render, and OBS Live Output all passed with no blocking regression.
-The packaged release runtimes are separately checked for their expected GPU
-providers; CUDA rendering and Live Output were also verified locally on an
-NVIDIA RTX 4070.
+The core Preview fix was physically tested on Windows with a Radeon RX 6900 XT:
+autoplay, stable window size, smoother sequential playback without skipped
+frames, Pause/Play, seeking, and responsive close all passed. The tester also
+noted low achieved FPS; that is recorded as a separate processing-throughput
+observation, not interpreted as a 30 FPS cap. This release does not promise
+real-time source-rate Preview when face processing is expensive.
+
+The CUDA/DirectML dependency sets, installer behavior, model policy, and OBS
+Live Output implementation are unchanged from 2.2.2. Final release assets are
+still checked separately for their expected GPU providers before publication.
 
 ## Source and license
 
@@ -59,7 +61,7 @@ exact binary release is attached and identified by the source ref above.
 The source archive is produced with:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.2 -GitRef HEAD
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.3 -GitRef HEAD
 ```
 
 This release preserves attribution to the original project:
@@ -91,6 +93,8 @@ Downloaded models are stored under:
 - OBS Studio must be installed separately for OBS Virtual Camera workflows.
 - The public files are unsigned and may trigger Microsoft Defender
   SmartScreen.
+- Processed Preview FPS depends on the selected processors, models, source
+  content, and hardware; it may be lower than the source video's frame rate.
 - Face-swap and enhancer model families retain their documented
   non-commercial or research-use restrictions; no model weights are
   redistributed here.
@@ -109,7 +113,9 @@ Completed local evidence is included in the uploaded release documents:
 - Clean-install, legacy-upgrade, registry, shortcut, and uninstall checks.
 - Model download/checksum and forbidden-model scans.
 - CUDA and DirectML file-render checks.
-- Radeon RX 9060 XT DirectML and NVIDIA RTX 4070 CUDA Live Output checks.
+- Radeon RX 6900 XT DirectML Preview autoplay and playback checks.
+- Existing Radeon RX 9060 XT DirectML and NVIDIA RTX 4070 CUDA Live Output
+  checks; the Live Output implementation is unchanged in this patch.
 
 Remaining publish blockers:
 

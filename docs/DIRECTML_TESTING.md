@@ -86,7 +86,7 @@ Build, validate, and package the portable release:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator DirectML
-powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.2 -Accelerator DirectML
+powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.3 -Accelerator DirectML
 ```
 
 The packaging step performs a strict provider probe, rejects bundled model

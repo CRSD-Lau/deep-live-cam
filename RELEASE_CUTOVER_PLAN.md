@@ -1,30 +1,31 @@
-# Windows 2.2.2 Release Cutover Plan
+# Windows 2.2.3 Release Cutover Plan
 
 ## Scope
 
-Release the installer-upgrade repair and reviewed dependency patches as
-`v2.2.2`, with separate CUDA and DirectML downloads from one exact source
-commit.
+Release the processed video Preview autoplay and sequential-playback repair as
+`v2.2.3`, with separate CUDA and DirectML downloads from one exact source
+commit. Dependency sets, installer behavior, models, and OBS implementation are
+unchanged from `v2.2.2`.
 
 ## Sequence
 
-1. Merge the dependency and installer-upgrade PRs.
-2. Prepare version, changelog, documentation, and dual-runtime release CI on a
+1. Merge Preview PR #53 after its physical AMD test gate passes.
+2. Prepare version, changelog, documentation, and release defaults on a
    clean release branch.
 3. Run the full test suite and static/script checks.
 4. Review dependency, model, and source-distribution deltas.
 5. Merge the release preparation PR.
-6. Dispatch `windows-release.yml` for `v2.2.2` and the exact merged commit.
-7. Verify the release assets, then create annotated tag `v2.2.2` on that same
-   production commit.
-8. Download the combined release-candidate asset set.
-9. Run strict installer, DirectML ZIP, hash, source, and manual-gate
+6. Wait for the exact merged production commit's required CI and CodeQL checks.
+7. Create annotated tag `v2.2.3` on that exact production commit.
+8. Dispatch `windows-release.yml` at the tag with the exact tagged source ref.
+9. Download the combined release-candidate asset set.
+10. Run strict installer, DirectML ZIP, hash, source, and manual-gate
    validation.
-10. Create a draft GitHub Release, upload every listed asset, and verify live
+11. Create a draft GitHub Release, upload every listed asset, and verify live
     GitHub digests.
-11. Download both public runtime files and repeat smoke/provider checks.
-12. Verify every issue/PR/security queue is empty, publish the release, and
-    preserve `v2.2.1` as rollback.
+12. Download both draft-hosted runtime files and repeat smoke/provider checks.
+13. Recheck the issue, PR, and security queues, publish the release, and
+    preserve `v2.2.2` as rollback.
 
 ## Stop conditions
 
@@ -41,7 +42,7 @@ Do not publish if any of the following is true:
 
 ## Rollback
 
-If a post-publication smoke test fails, return `v2.2.1` to latest-stable status,
-mark `v2.2.2` as pre-release or draft, and open a regression issue with the
+If a post-publication smoke test fails, return `v2.2.2` to latest-stable status,
+mark `v2.2.3` as pre-release or draft, and open a regression issue with the
 affected asset name and digest. Never replace a public binary in place without
 also replacing its source archive, manifests, hashes, and release notes.

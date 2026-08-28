@@ -1,7 +1,7 @@
 # Windows Release Checklist
 
 Use this checklist for every public Windows release. The current release is
-`2.2.2` and contains two mutually exclusive runtime profiles:
+`2.2.3` and contains two mutually exclusive runtime profiles:
 
 - NVIDIA/CUDA installer
 - AMD/Intel DirectML portable ZIP
@@ -21,17 +21,17 @@ Use this checklist for every public Windows release. The current release is
 - [ ] Build with `build\windows\build_windows.ps1 -Accelerator Cuda`.
 - [ ] Run `build\windows\test_packaged_runtime.ps1 -Accelerator Cuda -RequireAccelerator`.
 - [ ] Run `build\windows\test_environment.ps1 -RequireFfmpeg -RequireCuda`.
-- [ ] Package with `build\windows\package_installer.ps1 -AppVersion 2.2.2`.
-- [ ] Run `build\windows\test_installer.ps1 -AppVersion 2.2.2`.
-- [ ] Confirm a registered 2.2.1 version-directory install migrates to the
-  stable directory with one uninstall entry and no legacy version folders.
+- [ ] Package with `build\windows\package_installer.ps1 -AppVersion 2.2.3`.
+- [ ] Run `build\windows\test_installer.ps1 -AppVersion 2.2.3`.
+- [ ] Confirm an existing 2.2.2 stable-directory installation upgrades in
+  place; keep the registered 2.2.1 legacy-migration fixture passing.
 - [ ] Confirm the installer and `.sha256` sidecar match.
 - [ ] Confirm silent uninstall preserves `%LOCALAPPDATA%\DeepLiveCamStudio\models`.
 
 ## DirectML portable build
 
 - [ ] Build with `build\windows\build_windows.ps1 -Accelerator DirectML`.
-- [ ] Package with `build\windows\package_portable.ps1 -AppVersion 2.2.2 -Accelerator DirectML`.
+- [ ] Package with `build\windows\package_portable.ps1 -AppVersion 2.2.3 -Accelerator DirectML`.
 - [ ] Confirm the strict provider probe reports `DmlExecutionProvider`.
 - [ ] Confirm the ZIP contains `_internal/sklearn/.libs/vcomp140.dll`.
 - [ ] Confirm the ZIP and `.sha256` sidecar match.
@@ -50,7 +50,7 @@ Use this checklist for every public Windows release. The current release is
 - [ ] Package source from the exact merged release commit:
 
   ```powershell
-  powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.2 -GitRef RELEASE_COMMIT
+  powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.3 -GitRef RELEASE_COMMIT
   ```
 
 - [ ] Confirm the source manifest reports `Archive mode: git-ref` and records
@@ -75,25 +75,26 @@ Use this checklist for every public Windows release. The current release is
 Run the strict CUDA installer and source gate:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.2 -GitRef RELEASE_COMMIT -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.3 -GitRef RELEASE_COMMIT -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
 ```
 
 Assemble the combined asset set after the DirectML ZIP is available:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.2.2 -PortableDir build\windows\portable -RequireGitRefSource
-python tools\validate_windows_release_artifacts.py --app-version 2.2.2 --release-assets-dir build\windows\release-assets\2.2.2 --require-git-ref-source --require-directml-portable
+powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.2.3 -PortableDir build\windows\portable -RequireGitRefSource
+python tools\validate_windows_release_artifacts.py --app-version 2.2.3 --release-assets-dir build\windows\release-assets\2.2.3 --require-git-ref-source --require-directml-portable
 ```
 
 ## GitHub Release
 
-- [ ] Create release `v2.2.2` from the annotated tag, initially as a draft.
+- [ ] Create release `v2.2.3` from the annotated tag, initially as a draft.
 - [ ] Upload every file listed in `RELEASE_ASSETS.md`.
 - [ ] Verify live GitHub asset digests against `SHA256SUMS.txt`.
-- [ ] Download the public CUDA installer and DirectML ZIP and re-run their
+- [ ] Download the draft-hosted CUDA installer and DirectML ZIP and re-run their
   smoke/provider checks.
 - [ ] Publish only after the public-download checks pass.
 - [ ] Update README links, close resolved issues, and thank external testers.
-- [ ] Confirm no open issues, pull requests, Dependabot alerts, code-scanning
-  alerts, or secret-scanning alerts remain.
-- [ ] Preserve a rollback path to `v2.2.1` and record any deferred risks.
+- [ ] Confirm no unexpected release-blocking issues, pull requests, Dependabot
+  alerts, code-scanning alerts, or secret-scanning alerts remain; record
+  unrelated queue items.
+- [ ] Preserve a rollback path to `v2.2.2` and record any deferred risks.
