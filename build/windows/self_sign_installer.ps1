@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.2.2",
+    [string]$AppVersion = "2.2.3",
     [string]$PublisherName = "Neil Mitchell",
     [string]$TimestampUrl = "http://timestamp.digicert.com",
     [switch]$TrustForCurrentUser

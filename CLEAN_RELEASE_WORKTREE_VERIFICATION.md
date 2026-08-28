@@ -1,6 +1,6 @@
 # Clean Release Worktree Verification
 
-Release: `2.2.2`
+Release: `2.2.3`
 
 Status: READY FOR RELEASE-CANDIDATE BUILD
 
@@ -10,9 +10,9 @@ started.
 
 ## Completed source proof
 
-- [x] Release preparation started from the production branch after dependency
-  PRs #47, #48, #49, and #50 were merged.
-- [x] Only release-owned source, tests, workflow, version, and documentation
+- [x] Release preparation started from production commit
+  `31f215887e168d30bdbc8dff7fa56529ff35925c` after Preview PR #53 was merged.
+- [x] Only release-owned version defaults, workflow metadata, and documentation
   files are changed in this worktree.
 - [x] Model/checkpoint files are not staged.
 - [x] Full tests pass before release-branch publication.
@@ -20,7 +20,7 @@ started.
 ## Post-merge proof
 
 The release operator must still verify that the preparation PR is merged,
-annotated tag `v2.2.2` resolves to the final production commit, source
+annotated tag `v2.2.3` resolves to the final production commit, source
 packaging runs from that exact commit in `git-ref` mode, and the checkout is
 clean.
 Those results belong in the generated `RELEASE_VERIFICATION.md` distributed

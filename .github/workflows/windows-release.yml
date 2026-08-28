@@ -6,7 +6,7 @@ on:
       app_version:
         description: "Installer version"
         required: true
-        default: "2.2.2"
+        default: "2.2.3"
       git_ref:
         description: "Git ref used for corresponding-source packaging"
         required: false

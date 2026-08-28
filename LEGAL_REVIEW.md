@@ -2,7 +2,7 @@
 
 Status: PASS
 
-Release: `2.2.2`
+Release: `2.2.3`
 
 This is a release-management record, not legal advice. Publisher acceptance is
 recorded by project owner Neil Mitchell; exact final hashes and source refs are
@@ -70,8 +70,19 @@ kept in the release asset manifest rather than embedded in installed files.
 - CUDA and DirectML remain separate downloads with exact corresponding source,
   hashes, notices, and the previously accepted runtime licence posture.
 
+## 2.2.3 delta review
+
+- The Preview autoplay and playback changes use the already-shipped Qt,
+  OpenCV, NumPy, face-analysis, and frame-processor paths.
+- No dependency version, licence family, codec, external binary, model source,
+  model weight, or redistribution scope changes in this patch.
+- CUDA and DirectML remain separate downloads with the same model-exclusion,
+  notices, exact corresponding source, manifest, and hash requirements.
+- The Radeon RX 6900 XT result is functional hardware evidence only; it does
+  not add redistributed content or change the accepted runtime licence posture.
+
 Generate the final evidence packet with:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.2.2
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_legal_review_gate.ps1 -AppVersion 2.2.3
 ```

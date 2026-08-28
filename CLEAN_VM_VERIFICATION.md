@@ -2,7 +2,7 @@
 
 Status: PASS
 
-Release: `2.2.2`
+Release: `2.2.3`
 
 This gate covers the per-user CUDA installer. Exact final hashes are recorded
 outside the installed payload in `RELEASE_ASSETS.md` and `SHA256SUMS.txt` to
@@ -40,11 +40,18 @@ avoid circular binary-hash documentation.
 - The project owner confirmed Preview, Start Render, and Live Output on the
   CUDA runtime after the `2.2.0` runtime changes; `2.2.2` changes packaging and
   dependency patches without changing face-processing behavior.
+- The `2.2.3` delta changes processed file Preview behavior only. Installer
+  identity, stable install path, migration logic, dependency locks, user-data
+  paths, and uninstall behavior are unchanged from `2.2.2`.
+- Radeon RX 6900 XT testing passed autoplay, stable Preview geometry,
+  sequential playback, controls, seeking, and responsive close. This is runtime
+  evidence and does not replace the final downloaded-installer smoke/upgrade
+  check.
 - Final publication additionally requires downloading the GitHub-hosted
   installer and repeating the automated install/CLI/uninstall smoke check.
 
 Run the repeatable gate with:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.2.2
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.2.3
 ```

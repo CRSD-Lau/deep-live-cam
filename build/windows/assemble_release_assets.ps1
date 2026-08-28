@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.2.2",
+    [string]$AppVersion = "2.2.3",
     [string]$InstallerDir = "",
     [string]$PortableDir = "",
     [string]$OutputDir = "",

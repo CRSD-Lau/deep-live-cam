@@ -1,6 +1,6 @@
 # Windows Release Report
 
-Release: `2.2.2`
+Release: `2.2.3`
 
 ## Packaging Approach
 
@@ -20,21 +20,24 @@ one environment.
   safe legacy migration, orphan cleanup, and an isolated upgrade fixture.
 - Updated version metadata, README, DirectML guide, changelog, release notes,
   source preparation, checklist, handoff, and gate evidence.
+- Added processed video Preview autoplay, stable geometry, persistent sequential
+  decoding, achievable-rate pacing, and lifecycle regression coverage; runtime
+  dependency and packaging implementations are unchanged in this patch.
 
 ## Build Commands
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator Cuda
-powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.2.2
+powershell -ExecutionPolicy Bypass -File build\windows\package_installer.ps1 -AppVersion 2.2.3
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Accelerator DirectML
-powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.2 -Accelerator DirectML
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.2 -GitRef RELEASE_COMMIT
+powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.3 -Accelerator DirectML
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.3 -GitRef RELEASE_COMMIT
 ```
 
 ## Installer Output
 
-- `DeepLiveCamStudio-2.2.2-x64-setup.exe`
-- `DeepLiveCamStudio-2.2.2-DirectML-x64-portable.zip`
+- `DeepLiveCamStudio-2.2.3-x64-setup.exe`
+- `DeepLiveCamStudio-2.2.3-DirectML-x64-portable.zip`
 - matching SHA-256 sidecars
 - exact source ZIP, source SHA-256, and source manifest
 

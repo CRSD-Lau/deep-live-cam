@@ -6,6 +6,28 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.3] - 2026-08-28
+
+### Changed
+
+- Video Preview now starts processed target videos automatically and provides
+  Play, Pause, and responsive timeline controls.
+- Processed previews read frames sequentially through one persistent decoder
+  and advance at the achievable face-processing rate instead of skipping
+  source frames when processing is slower than the source video.
+
+### Fixed
+
+- Prevented the Preview window from growing as processed frames are displayed.
+- Avoided reopening and seeking the video decoder for every preview frame,
+  unnecessary temporal-state resets, and duplicate or unreachable edge frames.
+- Hardened Preview shutdown, error retry, idle-timer restart, missing
+  frame-count metadata, and file/live-preview mutual exclusion.
+- Confirmed the autoplay, stable-window, sequential playback, controls, seek,
+  and close behavior on Windows with a Radeon RX 6900 XT. The tester's separate
+  low achieved-FPS observation remains dependent on face-processing throughput
+  and is not interpreted as a 30 FPS cap.
+
 ## [2.2.2] - 2026-08-18
 
 ### Changed
@@ -120,7 +142,8 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed alpha-channel preview frames before face detection and swap inference.
 - Fixed packaged desktop startup on clean Windows laptops.
 
-[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.2...HEAD
+[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.3...HEAD
+[2.2.3]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.1.9...v2.2.0

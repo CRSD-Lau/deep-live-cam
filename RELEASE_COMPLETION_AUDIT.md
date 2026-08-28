@@ -1,6 +1,6 @@
 # Release Completion Audit
 
-Release: `2.2.2`
+Release: `2.2.3`
 
 Status: READY FOR FINAL ARTIFACT VERIFICATION
 
@@ -10,6 +10,8 @@ Status: READY FOR FINAL ARTIFACT VERIFICATION
 | --- | --- |
 | AMD/Intel GPU support | DirectML runtime, strict provider probe, Radeon 6900 XT reporter validation, Radeon RX 9060 XT independent validation |
 | NVIDIA behavior preserved | CUDA provider and render validation on RTX 4070 |
+| Processed video Preview autoplay | Radeon RX 6900 XT PASS for autoplay, stable geometry, sequential no-skip playback, controls, seeking, and close; exact-head regression tests and DirectML package build |
+| Preview throughput represented accurately | Low achieved FPS retained as a separate processing-throughput observation; no 30 FPS cap or real-time guarantee claimed |
 | File render freeze fixed | Re-entry regression tests and local frozen-stack root-cause capture |
 | Live Output preserved | Project owner, issue reporter, and independent Radeon tester confirmation |
 | Reproducible Windows assets | Dual-job release workflow, portable packager, installer/source tooling |
@@ -28,6 +30,8 @@ Status: READY FOR FINAL ARTIFACT VERIFICATION
   DLL, SHA-256 sidecar, and forbidden model weights.
 - CUDA and DirectML packaged provider/render checks passed before release
   preparation.
+- The full final source suite passes 514 tests, including focused Preview
+  lifecycle, sequential decoding, pacing, geometry, and temporal-state checks.
 
 ## Remaining publication step
 
