@@ -6,6 +6,28 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Preserve existing image and video exports when processing, audio restoration,
+  or final file replacement fails; report image processor failures accurately.
+- Reject failed FFmpeg decoding and incomplete frames, handle short pipe reads,
+  and prevent diagnostic output from blocking video exports.
+- Use private temporary workspaces so frame extraction and cleanup cannot
+  collide with unrelated folders or same-named videos. Retained-frame locations
+  are printed in the processing log.
+- Recover from malformed saved settings and preserve the previous settings file
+  when a save is interrupted.
+- Release camera and virtual-camera resources after startup failures, and
+  prevent file rendering from overlapping live output.
+- Clean up interrupted model downloads, preserve existing models when download
+  publication fails, and reject insecure redirects before following them.
+- Validate CLI resource values and check for both FFmpeg tools before video use.
+
+### Documentation
+
+- Clarified which model downloads use Set Up Models and which may be initiated
+  by dependencies on first use.
+
 ## [2.2.3] - 2026-08-28
 
 ### Changed

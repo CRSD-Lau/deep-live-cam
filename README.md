@@ -80,7 +80,7 @@ from the two packages.
 | NVIDIA acceleration | A packaged CUDA installer with the reviewed runtime libraries required by ONNX Runtime GPU. |
 | AMD and Intel acceleration | A separate DirectML portable build for DirectX 12-capable Windows GPUs. |
 | OBS and virtual cameras | Process a camera feed and send it to OBS, meeting apps, or other virtual-camera consumers. |
-| Consent-based model setup | Models are excluded from releases and downloaded only after the user reviews their source, licence notes, and checksums. |
+| Reviewed swap and enhancement setup | Set Up Models shows sources, licence notes, and checksums before downloading the swap and enhancement models. See Models and Privacy for dependency-managed downloads. |
 | Reproducible releases | Versioned dependency locks, SHA-256 sidecars, corresponding-source archives, and automated release checks. |
 
 ## Quick Start
@@ -111,7 +111,7 @@ Close and reopen the app after installation so the new commands are available.
 | DirectML profile | AMD, Intel, or NVIDIA DirectX 12-capable GPU with a current vendor driver |
 | Video files | `ffmpeg` and `ffprobe` on `PATH` |
 | Live output | Camera access and an installed virtual-camera consumer such as OBS |
-| Models | Downloaded separately with explicit consent; not bundled in releases |
+| Models | Downloaded separately; Set Up Models covers swap and enhancement models (see Models and Privacy) |
 
 See [DirectML testing](docs/DIRECTML_TESTING.md) and [OBS Virtual Camera](docs/OBS_VIRTUAL_CAMERA.md) for provider-specific setup and troubleshooting.
 
@@ -147,7 +147,8 @@ Provider checks fail when the requested accelerator is unavailable instead of si
 ## Models and Privacy
 
 - Face-swap and enhancement models are not bundled with the installer or portable archive.
-- Model downloads require explicit consent and are checked against reviewed SHA-256 values.
+- Downloads offered by **Set Up Models** require explicit consent and are checked against reviewed SHA-256 values.
+- InsightFace face-analysis models and optional safety-filter weights are managed by their dependencies. When missing, those dependencies can download them automatically on first use; they are not covered by the Set Up Models checksum catalogue. Account for this network access before first use in an offline or restricted environment.
 - Media stays on the local machine unless the user moves or shares it.
 - Treat faces, media files, third-party models, and logs as sensitive or untrusted input.
 - Never attach private faces, videos, credentials, or model binaries to a public GitHub issue.
