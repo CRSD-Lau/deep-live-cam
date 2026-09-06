@@ -3,26 +3,26 @@
 from __future__ import annotations
 
 import argparse
+import sysconfig
 from importlib import metadata
 from pathlib import Path
 
-
-EXCLUDED_PACKAGES = {
-    "altgraph": "PyInstaller/build tooling dependency; not an app runtime dependency.",
-    "iniconfig": "Test tooling dependency; not an app runtime dependency.",
-    "pefile": "PyInstaller/build tooling dependency; not an app runtime dependency.",
-    "pip": "Build environment package manager; not an app runtime dependency.",
-    "pluggy": "Test tooling dependency; not an app runtime dependency.",
-    "pytest": "Test-only dependency; spec excludes pytest and tests.",
-    "pyinstaller": "Build tooling only; not shipped as an app runtime dependency.",
-    "pyinstaller-hooks-contrib": "Build tooling only; not shipped as an app runtime dependency.",
-    "pywin32-ctypes": "PyInstaller/build tooling dependency; not an app runtime dependency.",
-    "setuptools": "Build environment package; may appear via vendored metadata but is not a declared app runtime dependency.",
-    "torch": "Spec excludes torch; bundle scan checks _internal/torch is absent.",
-    "torchaudio": "Spec excludes torchaudio.",
-    "torchvision": "Spec excludes torchvision.",
-    "uv": "Tooling only; not part of app runtime.",
-    "wheel": "Build environment package; not an app runtime dependency.",
+BUILD_AND_SUPPORT_PACKAGES = {
+    "altgraph": "PyInstaller build dependency; verify final payload inclusion separately.",
+    "iniconfig": "Test support package; verify final payload inclusion separately.",
+    "pefile": "PyInstaller build dependency; verify final payload inclusion separately.",
+    "pip": "Build package manager; Python modules can be frozen incidentally. Preserve package and vendor notices.",
+    "pluggy": "Test support package; verify final payload inclusion separately.",
+    "pytest": "Test package; excluded by spec policy, subject to final payload verification.",
+    "pyinstaller": "Packaging tool; bootstrap and runtime-hook code is included in frozen applications.",
+    "pyinstaller-hooks-contrib": "Packaging hooks; selected runtime hooks can be included in the frozen application.",
+    "pywin32-ctypes": "PyInstaller build dependency; verify final payload inclusion separately.",
+    "setuptools": "Build backend; Python and vendored modules can be frozen incidentally. Preserve package and vendor notices.",
+    "torch": "Isolated CUDA DLL source; Torch Python exclusion is spec policy and requires final archive/payload verification.",
+    "torchaudio": "Excluded by spec policy; verify final payload separately.",
+    "torchvision": "Excluded by spec policy; verify final payload separately.",
+    "uv": "Build tool; verify final payload inclusion separately.",
+    "wheel": "Build support package; verify final payload inclusion separately.",
 }
 
 
@@ -51,20 +51,32 @@ def row(name: str, version: str, license_text: str, extra: str | None = None) ->
 
 
 def generate(output: Path) -> None:
-    dists = sorted(metadata.distributions(), key=lambda dist: package_name(dist).lower())
+    # PYTHONPATH can expose the isolated Torch helper. Its bootstrap tools must
+    # not shadow or duplicate the versions used by the main build interpreter.
+    main_packages = {"pip", "setuptools", "pyinstaller", "pyinstaller-hooks-contrib"}
+    dists = [dist for dist in metadata.distributions() if package_name(dist).lower() not in main_packages]
+    paths = sorted({sysconfig.get_path("purelib"), sysconfig.get_path("platlib")})
+    dists.extend(dist for dist in metadata.distributions(path=paths) if package_name(dist).lower() in main_packages)
+    dists.sort(key=lambda dist: package_name(dist).lower())
     runtime_rows: list[str] = []
-    excluded_rows: list[str] = []
+    support_rows: list[str] = []
 
     for dist in dists:
         name = package_name(dist)
         key = name.lower().replace("_", "-")
         license_text = normalize_license(dist)
-        if key in EXCLUDED_PACKAGES:
-            excluded_rows.append(row(name, dist.version, license_text, EXCLUDED_PACKAGES[key]))
+        if key in BUILD_AND_SUPPORT_PACKAGES:
+            support_rows.append(row(name, dist.version, license_text, BUILD_AND_SUPPORT_PACKAGES[key]))
         else:
             runtime_rows.append(row(name, dist.version, license_text))
 
     content = [
+        "---",
+        "author: Neil Mitchell",
+        "creator: Neil Mitchell",
+        "last_modified_by: Neil Mitchell",
+        "---",
+        "",
         "# Python Dependency License Snapshot",
         "",
         "Generated from the active Python environment. Package metadata can be incomplete or overly broad; this snapshot is release evidence, not legal advice. Re-generate and review this file for each public release candidate.",
@@ -77,13 +89,13 @@ def generate(output: Path) -> None:
         "| --- | ---: | --- |",
         *runtime_rows,
         "",
-        "## Installed But Excluded From The Windows Bundle",
+        "## Build and Support Package Metadata",
         "",
-        "The local development environment may contain these packages, but they are build/test tooling or are excluded by the PyInstaller spec. Re-check the bundle scan before publishing.",
+        "This table records package roles in the build environment, not proven exclusions. PyInstaller can collect build/support modules incidentally, including pip and setuptools. Inspect the final native payload and both executable archives to establish what is actually bundled; retain notices for collected packages and their vendors.",
         "",
-        "| Package | Version | License metadata observed | Exclusion evidence |",
+        "| Package | Version | License metadata observed | Role and payload verification |",
         "| --- | ---: | --- | --- |",
-        *excluded_rows,
+        *support_rows,
         "",
         "## High-Attention Items",
         "",
