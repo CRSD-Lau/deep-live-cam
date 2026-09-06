@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Candidate snapshots carry byte hashes; preserve their original line endings.
+docs/release-evidence/v2.2.4/candidate-753aab70/* -text
