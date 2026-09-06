@@ -13,6 +13,10 @@ Release: `2.2.4`
 
 Candidate source: `753aab70c34ae585d525a06b9f7de2d721b7f491`
 
+The final CUDA runtime must pass `--check-execution-provider` and real processing
+without an external CUDA Toolkit or development Torch path. A compatible NVIDIA
+driver remains required. This check is pending for the final CUDA installer.
+
 ## Completed official DirectML CLI checks
 
 - [x] Verify official workflow provenance and ZIP sidecar, safely extract the
