@@ -62,14 +62,17 @@ if (-not $SkipDependencyInstall) {
         # wheel is only the reviewed source for CUDA 12/cuDNN 9 DLLs copied by
         # the PyInstaller spec.
         if (-not (Test-Path -LiteralPath $CudaRuntimePython)) {
-            Invoke-Checked $Python @("-m", "venv", $CudaRuntimeVenv)
+            Invoke-Checked $Python @("-m", "venv", "--without-pip", $CudaRuntimeVenv)
         }
         $CudaRuntimePythonVersion = & $CudaRuntimePython -c "import sys; print('.'.join(map(str, sys.version_info[:3])))"
         if ($LASTEXITCODE -ne 0 -or $CudaRuntimePythonVersion.Trim() -ne "3.11.9") {
             throw "The CUDA runtime wheel lock requires CPython 3.11.9; found $CudaRuntimePythonVersion at $CudaRuntimePython"
         }
-        Invoke-Checked $CudaRuntimePython @(
-            "-m", "pip", "install", "--require-hashes", "--no-cache-dir", "--no-deps",
+        # Use the main environment's locked pip even when an existing helper
+        # contains older bootstrap tools. Fresh helpers do not need their own pip.
+        Invoke-Checked $PythonExe @(
+            "-m", "pip", "--python", $CudaRuntimePython,
+            "install", "--require-hashes", "--no-cache-dir", "--no-deps",
             "-r", $CudaRuntimeRequirementsFile
         )
     }
