@@ -124,9 +124,12 @@ def write_release_assets(tmp_path):
                 "Deep-Live-Cam is licensed under AGPL-3.0",
                 "The installer intentionally does not include model/checkpoint files",
                 "This release candidate is not publish-approved",
-                "Completed local evidence is included in the uploaded release documents:",
+                "## Release evidence",
+                "Final artifact verification is pending during candidate preparation.",
                 "Remaining publish blockers:",
-                "Authorized legal review for dependency, model-license, and redistribution obligations.",
+                "RELEASE_VERIFICATION.md",
+                "MANUAL_RELEASE_GATES.md",
+                "LEGAL_REVIEW.md",
             )
         ),
     )
@@ -290,6 +293,19 @@ def test_named_release_asset_checks_pass_for_complete_cuda_assets(tmp_path):
         "release-notes",
     ]
     assert all(result.passed for result in results)
+
+
+def test_candidate_release_notes_can_truthfully_leave_verification_pending(tmp_path):
+    assets_dir = write_release_assets(tmp_path)
+    notes = (assets_dir / "RELEASE_NOTES.md").read_text(encoding="utf-8")
+    assert "Final artifact verification is pending" in notes
+    assert "Completed local evidence" not in notes
+    assert "Authorized legal review" not in notes
+
+    checks = validator.evaluate_release_asset_checks(
+        assets_dir, "2.1.7", require_git_ref=True, require_directml_portable=False,
+    )
+    assert next(check for check in checks if check.name == "release-notes").passed
 
 
 def test_named_release_asset_checks_pass_for_combined_directml_assets(tmp_path):

@@ -10,6 +10,14 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
+if __package__:
+    from .summarize_manual_release_gates import (
+        gate_failures, gate_release_version, gate_status, open_checklist_items, read_text,
+    )
+else:
+    from summarize_manual_release_gates import (
+        gate_failures, gate_release_version, gate_status, open_checklist_items, read_text,
+    )
 
 MANUAL_GATES = (
     "Clean Windows x64 VM install without admin rights",
@@ -22,6 +30,9 @@ MANUAL_GATES = (
 
 MANUAL_GATE_EVIDENCE = {
     "Clean Windows x64 VM install without admin rights": "CLEAN_VM_VERIFICATION.md",
+    "Real model download with user consent and checksum verification": "MODEL_DOWNLOAD_VERIFICATION.md",
+    "CPU fallback processing with downloaded models": "PROCESSING_VERIFICATION.md",
+    "CUDA processing with downloaded models on a supported NVIDIA machine": "PROCESSING_VERIFICATION.md",
     "OBS Virtual Camera workflow with OBS installed and virtual camera enabled": "OBS_VIRTUAL_CAMERA_VERIFICATION.md",
     "Final legal review for model licenses, pyvirtualcam metadata, LGPL/GPL obligations, and Inno Setup commercial-use position": "LEGAL_REVIEW.md",
 }
@@ -104,24 +115,23 @@ def yes_no(ok: bool) -> str:
 
 
 def evidence_status(path: Path) -> str:
-    if not path.exists():
-        return "MISSING"
-    text = path.read_text(encoding="utf-8", errors="replace")
-    for line in text.splitlines():
-        if line.strip().lower().startswith("status:"):
-            return line.split(":", 1)[1].strip().upper() or "UNKNOWN"
-    return "UNKNOWN"
+    return gate_status(read_text(path), path.is_file())
 
 
 def evidence_open_items(path: Path) -> int:
-    if not path.exists():
-        return 0
-    text = path.read_text(encoding="utf-8", errors="replace")
-    return sum(1 for line in text.splitlines() if line.lstrip().startswith("- [ ]"))
+    return len(open_checklist_items(read_text(path)))
 
 
-def evidence_passed(path: Path) -> bool:
-    return evidence_status(path) == "PASS" and evidence_open_items(path) == 0
+def evidence_failures(path: Path, app_version: str) -> list[str]:
+    text = read_text(path)
+    return gate_failures(
+        gate_status(text, path.is_file()), gate_release_version(text),
+        app_version, len(open_checklist_items(text)),
+    )
+
+
+def evidence_passed(path: Path, app_version: str) -> bool:
+    return not evidence_failures(path, app_version)
 
 
 def parse_cutover_status(path: Path) -> dict[str, int | bool]:
@@ -268,15 +278,12 @@ def _source_has_no_models(source: Path | None) -> bool:
 
 def _manual_gate_done(
     gate: str,
-    model_download_verification: Path,
-    processing_verification: Path,
     manual_evidence_status: dict[str, tuple[Path, str, int]],
+    app_version: str,
 ) -> bool:
-    if gate.startswith("Real model download"):
-        return model_download_verification.exists()
-    if gate.startswith(("CPU fallback processing", "CUDA processing")):
-        return processing_verification.exists()
-    return gate in manual_evidence_status and evidence_passed(manual_evidence_status[gate][0])
+    return gate in manual_evidence_status and evidence_passed(
+        manual_evidence_status[gate][0], app_version
+    )
 
 
 def collect_verification_context(
@@ -339,9 +346,8 @@ def collect_verification_context(
     manual_gates_done = {
         gate: _manual_gate_done(
             gate,
-            model_download_verification,
-            processing_verification,
             manual_evidence_status,
+            app_version,
         )
         for gate in MANUAL_GATES
     }
@@ -437,11 +443,14 @@ def _manual_gate_check(context: VerificationContext, gate: str) -> CheckResult:
     if context.manual_gates_done[gate]:
         return CheckResult(f"manual-gate:{gate}", True)
     if gate in context.manual_evidence_status:
-        path, status, open_items = context.manual_evidence_status[gate]
-        message = f"{path.name} is `{status}` with {open_items} open checklist item(s)."
+        path, _, _ = context.manual_evidence_status[gate]
+        failures = tuple(
+            f"{path.name} {failure}"
+            for failure in evidence_failures(path, context.app_version)
+        )
     else:
-        message = f"{gate} evidence is missing."
-    return CheckResult(f"manual-gate:{gate}", False, (message,))
+        failures = (f"{gate} evidence is missing.",)
+    return CheckResult(f"manual-gate:{gate}", False, failures)
 
 
 def evaluate_release_checks(context: VerificationContext) -> tuple[CheckResult, ...]:
@@ -478,8 +487,8 @@ def _render_verdict(context: VerificationContext, publishable: bool) -> list[str
         "",
         f"- Local installer automation passed: **{yes_no(context.automated_installer_ok)}**",
         f"- Draft source traceability available: **{yes_no(context.draft_traceability_ok)}**",
-        f"- Real model download/checksum verification recorded: **{yes_no(context.model_download_verification.exists())}**",
-        f"- Packaged CPU/CUDA processing verification recorded: **{yes_no(context.processing_verification.exists())}**",
+        f"- Real model download/checksum evidence passes for requested release: **{yes_no(evidence_passed(context.model_download_verification, context.app_version))}**",
+        f"- Packaged CPU/CUDA processing evidence passes for requested release: **{yes_no(evidence_passed(context.processing_verification, context.app_version))}**",
         f"- Public-release source archive from clean Git ref: **{yes_no(context.public_source_ok)}**",
         f"- Release cutover status clean: **{yes_no(context.cutover_ready)}**",
         f"- Manual gate evidence complete: **{yes_no(context.all_manual_gates_done)}**",
@@ -510,8 +519,8 @@ def _render_automated_evidence(context: VerificationContext) -> list[str]:
             f"- [{checkbox(context.source_manifest_ok)}] Corresponding-source manifest exists",
             f"- [{checkbox(context.source_clean_models)}] Corresponding-source archive contains no forbidden model/checkpoint entries",
             f"- [{checkbox(context.source_is_clean_git_ref)}] Public-release source archive was created from a clean Git ref",
-            f"- [{checkbox(context.model_download_verification.exists())}] Real model download/checksum verification exists: `{context.model_download_verification}`",
-            f"- [{checkbox(context.processing_verification.exists())}] Packaged processing verification exists: `{context.processing_verification}`",
+            f"- [{checkbox(evidence_passed(context.model_download_verification, context.app_version))}] Real model download/checksum evidence passes for requested release: `{context.model_download_verification}`",
+            f"- [{checkbox(evidence_passed(context.processing_verification, context.app_version))}] Packaged processing evidence passes for requested release: `{context.processing_verification}`",
             "",
             "## Required Installed Release Files",
             "",
@@ -566,9 +575,10 @@ def _render_manual_evidence(context: VerificationContext) -> list[str]:
         lines.append(f"- [{checkbox(gate_done)}] {gate}")
     lines.extend(["", "## Manual Gate Evidence Files", ""])
     for gate, (path, status, open_items) in context.manual_evidence_status.items():
-        passed = evidence_passed(path)
+        passed = evidence_passed(path, context.app_version)
         lines.append(f"- [{checkbox(passed)}] `{path.name}` for {gate}: `{status}`")
         if path.exists():
+            lines.append(f"  - Release version: `{gate_release_version(read_text(path)) or 'MISSING'}`; requested: `{context.app_version}`")
             lines.append(f"  - Open checklist items: `{open_items}`")
     return lines
 
@@ -614,7 +624,7 @@ def main() -> int:
     parser.add_argument("--repo-root", default=".", help="Repository root.")
     parser.add_argument("--dist", default="dist/DeepLiveCamStudio", help="Packaged dist directory.")
     parser.add_argument("--output-dir", default="build/windows/installer", help="Installer output directory.")
-    parser.add_argument("--app-version", default="2.2.3", help="Application version.")
+    parser.add_argument("--app-version", default="2.2.4", help="Application version.")
     parser.add_argument("--output", default="RELEASE_VERIFICATION.md", help="Verification summary output path.")
     parser.add_argument(
         "--require-publish-ready",

@@ -1,6 +1,6 @@
 #define AppName "Deep Live Cam Studio"
 #ifndef AppVersion
-#define AppVersion "2.2.3"
+#define AppVersion "2.2.4"
 #endif
 #ifndef DistDir
 #define DistDir "..\..\dist\DeepLiveCamStudio"

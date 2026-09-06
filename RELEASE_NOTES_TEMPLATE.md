@@ -1,13 +1,14 @@
-# Deep Live Cam Studio 2.2.3 Windows Release
+# Deep Live Cam Studio 2.2.4 Windows Release
 
-This patch release fixes processed video Preview autoplay and playback. Preview
-now starts without manual timeline scrubbing, keeps a stable window size, and
-shows processed frames in order at the hardware's achievable processing rate.
+This patch release protects existing exports when rendering fails, isolates
+temporary frames from user folders, and improves settings, model-transfer, and
+camera lifecycle handling. It also tightens release source matching and rejects
+stale verification evidence.
 
 ## Downloads
 
-- NVIDIA/CUDA installer: `DeepLiveCamStudio-2.2.3-x64-setup.exe`
-- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.2.3-x64-setup.exe.sha256`
+- NVIDIA/CUDA installer: `DeepLiveCamStudio-2.2.4-x64-setup.exe`
+- Installer SHA-256: listed in the uploaded `RELEASE_ASSETS.md` and `DeepLiveCamStudio-2.2.4-x64-setup.exe.sha256`
 - AMD/Intel DirectML portable ZIP: {{DIRECTML_PORTABLE_NAME}}
 - DirectML portable SHA-256: {{DIRECTML_PORTABLE_SHA256}}
 - Corresponding source archive: listed in the uploaded `RELEASE_ASSETS.md`
@@ -26,32 +27,32 @@ old extracted folder after verifying the new copy.
 
 ## What Changed
 
-### Changed
+- Image processors report write failures, and image/video publication replaces
+  the destination only after staging succeeds. Failed processing or audio
+  restoration preserves the previous export. Silent source videos remain valid.
+- Video exports reject failed decoding and incomplete frames, handle short
+  pipe reads, and prevent FFmpeg diagnostic output from blocking processing.
+- Frame extraction uses private workspaces. Same-named inputs cannot share
+  extracted frames, and cleanup never targets unrelated input-folder `temp`
+  directories. Retained frame locations appear in the processing log.
+- Invalid saved settings recover safely; interrupted settings writes preserve
+  the previous file.
+- Camera startup failures release their resources, and file rendering cannot
+  overlap live output.
+- Interrupted model downloads clean up partial files without replacing an
+  existing model. Insecure redirects are rejected before they are followed.
+- CLI resource validation rejects invalid values, requires both FFmpeg tools
+  for video workflows, and returns failure status for unsuccessful renders.
+- Release builds pin both runtime profiles and corresponding source to one
+  immutable commit. Verification rejects evidence for an earlier release.
 
-- Processed target-video Preview starts automatically and includes Play, Pause,
-  and responsive timeline seeking.
-- Preview reuses one decoder and requests the next frame only after the current
-  processed frame is displayed. Slower hardware therefore shows every frame in
-  order at its achievable processing rate instead of skipping ahead.
-
-### Fixed
-
-- Prevented the Preview window from growing on each displayed frame.
-- Removed per-frame decoder reopen/seek overhead and unnecessary temporal-state
-  resets during sequential playback.
-- Hardened Preview shutdown, worker-error retry, idle-timer restart, missing
-  frame-count metadata, and file/live-preview mutual exclusion.
-
-The core Preview fix was physically tested on Windows with a Radeon RX 6900 XT:
-autoplay, stable window size, smoother sequential playback without skipped
-frames, Pause/Play, seeking, and responsive close all passed. The tester also
-noted low achieved FPS; that is recorded as a separate processing-throughput
-observation, not interpreted as a 30 FPS cap. This release does not promise
-real-time source-rate Preview when face processing is expensive.
-
-The CUDA/DirectML dependency sets, installer behavior, model policy, and OBS
-Live Output implementation are unchanged from 2.2.2. Final release assets are
-still checked separately for their expected GPU providers before publication.
+The dependency changes since `v2.2.3` are PyInstaller hooks **2026.6 → 2026.7**
+in both Windows package locks and Ruff **0.16.4 → 0.16.5** in development tools.
+The ONNX Runtime versions and CUDA/DirectML inference dependencies remain at
+their reviewed locks. The build-only PyTorch 2.11.0 advisory exception is
+documented accurately: the wheel is affected, while the packaged application
+excludes Torch/JIT Python code and uses only the reviewed CUDA/cuDNN DLLs.
+See `docs/DEPENDENCY_LOCKS.md` for the exception's scope and limitations.
 
 ## Source and license
 
@@ -61,13 +62,11 @@ exact binary release is attached and identified by the source ref above.
 The source archive is produced with:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.3 -GitRef HEAD
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef HEAD
 ```
 
-This release preserves attribution to the original project:
-
-- Original project: https://github.com/hacksider/Deep-Live-Cam
-- License: AGPL-3.0
+This release preserves attribution to the
+[original project](https://github.com/hacksider/Deep-Live-Cam).
 
 ## Models are not bundled
 
@@ -81,7 +80,12 @@ After launching, select **Set Up Models**, or run:
 DeepLiveCamStudioCLI.exe --download-models
 ```
 
-Downloaded models are stored under:
+This consent flow downloads and verifies the model-manager inventory. Some
+dependencies, including InsightFace's analysis models and optional NSFW
+filtering, may download their own assets on first use; they are outside that
+inventory and may use different cache locations.
+
+The model-manager downloads are stored under:
 
 ```text
 %LOCALAPPDATA%\DeepLiveCamStudio\models
@@ -89,40 +93,39 @@ Downloaded models are stored under:
 
 ## Requirements and known limitations
 
-- `ffmpeg` and `ffprobe` must be installed separately for video workflows.
-- OBS Studio must be installed separately for OBS Virtual Camera workflows.
-- The public files are unsigned and may trigger Microsoft Defender
-  SmartScreen.
-- Processed Preview FPS depends on the selected processors, models, source
-  content, and hardware; it may be lower than the source video's frame rate.
-- Face-swap and enhancer model families retain their documented
-  non-commercial or research-use restrictions; no model weights are
-  redistributed here.
+- Install `ffmpeg` and `ffprobe` separately for video workflows.
+- Install OBS Studio separately for OBS Virtual Camera workflows.
+- The public files are unsigned and may trigger Microsoft Defender SmartScreen.
+- Processed Preview FPS depends on the selected processors, models, content,
+  and hardware; it may be lower than the source video's frame rate.
+- Face-swap and enhancer model families retain their documented non-commercial
+  or research-use restrictions; no model weights are redistributed here.
 
 ## Release evidence
 
-This release candidate is not publish-approved by release notes alone;
-publish approval is recorded in `RELEASE_VERIFICATION.md`,
-`MANUAL_RELEASE_GATES.md`, and the signed gate documents included with the
-upload.
+This release candidate is not publish-approved by release notes alone.
+Final artifact verification is pending during candidate preparation. The
+uploaded `RELEASE_VERIFICATION.md`, `MANUAL_RELEASE_GATES.md`, and
+`LEGAL_REVIEW.md` record the current decisions and supporting evidence.
 
-Completed local evidence is included in the uploaded release documents:
-
-- Full automated test suite.
-- Packaged CUDA and DirectML runtime/provider checks.
-- Clean-install, legacy-upgrade, registry, shortcut, and uninstall checks.
-- Model download/checksum and forbidden-model scans.
-- CUDA and DirectML file-render checks.
-- Radeon RX 6900 XT DirectML Preview autoplay and playback checks.
-- Existing Radeon RX 9060 XT DirectML and NVIDIA RTX 4070 CUDA Live Output
-  checks; the Live Output implementation is unchanged in this patch.
+Source-level tests, static and dependency checks, synthetic FFmpeg exports,
+and cross-drive publication checks passed during the project review. These
+results do not establish final packaged CUDA/DirectML, installer, or OBS
+workflow success. Historical `2.2.3` hardware reports remain historical.
 
 Remaining publish blockers:
 
-- None when `RELEASE_VERIFICATION.md` says `Ready to publish without remaining manual gates: YES`.
+- Build both runtime profiles and exact corresponding source from the merged
+  release commit; verify the complete asset set and hashes.
+- Complete final packaged CUDA and identified AMD/DirectML provider,
+  processing, Preview, and Live Output checks.
+- Complete the current-release clean Windows install/upgrade/uninstall and
+  receiving-application checks, with model preservation evidence.
+- Complete the current-release license and redistribution review, including
+  the packaging dependency delta and build-only PyTorch exception.
+- Download the draft-hosted runtime artifacts, compare their hashes, and
+  repeat their smoke/provider checks before publishing.
 
-Completed manual signoffs include:
-
-- Clean Windows install without admin rights.
-- OBS Virtual Camera and DirectML Live Output workflows.
-- Authorized legal review for dependency, model-license, and redistribution obligations.
+Resolve each item using the current candidate's evidence. Keep the release
+as a draft while any required gate remains pending; preserve `v2.2.3` as the
+rollback release.

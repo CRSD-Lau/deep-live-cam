@@ -6,22 +6,78 @@ on:
       app_version:
         description: "Installer version"
         required: true
-        default: "2.2.3"
+        default: "2.2.4"
       git_ref:
-        description: "Git ref used for corresponding-source packaging"
+        description: "Git ref to resolve once for both runtime builds and corresponding source"
         required: false
         default: ""
 
+env:
+  APP_VERSION: ${{ inputs.app_version }}
+
 jobs:
-  build-windows:
-    needs: build-directml
+  resolve-source:
     runs-on: windows-latest
     permissions:
       contents: read
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - name: Check out requested source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.git_ref || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11.9"
+
+      - name: Resolve immutable source and verify version
+        id: source
+        shell: python
+        run: |
+          import ast
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          requested_version = os.environ["APP_VERSION"]
+          if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", requested_version):
+              raise SystemExit("app_version must be a numeric major.minor.patch version")
+          metadata = ast.parse(Path("modules/metadata.py").read_text(encoding="utf-8"))
+          versions = [
+              node.value.value
+              for node in metadata.body
+              if isinstance(node, ast.Assign)
+              and any(isinstance(target, ast.Name) and target.id == "version" for target in node.targets)
+              and isinstance(node.value, ast.Constant)
+          ]
+          if versions != [requested_version]:
+              raise SystemExit(f"Requested version {requested_version} does not match source metadata {versions}")
+          commit = subprocess.check_output(
+              ["git", "rev-parse", "--verify", "HEAD^{commit}"], text=True
+          ).strip()
+          if not re.fullmatch(r"[0-9a-f]{40}", commit):
+              raise SystemExit(f"Expected an immutable Git commit SHA, got {commit!r}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"sha={commit}\n")
+          print(f"Release {requested_version}: both runtimes and source will use {commit}")
+
+  build-windows:
+    needs: [resolve-source, build-directml]
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    env:
+      SOURCE_COMMIT: ${{ needs.resolve-source.outputs.sha }}
 
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve-source.outputs.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -38,11 +94,7 @@ jobs:
       - name: Build, package, and verify release candidate
         shell: pwsh
         run: |
-          $gitRef = "${{ inputs.git_ref }}"
-          if (-not $gitRef) {
-            $gitRef = "${{ github.sha }}"
-          }
-          powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion "${{ inputs.app_version }}" -Python python -GitRef $gitRef -AllowDirtySource
+          powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion $env:APP_VERSION -Python python -GitRef $env:SOURCE_COMMIT -AllowDirtySource
 
       - name: Guard against accidental publish approval
         shell: pwsh
@@ -52,7 +104,7 @@ jobs:
             "--repo-root", ".",
             "--dist", "dist\DeepLiveCamStudio",
             "--output-dir", "build\windows\installer",
-            "--app-version", "${{ inputs.app_version }}",
+            "--app-version", $env:APP_VERSION,
             "--output", "RELEASE_VERIFICATION.md",
             "--require-publish-ready"
           )
@@ -67,7 +119,7 @@ jobs:
 
       - name: Validate uploaded artifact set
         shell: pwsh
-        run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version "${{ inputs.app_version }}" --require-git-ref-source
+        run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --app-version $env:APP_VERSION --require-git-ref-source
 
       - name: Download DirectML release asset
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -77,11 +129,11 @@ jobs:
 
       - name: Assemble GitHub Release asset set
         shell: pwsh
-        run: powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion "${{ inputs.app_version }}" -PortableDir build\windows\portable -RequireGitRefSource
+        run: powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion $env:APP_VERSION -PortableDir build\windows\portable -RequireGitRefSource
 
       - name: Validate GitHub Release asset set
         shell: pwsh
-        run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --release-assets-dir build\windows\release-assets\${{ inputs.app_version }} --app-version "${{ inputs.app_version }}" --require-git-ref-source --require-directml-portable
+        run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --release-assets-dir "build\windows\release-assets\$env:APP_VERSION" --app-version $env:APP_VERSION --require-git-ref-source --require-directml-portable
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -93,6 +145,7 @@ jobs:
           include-hidden-files: true
 
   build-directml:
+    needs: resolve-source
     runs-on: windows-latest
     permissions:
       contents: read
@@ -100,6 +153,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve-source.outputs.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -117,7 +172,7 @@ jobs:
         # GitHub-hosted runners have no DirectML display adapter. Structure and
         # non-GPU runtime checks still run here; hardware evidence is a separate
         # manual publication gate.
-        run: powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion "${{ inputs.app_version }}" -Accelerator DirectML -SkipAcceleratorProbe
+        run: powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion $env:APP_VERSION -Accelerator DirectML -SkipAcceleratorProbe
 
       - name: Upload DirectML release artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

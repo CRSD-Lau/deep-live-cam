@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.2.3",
+    [string]$AppVersion = "2.2.4",
     [string]$InstallerDir = "",
     [string]$PortableDir = "",
     [string]$OutputDir = "",
@@ -188,7 +188,7 @@ Copy-LatestManualEvidence -Subdirectory "obs-virtualcam" -Pattern "obs-virtualca
 Copy-LatestManualEvidence -Subdirectory "legal-review" -Pattern "legal-review-$AppVersion-*.md" -DestinationName "LEGAL_REVIEW_EVIDENCE_PACKET.md"
 
 $ManualGateSummary = Join-Path $StagingDir "MANUAL_RELEASE_GATES.md"
-& $CheckPython tools\summarize_manual_release_gates.py --repo-root $RepoRoot --output $ManualGateSummary
+& $CheckPython tools\summarize_manual_release_gates.py --repo-root $RepoRoot --app-version $AppVersion --output $ManualGateSummary
 if ($LASTEXITCODE -ne 0) {
     throw "Manual release gate summary generation failed with exit code $LASTEXITCODE."
 }

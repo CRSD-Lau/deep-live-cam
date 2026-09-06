@@ -577,9 +577,11 @@ def _release_notes_expected_phrases(context: ReleaseAssetContext) -> tuple[str, 
         "Deep-Live-Cam is licensed under AGPL-3.0",
         "The installer intentionally does not include model/checkpoint files",
         "This release candidate is not publish-approved",
-        "Completed local evidence is included in the uploaded release documents:",
+        "## Release evidence",
         "Remaining publish blockers:",
-        "Authorized legal review for dependency, model-license, and redistribution obligations.",
+        "RELEASE_VERIFICATION.md",
+        "MANUAL_RELEASE_GATES.md",
+        "LEGAL_REVIEW.md",
     )
     if context.directml_archive:
         phrases += (
@@ -663,7 +665,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate Windows release artifact set.")
     parser.add_argument("--output-dir", default="build/windows/installer", help="Installer output directory.")
     parser.add_argument("--release-assets-dir", help="Optional curated GitHub Release asset directory to validate.")
-    parser.add_argument("--app-version", default="2.2.3", help="Application version.")
+    parser.add_argument("--app-version", default="2.2.4", help="Application version.")
     parser.add_argument("--repo-root", default=".", help="Repository root containing RELEASE_VERIFICATION.md.")
     parser.add_argument(
         "--require-git-ref-source",

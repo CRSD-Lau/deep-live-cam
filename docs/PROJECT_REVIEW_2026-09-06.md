@@ -7,8 +7,9 @@ date: 2026-09-06
 # Project review — 6 September 2026
 
 This review prioritizes reliable exports, preservation of existing files, and
-recovery from failed operations. Changes are on `codex/project-review-20260906`,
-based on default-branch commit `8ce01f795b0558e77de255b9fa1c839a8a6a738b`.
+recovery from failed operations. Changes are on `codex/project-review-20260906`.
+The initial review used default-branch commit `8ce01f795b0558e77de255b9fa1c839a8a6a738b`;
+release preparation incorporates the subsequent `9bdb9cf` audit documentation fix.
 This is source-review evidence, not a new binary release approval.
 
 ## Coverage and approach
