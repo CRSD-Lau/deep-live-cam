@@ -50,8 +50,9 @@ jobs:
         run: python -m pip_audit -r requirements-locks/windows-cuda-py311.lock --progress-spinner off
 
       - name: Audit CUDA build-only runtime version
-        # PYSEC-2025-194 is scoped to torch.jit.script through 2.6.0 in OSV.
-        # This build uses 2.11.0 only as a DLL source and excludes Torch code.
+        # PYSEC-2025-194 / GHSA-rrmf-rvhw-rf47 affects the locked Torch version.
+        # Exception: isolated DLL source only; Torch/JIT code is not shipped.
+        # Scope and re-evaluation conditions: docs/DEPENDENCY_LOCKS.md.
         run: python -m pip_audit -r requirements-locks/windows-cuda-runtime-audit-py311.txt --progress-spinner off --no-deps --disable-pip --ignore-vuln PYSEC-2025-194
 
       - name: Audit DirectML dependency profile

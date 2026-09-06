@@ -59,4 +59,12 @@ Dependabot monitors the maintained root manifests weekly. Major upgrades remain 
 
 The CUDA build installs PyTorch into an isolated helper environment and copies only an explicit allowlist of CUDA and cuDNN DLLs. PyTorch Python modules, including `torch.jit`, are excluded from the packaged application.
 
-The generated audit companion removes the `+cu128` local build suffix so `pip-audit` can query the upstream `torch` version. `PYSEC-2025-194` is explicitly ignored because [OSV describes the affected function as `torch.jit.script` and the affected range as ending at 2.6.0](https://osv.dev/vulnerability/PYSEC-2025-194), while the locked DLL-source wheel is 2.11.0 and its Python code is not shipped. Keep the exception visible and re-evaluate it whenever the PyTorch lock changes.
+The generated audit companion removes the `+cu128` local build suffix so `pip-audit` can query the upstream `torch` version. As reviewed on 2026-09-06, [GHSA-rrmf-rvhw-rf47 / CVE-2025-3000](https://github.com/advisories/GHSA-rrmf-rvhw-rf47), also tracked as `PYSEC-2025-194`, lists versions through 2.12.1 as affected and 2.13.0 as patched. The locked 2.11.0 DLL-source wheel is therefore within the advisory's affected version range. The older OSV range ending at 2.6.0 does not establish that this wheel is patched.
+
+The audit exception is limited to the build-only DLL source because the [reported failure is in `torch.jit.script`](https://github.com/pytorch/pytorch/issues/149623), which the application and build do not call. Its continued use depends on these boundaries:
+
+- `build/windows/build_windows.ps1` installs the hash-locked wheel without dependencies in a separate helper environment.
+- `build/windows/deep_live_cam_studio.spec` copies an explicit CUDA/cuDNN DLL allowlist and excludes the `torch`, `torchvision`, and `torchaudio` Python packages.
+- `build/windows/test_packaged_runtime.ps1` and `build/windows/test_installer.ps1` reject a payload containing `_internal/torch`.
+
+This is a reachability exception, not a claim that PyTorch 2.11.0 is unaffected. It does not cover a source installation that adds PyTorch, a different advisory, or a build that includes Torch/JIT code. Re-evaluate the exception whenever the PyTorch lock, copied DLLs, build isolation, packaging exclusions, or application use of PyTorch changes. Any upgrade to the DLL-source wheel still requires the CUDA provider and release validation described above.
