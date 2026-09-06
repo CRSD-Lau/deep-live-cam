@@ -40,6 +40,8 @@ Release candidate; publication remains pending final artifact and manual checks.
   resolved release commit, and reject stale release-gate evidence.
 - Include embedded pip/setuptools package and vendor notices, and classify build
   support packages without claiming their code is absent from frozen executables.
+- Preserve PyInstaller's licence and bootloader exception and the contributed
+  hooks' licence texts; fail collection if declared or recorded notices are missing.
 - Install the CUDA DLL-source wheel using the main locked pip, including when an
   existing helper environment contains older bootstrap tools.
 

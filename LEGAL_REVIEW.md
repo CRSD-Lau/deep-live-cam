@@ -19,6 +19,7 @@ with original hashes and does not approve this rebuild.
 - [ ] Verify exact matching source and runtime commits, hashes, attribution and AGPL source instructions.
 - [ ] Inspect both final runtime inventories, embedded modules and actual notice contents.
 - [ ] Verify collected pip/setuptools and vendor notices match the pinned main build environment.
+- [ ] Verify PyInstaller's licence/bootloader exception and the contributed hooks' licence texts.
 - [ ] Verify the CUDA helper uses the main pinned pip and fresh helpers omit bootstrap tools.
 - [ ] Verify CUDA DLL provenance, Qt notices and the documented build-only Torch exception's scope.
 - [ ] Scan both final payloads and corresponding source for excluded weights, Torch/JIT Python code and bundled FFmpeg.

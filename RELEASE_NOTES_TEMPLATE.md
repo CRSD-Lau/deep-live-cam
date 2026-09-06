@@ -64,6 +64,8 @@ old extracted folder after verifying the new copy.
 - Packaging includes embedded pip/setuptools and vendor notices. The CUDA DLL-source
   helper uses the main locked pip, and only the isolated installer test fixture
   uses faster compression; public installer compression stays unchanged.
+- Packaging also retains PyInstaller's licence and bootloader exception and the
+  contributed hooks' licence; missing declared or recorded notices fail the build.
 - Release builds pin both runtime profiles and corresponding source to one
   immutable commit. Verification rejects evidence for an earlier release.
 
