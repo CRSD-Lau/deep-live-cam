@@ -466,15 +466,18 @@ def process_frames(
 
 def process_image(
     source_path: str | None, target_path: str, output_path: str
-) -> None:
+) -> bool:
     """Processes a single image file."""
     target_frame = read_image(target_path)
     if target_frame is None:
         print(f"{NAME}: Error: Failed to read target image {target_path}")
-        return
+        return False
     result_frame = process_frame(None, target_frame)
-    cv2.imwrite(output_path, result_frame)
+    if result_frame is None or not cv2.imwrite(output_path, result_frame):
+        print(f"{NAME}: Error: Failed to write output image {output_path}")
+        return False
     print(f"{NAME}: Enhanced image saved to {output_path}")
+    return True
 
 
 def process_video(

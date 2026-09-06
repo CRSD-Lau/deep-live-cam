@@ -341,10 +341,15 @@ def get_unique_faces_from_target_video() -> Any:
         face_embeddings = []
     
         print('Creating temp resources...')
-        clean_temp(modules.globals.target_path)
+        if not clean_temp(modules.globals.target_path):
+            print('Previous temporary frames are still in use. Face mapping was cancelled.')
+            return None
         create_temp(modules.globals.target_path)
         print('Extracting frames...')
-        extract_frames(modules.globals.target_path)
+        if not extract_frames(modules.globals.target_path):
+            print('Frame extraction failed. Face mapping was cancelled.')
+            clean_temp(modules.globals.target_path)
+            return None
 
         temp_frame_paths = get_temp_frame_paths(modules.globals.target_path)
 

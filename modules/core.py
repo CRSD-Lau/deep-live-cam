@@ -23,7 +23,11 @@ from modules.execution_providers import (
     supported_provider_aliases,
 )
 from modules.quality_profiles import QUALITY_MODE_NAMES, apply_quality_profile
-from modules.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
+from modules.utilities import (
+    has_image_extension, detect_fps, create_video, extract_frames,
+    get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, clean_all_temp,
+    normalize_output_path, read_image, staged_output_path,
+)
 from modules.diagnostics.overlays import parse_overlay_layers
 from modules.visual_qa import parse_frame_selection
 
@@ -68,10 +72,10 @@ def parse_args() -> None:
     program.add_argument('--virtual-cam-width', help='virtual camera output width', dest='virtual_cam_width', type=positive_int, default=1280)
     program.add_argument('--virtual-cam-height', help='virtual camera output height', dest='virtual_cam_height', type=positive_int, default=720)
     program.add_argument('--virtual-cam-fps', help='virtual camera output fps', dest='virtual_cam_fps', type=positive_int, default=30)
-    program.add_argument('--max-memory', help='maximum amount of RAM in GB', dest='max_memory', type=int, default=suggest_max_memory())
+    program.add_argument('--max-memory', help='maximum amount of RAM in GB (0 disables the limit)', dest='max_memory', type=non_negative_int, default=suggest_max_memory())
     program.add_argument('--execution-provider', help=f'execution provider ({", ".join(suggest_execution_providers())})', dest='execution_provider', default=[suggest_default_execution_provider()], metavar='PROVIDER', nargs='+')
     program.add_argument('--directml-device-id', help='DirectML adapter index (0 is the Windows default GPU)', dest='directml_device_id', type=non_negative_int, default=0)
-    program.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int)
+    program.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=positive_int)
     program.add_argument('--check-execution-provider', help='run a real ONNX inference with the requested provider and exit', dest='check_execution_provider', action='store_true', default=False)
     program.add_argument('--download-models', help='review model sources, download models, and verify checksums', dest='download_models', action='store_true', default=False)
     program.add_argument('--yes', help='assume yes for non-interactive setup commands such as --download-models', dest='assume_yes', action='store_true', default=False)
@@ -79,9 +83,9 @@ def parse_args() -> None:
 
     # register deprecated args
     program.add_argument('-f', '--face', help=argparse.SUPPRESS, dest='source_path_deprecated')
-    program.add_argument('--cpu-cores', help=argparse.SUPPRESS, dest='cpu_cores_deprecated', type=int)
+    program.add_argument('--cpu-cores', help=argparse.SUPPRESS, dest='cpu_cores_deprecated', type=positive_int)
     program.add_argument('--gpu-vendor', help=argparse.SUPPRESS, dest='gpu_vendor_deprecated')
-    program.add_argument('--gpu-threads', help=argparse.SUPPRESS, dest='gpu_threads_deprecated', type=int)
+    program.add_argument('--gpu-threads', help=argparse.SUPPRESS, dest='gpu_threads_deprecated', type=positive_int)
 
     args = program.parse_args()
     try:
@@ -326,10 +330,11 @@ def pre_check() -> bool:
     if sys.version_info < (3, 9):
         update_status('Python version is not supported - please upgrade to 3.9 or higher.')
         return False
-    if not shutil.which('ffmpeg'):
+    missing_tools = [tool for tool in ('ffmpeg', 'ffprobe') if not shutil.which(tool)]
+    if missing_tools:
         message = (
-            'ffmpeg is not installed or not on PATH. Video processing and audio '
-            'restore require ffmpeg. Install ffmpeg or place ffmpeg.exe and '
+            f'{", ".join(missing_tools)} is not installed or not on PATH. Video '
+            'processing requires ffmpeg and ffprobe. Install ffmpeg or place ffmpeg.exe and '
             'ffprobe.exe beside the application.'
         )
         update_status(message)
@@ -345,44 +350,70 @@ def update_status(message: str, scope: str = 'DLC.CORE') -> None:
         import modules.ui as ui
         ui.update_status(message)
 
-def start() -> None:
-    """Start processing with performance monitoring."""
+def start() -> bool:
+    """Render into private files and report success only after publication."""
     import time
-    import modules.ui as ui
-    from modules.processors.frame.core import (
-        get_frame_processors_modules,
-        process_video_in_memory,
-    )
-    
+    from modules.processors.frame.core import get_frame_processors_modules
+
     start_time = time.time()
-    
-    for frame_processor in get_frame_processors_modules(modules.globals.frame_processors):
+    frame_processors = get_frame_processors_modules(modules.globals.frame_processors)
+    for frame_processor in frame_processors:
         if not frame_processor.pre_start():
-            return
+            return False
+    if not modules.globals.target_path or not modules.globals.output_path:
+        update_status('Select a target and output path before rendering.')
+        return False
     update_status('Processing...')
-    
-    # process image to image
-    if has_image_extension(modules.globals.target_path):
-        if modules.globals.nsfw_filter and ui.check_and_ignore_nsfw(modules.globals.target_path, destroy):
-            return
-        try:
-            shutil.copy2(modules.globals.target_path, modules.globals.output_path)
-        except Exception as e:
-            print("Error copying file:", str(e))
-        for frame_processor in get_frame_processors_modules(modules.globals.frame_processors):
-            update_status('Progressing...', frame_processor.NAME)
-            frame_processor.process_image(modules.globals.source_path, modules.globals.output_path, modules.globals.output_path)
-            release_resources()
-        if is_image(modules.globals.target_path):
+    if modules.globals.nsfw_filter:
+        import modules.ui as ui
+        if ui.check_and_ignore_nsfw(modules.globals.target_path, destroy):
+            return False
+
+    target_is_image = has_image_extension(modules.globals.target_path)
+    try:
+        if target_is_image:
+            with staged_output_path(modules.globals.output_path) as staging_path:
+                # Preserve image bytes while keeping staging writable even
+                # when the selected input file is marked read-only.
+                shutil.copyfile(modules.globals.target_path, staging_path)
+                for frame_processor in frame_processors:
+                    update_status('Progressing...', frame_processor.NAME)
+                    try:
+                        completed = frame_processor.process_image(
+                            modules.globals.source_path, staging_path, staging_path
+                        )
+                    finally:
+                        release_resources()
+                    if completed is not True:
+                        update_status(f'Image processing failed in {frame_processor.NAME}.')
+                        return False
+                if read_image(staging_path) is None:
+                    update_status('Image processing failed: output could not be read.')
+                    return False
+                os.replace(staging_path, modules.globals.output_path)
             elapsed = time.time() - start_time
-            update_status(f'Processing to image succeed! (Time: {elapsed:.2f}s)')
-        else:
-            update_status('Processing to image failed!')
-        return
-    
-    # process image to videos
-    if modules.globals.nsfw_filter and ui.check_and_ignore_nsfw(modules.globals.target_path, destroy):
-        return
+            update_status(f'Image processing succeeded! (Time: {elapsed:.2f}s)')
+            return True
+        return _render_video(frame_processors, start_time)
+    except Exception as error:
+        update_status(f'Rendering failed: {error}')
+        return False
+    finally:
+        if not target_is_image:
+            clean_temp(modules.globals.target_path)
+
+
+def _render_video(frame_processors, start_time: float) -> bool:
+    import time
+    from modules.processors.frame.core import process_video_in_memory
+
+    if not modules.globals.map_faces:
+        # Start a fresh session; mapper setup intentionally hands its existing
+        # extracted frames and their recorded locations to the render instead.
+        if not clean_temp(modules.globals.target_path):
+            update_status('Previous temporary frames are still in use. Retry when they are released.')
+            return False
+        create_temp(modules.globals.target_path)
 
     # Detect FPS early (needed by both pipelines)
     if modules.globals.keep_fps:
@@ -420,14 +451,19 @@ def start() -> None:
         if not modules.globals.map_faces:
             create_temp(modules.globals.target_path)
             update_status('Extracting frames...')
-            extract_frames(modules.globals.target_path)
+            if not extract_frames(modules.globals.target_path):
+                update_status('Frame extraction failed.')
+                return False
 
         temp_frame_paths = get_temp_frame_paths(modules.globals.target_path)
         total_frames = len(temp_frame_paths)
+        if total_frames == 0:
+            update_status('Video processing failed: no extracted frames are available.')
+            return False
         update_status(f'Processing {total_frames} frames with {modules.globals.execution_threads} threads...')
 
         processing_start = time.time()
-        for frame_processor in get_frame_processors_modules(modules.globals.frame_processors):
+        for frame_processor in frame_processors:
             update_status('Progressing...', frame_processor.NAME)
             frame_processor.process_video(modules.globals.source_path, temp_frame_paths)
             release_resources()
@@ -444,8 +480,7 @@ def start() -> None:
 
     if not video_created:
         update_status('Video encoding failed. No temporary output video was created.')
-        clean_temp(modules.globals.target_path)
-        return
+        return False
     
     # handle audio
     if modules.globals.keep_audio:
@@ -453,23 +488,20 @@ def start() -> None:
             update_status('Restoring audio...')
         else:
             update_status('Restoring audio might cause issues as fps are not kept...')
-        restore_audio(modules.globals.target_path, modules.globals.output_path)
+        published = restore_audio(modules.globals.target_path, modules.globals.output_path)
     else:
-        move_temp(modules.globals.target_path, modules.globals.output_path)
-    
-    # clean and validate
-    clean_temp(modules.globals.target_path)
+        published = move_temp(modules.globals.target_path, modules.globals.output_path)
     
     total_time = time.time() - start_time
-    if is_video(modules.globals.target_path) and modules.globals.output_path and os.path.isfile(modules.globals.output_path):
+    if published:
         update_status(f'Video processing succeeded! Total time: {total_time:.2f}s')
     else:
-        update_status('Processing to video failed!')
+        update_status('Video finalization failed. The output was not replaced.')
+    return published
 
 
 def destroy(to_quit=True) -> None:
-    if modules.globals.target_path:
-        clean_temp(modules.globals.target_path)
+    clean_all_temp()
     if to_quit: quit()
 
 
@@ -481,19 +513,21 @@ def run() -> None:
         from modules.model_manager import download_models
         raise SystemExit(download_models(assume_yes=modules.globals.assume_yes))
     if not pre_check():
+        if modules.globals.headless:
+            raise SystemExit(1)
         return
     if modules.globals.headless:
         from modules.processors.frame.core import get_frame_processors_modules
 
         for frame_processor in get_frame_processors_modules(modules.globals.frame_processors):
             if not frame_processor.pre_check():
-                return
+                raise SystemExit(1)
     # Pre-load face analyser in main thread before GUI starts
     #from modules.face_analyser import get_face_analyser
     #get_face_analyser()
     limit_resources()
     if modules.globals.headless:
-        start()
+        raise SystemExit(0 if start() else 1)
     else:
         import modules.ui as ui
 

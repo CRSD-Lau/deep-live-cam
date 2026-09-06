@@ -2254,7 +2254,7 @@ def process_frames(
         #        update_status(f"Processed frame {i+1}/{total_frames}", NAME)
 
 
-def process_image(source_path: str, target_path: str, output_path: str) -> None:
+def process_image(source_path: str, target_path: str, output_path: str) -> bool:
     """Processes a single target image."""
     # --- Reset interpolation state for single image processing ---
     global PREVIOUS_FRAME_RESULT
@@ -2268,10 +2268,10 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
         target_frame = read_image(target_path)
         if target_frame is None:
             update_status(f"Error: Could not read target image: {target_path}", NAME)
-            return
+            return False
     except Exception as read_e:
         update_status(f"Error reading target image {target_path}: {read_e}", NAME)
-        return
+        return False
 
     result = None
     try:
@@ -2287,14 +2287,14 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
                 source_img = read_image(source_path)
                 if source_img is None:
                     update_status(f"Error: Could not read source image: {source_path}", NAME)
-                    return
+                    return False
                 source_face = get_one_face(source_img)
                 if not source_face:
                     update_status(f"Error: No face found in source image: {source_path}", NAME)
-                    return
+                    return False
             except Exception as src_e:
                  update_status(f"Error reading or analyzing source image {source_path}: {src_e}", NAME)
-                 return
+                 return False
 
             result = process_frame(source_face, target_frame)
 
@@ -2303,6 +2303,7 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
             write_success = cv2.imwrite(output_path, result)
             if write_success:
                 update_status(f"Output image saved to: {output_path}", NAME)
+                return True
             else:
                 update_status(f"Error: Failed to write output image to {output_path}", NAME)
         else:
@@ -2313,6 +2314,7 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
          update_status(f"Error during image processing: {proc_e}", NAME)
          # import traceback
          # traceback.print_exc()
+    return False
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
