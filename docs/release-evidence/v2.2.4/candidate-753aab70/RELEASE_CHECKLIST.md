@@ -13,18 +13,10 @@ Use this checklist for every public Windows release. The release candidate is
 - NVIDIA/CUDA installer
 - AMD/Intel DirectML portable ZIP
 
-Binary and corresponding-source commit: the corrected immutable SHA recorded in the final source manifest.
+Binary and corresponding-source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`.
 The existing release remains a draft while final artifact or manual checks are pending.
 Later documentation/evidence commits do not move this artifact commit or release tag.
 Rollback release: `v2.2.3`.
-
-
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
 
 ## Source and version
 
@@ -76,8 +68,7 @@ that recorded SHA, never silently resolve a newer branch tip.
 - [ ] Package source from the exact merged release commit:
 
   ```powershell
-$ReleaseCommit = (git rev-parse --verify "HEAD^{commit}").Trim() # Clean merged release checkout only
-  powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef $ReleaseCommit
+  powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef 753aab70c34ae585d525a06b9f7de2d721b7f491
   ```
 
 - [ ] Confirm the source manifest reports `Archive mode: git-ref` and records
@@ -108,7 +99,7 @@ check of downloaded official artifacts. Keep later attestation-only changes
 separate from the verified payload:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.4 -GitRef $ReleaseCommit -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.4 -GitRef 753aab70c34ae585d525a06b9f7de2d721b7f491 -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
 ```
 
 Assemble the combined asset set after the DirectML ZIP is available:

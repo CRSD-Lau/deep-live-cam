@@ -11,28 +11,19 @@ Release: `2.2.4`
 
 Status: DRAFT — FINAL ASSET VERIFICATION PENDING
 
-Binary and corresponding-source commit: the corrected immutable SHA recorded in the final source manifest
+Binary and corresponding-source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`
 
 The corresponding-source archive must come from the same immutable merged
-commit as both runtime builds. The corrected candidate must be tied to the final
-manifest commit. Later documentation/evidence commits must not replace it with `HEAD`
+commit as both runtime builds. The candidate is already tied to the commit
+above. Later documentation/evidence commits must not replace it with `HEAD`
 or move the release tag. Publish those attestations separately and identify
 their source commit separately from the binary/source commit.
-
-
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
 
 ## Inspect the source identity
 
 ```powershell
-$ReleaseCommit = (git rev-parse --verify "HEAD^{commit}").Trim() # Clean merged release checkout only
 git status --short
-git show --no-patch --decorate $ReleaseCommit
+git show --no-patch --decorate 753aab70c34ae585d525a06b9f7de2d721b7f491
 ```
 
 Use a clean release worktree. Local environments, build outputs, models, logs
@@ -46,7 +37,7 @@ use the exact commit and a separate output directory; do not overwrite already
 approved asset bytes just to refresh documentation.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef $ReleaseCommit -OutputDir build\windows\source-verification\2.2.4
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef 753aab70c34ae585d525a06b9f7de2d721b7f491 -OutputDir build\windows\source-verification\2.2.4
 ```
 
 Required output:

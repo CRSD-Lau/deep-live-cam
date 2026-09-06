@@ -11,46 +11,29 @@ Status: PENDING
 
 Release: `2.2.4`
 
-Candidate source: `753aab70c34ae585d525a06b9f7de2d721b7f491`
+Candidate source: PENDING — record the corrected immutable build SHA and asset hashes.
 
-## Distribution posture and reviewed delta
+The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded. Its evidence is retained
+with original hashes and does not approve this rebuild.
 
-The previous owner-accepted distribution posture is preserved in
-`docs/release-evidence/v2.2.3/LEGAL_REVIEW.md`. It records Neil Mitchell's
-historical publisher acceptance. This current technical evidence update does
-not create or claim a new owner signoff or a legal opinion.
+- [ ] Verify exact matching source and runtime commits, hashes, attribution and AGPL source instructions.
+- [ ] Inspect both final runtime inventories, embedded modules and actual notice contents.
+- [ ] Verify collected pip/setuptools and vendor notices match the pinned main build environment.
+- [ ] Verify the CUDA helper uses the main pinned pip and fresh helpers omit bootstrap tools.
+- [ ] Verify CUDA DLL provenance, Qt notices and the documented build-only Torch exception's scope.
+- [ ] Scan both final payloads and corresponding source for excluded weights, Torch/JIT Python code and bundled FFmpeg.
+- [ ] Reconcile the actual packaging delta with the established distribution posture.
 
-- [x] Review the dependency delta: PyInstaller hooks 2026.6 to 2026.7 in both
-  package locks and development Ruff 0.16.4 to 0.16.5. Runtime dependency
-  versions, codec families, and model families remain unchanged from 2.2.3.
-- [x] Retain separate CUDA and DirectML distribution and model-weight exclusion.
-- [x] Document that explicit catalogue downloads carry source, checksum, and
-  licence notes, while InsightFace analysis and optional OpenNSFW2 models may
-  download through dependency-managed paths outside that consent inventory.
-- [x] Verify required runtime notice files and model exclusion through the
-  official DirectML packaged-runtime preflight.
+The previous owner-accepted distribution posture is recorded in
+docs/release-evidence/v2.2.3/LEGAL_REVIEW.md. This technical delta review does not
+invent new owner signoff. Runtime versions and model families remain unchanged;
+packaging hooks move from 2026.6 to 2026.7 and development Ruff from 0.16.4 to
+0.16.5. pip/setuptools package and vendor notices must accompany any embedded code.
 
-The build-only PyTorch 2.11.0 wheel remains affected by the documented advisory.
-The existing exception depends on excluding Torch/JIT Python code and copying
-only the selected CUDA/cuDNN DLLs. It is not an assertion that the wheel is
-patched. Its scope and re-evaluation conditions remain in
-`docs/DEPENDENCY_LOCKS.md`; the final CUDA payload must still be checked.
-
-## Outstanding final artifact checks
-
-- [ ] Attach corresponding source that matches both final runtime builds.
-- [ ] Verify final source/binary refs, hashes, original attribution, and AGPL
-  source instructions in the assembled asset set.
-- [ ] Verify both final dependency inventories and notices, including actual
-  Qt metadata and CUDA DLL licences; DirectML file-presence checks alone do
-  not establish every licence document's content.
-- [ ] Scan the final CUDA runtime and exact source archive for excluded weights;
-  retain the already completed DirectML exclusion result with its hash.
-- [ ] Verify external FFmpeg and model redistribution boundaries in the complete
-  final artifact set, and assess any material obligation revealed by that inspection.
-
-Evidence read for this update: `docs/DEPENDENCY_LOCKS.md`, the historical legal
-record, and `.tmp/release-2.2.4/official-directml/validation.json`. Exact binary
-hashes belong in the external asset manifest. Do not promote this gate to PASS
-until the outstanding technical artifact checks are complete and the existing
-owner-accepted posture still applies to the actual delta.
+The first candidate's deeper inspection found these notices missing. Its earlier
+DirectML presence check did not establish complete embedded-module notice coverage.
+Resolve this finding against rebuilt payloads, not by changing archived verdicts.
+The affected build-only Torch 2.11.0 wheel retains the existing scoped exception
+in docs/DEPENDENCY_LOCKS.md; do not claim the wheel is patched. CUDA seed DLLs may
+have documented transitive binary dependencies, such as nvJitLink from cuSPARSE.
+FFmpeg and model licences remain separate redistribution boundaries.

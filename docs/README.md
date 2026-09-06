@@ -43,9 +43,9 @@ Use this index to find the right guide without searching through release and com
 
 Files ending in `VERIFICATION.md`, `REPORT.md`, or `AUDIT.md` are evidence records. They support release decisions but are not the starting point for ordinary users.
 
-The current candidate is **2.2.4**, with binaries and corresponding source fixed
-at `753aab70c34ae585d525a06b9f7de2d721b7f491`. It stays a draft while required
+The current candidate is **2.2.4**. A corrected build is being prepared because
+the first candidate was missing embedded-package notices. It stays a draft while required
 artifact or manual checks remain pending; `v2.2.3` remains the rollback release.
 Later documentation commits record attestations without changing that build
-identity. Current external guidance supersedes older instructions embedded in
-the fixed candidate payload; those historical artifact bytes remain unchanged.
+identity. The [first candidate's evidence](release-evidence/v2.2.4/candidate-753aab70/README.md)
+is retained with its original hashes and does not approve replacement binaries.

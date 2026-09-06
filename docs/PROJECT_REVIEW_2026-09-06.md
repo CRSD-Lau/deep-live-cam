@@ -128,6 +128,20 @@ that physical-camera, clean-Windows, or packaged GUI/manual gates are complete.
 
 See [the current release report](../RELEASE_REPORT.md),
 [publication handoff](../RELEASE_PUBLISH_HANDOFF.md), and
-[DirectML payload inspection](release-evidence/v2.2.4/DIRECTML_COMPLIANCE_TECHNICAL.md).
+[first-candidate DirectML inspection](release-evidence/v2.2.4/candidate-753aab70/DIRECTML_COMPLIANCE_TECHNICAL.md).
 The 2.2.4 candidate remains a draft while mandatory release checks are pending;
 historical 2.2.3 evidence is retained under `docs/release-evidence/v2.2.3/`.
+
+The first official CUDA installer subsequently passed an actual 2.2.3-to-2.2.4
+upgrade with seven unchanged user-data files, real NVIDIA CUDA image/audio/silent
+video processing, and CPU image fallback. Deeper executable inspection then found
+embedded pip/setuptools modules without dedicated notices. The first candidate is
+superseded; its byte-exact evidence is archived under
+`docs/release-evidence/v2.2.4/candidate-753aab70/`.
+
+The corrected candidate collects package/vendor notices, uses the locked main pip
+for the CUDA DLL-source helper, and speeds up only the isolated installer test
+fixture's compression. The public installer retains its compression settings and
+all migration/uninstall assertions remain required. Replacement bytes require
+fresh source, hash, payload and runtime validation; the shared 2.2.4 version does
+not transfer earlier PASS claims.

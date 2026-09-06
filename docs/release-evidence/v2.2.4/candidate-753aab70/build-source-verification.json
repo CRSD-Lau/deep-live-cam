@@ -1,0 +1,140 @@
+{
+  "author": "Neil Mitchell",
+  "creator": "Neil Mitchell",
+  "last_modified_by": "Neil Mitchell",
+  "verified_utc": "2026-09-06T21:28:40.822202+00:00",
+  "release": "2.2.4",
+  "status": "AUTOMATED_BUILD_SOURCE_SUBSET_PASS",
+  "publication_approval": false,
+  "binary_source_commit": "753aab70c34ae585d525a06b9f7de2d721b7f491",
+  "workflow": {
+    "run_id": 34056909310,
+    "url": "https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34056909310",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "resolve-source",
+        "conclusion": "success",
+        "completed_utc": "2026-09-06T20:06:01Z"
+      },
+      {
+        "name": "build-directml",
+        "conclusion": "success",
+        "completed_utc": "2026-09-06T20:14:04Z"
+      },
+      {
+        "name": "build-windows",
+        "conclusion": "success",
+        "completed_utc": "2026-09-06T21:22:40Z"
+      }
+    ]
+  },
+  "workflow_artifact": {
+    "id": 9997372846,
+    "name": "DeepLiveCamStudio-2.2.4-x64-setup",
+    "service_reported_digest": "sha256:848763c9957a3e86763b17846efc09c6c846a7d457e2d42160e1275e2050f714",
+    "scope": "Saved GitHub artifact metadata; outer Actions ZIP digest was not independently recomputed in this audit."
+  },
+  "official_installer": {
+    "name": "DeepLiveCamStudio-2.2.4-x64-setup.exe",
+    "bytes": 1716357882,
+    "sha256": "797f15a50cef7522374c5bf4f1880b047e6fe0f1cd165c39a1639bc36189c31d",
+    "sidecar_match": true,
+    "build_log_digest_match": true,
+    "executed_by_this_audit": false
+  },
+  "source_archive": {
+    "name": "DeepLiveCamStudio-2.2.4-source-753aab70c34a.zip",
+    "bytes": 3863377,
+    "sha256": "43e9ab8a6e71a938d57b82661598cdae1092e69cfb010efb8d78e4eff5bf64df",
+    "sidecar_match": true,
+    "manifest_match": true,
+    "manifest_sha256": "e6df4451a437462cd9216b6a4beaf8ca8f6a9eb51b1b5380755b2ff3752414a6",
+    "prefix": "DeepLiveCamStudio-2.2.4-source/",
+    "files": 255,
+    "payload_bytes": 6467977,
+    "required_manifest_entries_checked": 119,
+    "crc_and_safe_paths_passed": true,
+    "forbidden_model_entries": 0,
+    "local_environment_entries": 0,
+    "application_version": "2.2.4",
+    "git_archive_per_file_bytes_match": true,
+    "git_archive_file_set_match": true,
+    "documented_model_policy_exclusions": [],
+    "comparison_method": "In-memory native git archive of the fixed SHA with the same prefix; exact member set and uncompressed byte comparison after the packager's model exclusion policy."
+  },
+  "installer_fixture": {
+    "status": "PASS_FROM_SUCCESSFUL_HOSTED_LOG_AND_EXACT_SOURCE_ASSERTIONS",
+    "legacy_fixture_version": "2.2.1",
+    "orphan_fixture_version": "2.1.9",
+    "candidate_version": "2.2.4",
+    "uses_recompiled_test_guid_installer": true,
+    "actual_official_installer_executed": false,
+    "assertions_satisfied": [
+      "registered_legacy_directory_removed",
+      "orphaned_version_directory_removed",
+      "model_sentinel_preserved_during_upgrade",
+      "candidate_registry_path_validated",
+      "candidate_registry_version_validated",
+      "required_payload_files_present",
+      "model_weight_payload_absent",
+      "torch_python_payload_absent",
+      "uninstall_exit_checked",
+      "model_sentinel_preserved_during_uninstall",
+      "test_registration_removed_after_uninstall",
+      "stable_fixture_directory_removed_after_uninstall"
+    ],
+    "events": {
+      "legacy_fixture_install_started": {
+        "line": 5638,
+        "utc": "2026-09-06T21:13:17.3756639Z"
+      },
+      "isolated_candidate_upgrade_started": {
+        "line": 5639,
+        "utc": "2026-09-06T21:13:22.5472493Z"
+      },
+      "installed_fixture_cli_version": {
+        "line": 5641,
+        "utc": "2026-09-06T21:17:22.9355672Z"
+      },
+      "fixture_upgrade_checks_passed": {
+        "line": 5642,
+        "utc": "2026-09-06T21:17:23.1455307Z"
+      },
+      "fixture_silent_uninstall_started": {
+        "line": 5643,
+        "utc": "2026-09-06T21:17:23.1593681Z"
+      },
+      "following_release_step_reached": {
+        "line": 5645,
+        "utc": "2026-09-06T21:17:28.2364132Z"
+      },
+      "official_installer_hash_confirmed": {
+        "line": 5646,
+        "utc": "2026-09-06T21:17:56.0262708Z"
+      },
+      "source_sha_confirmed": {
+        "line": 5713,
+        "utc": "2026-09-06T21:18:03.8018626Z"
+      },
+      "source_content_validation_passed": {
+        "line": 5714,
+        "utc": "2026-09-06T21:18:03.8025197Z"
+      }
+    },
+    "evidence_basis": "Successful exact-source script reached the next release step after silent uninstall. Assertions that throw on migration, payload, registry, sentinel or cleanup failures therefore completed; no separate post-uninstall PASS line is emitted."
+  },
+  "input_evidence_sha256": {
+    "cuda-build.log": "376ce6f134b62593249f14580f7c7d8ddd9e9bc9af4467e3dbdba2fe5607efdc",
+    "final-run-metadata.json": "2b3fa0084d9ab0fc4745f53cbfc7f69210c2f90f1b921ed47057984b7b8830bb",
+    "final-artifact-metadata.json": "13e58d895f9c234e0773dd334c0dc43c1c5166625b5aa7c665e2ee3cbbf36271"
+  },
+  "limitations": [
+    "No local installer, runtime, model download, GPU, GUI or receiver was executed by this audit.",
+    "The hosted installer test recompiles an isolated test-GUID EXE; it is not execution of the supplied official installer bytes and is not a real stable 2.2.3 upgrade.",
+    "The fixture preserves a synthetic model sentinel; it does not establish complete real-user-data preservation.",
+    "This source comparison verifies the committed source payload, not a new licence or semantic secret-content audit.",
+    "No clean Windows manual gate or final publication approval is established."
+  ]
+}
