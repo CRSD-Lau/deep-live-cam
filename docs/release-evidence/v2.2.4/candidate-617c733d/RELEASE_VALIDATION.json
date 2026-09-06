@@ -1,0 +1,980 @@
+{
+  "author": "Neil Mitchell",
+  "creator": "Neil Mitchell",
+  "last_modified_by": "Neil Mitchell",
+  "status": "AUTOMATED_FINAL_CANDIDATE_SUBSETS_PASS",
+  "generated_utc": "2026-09-06T23:22:40.093799+00:00",
+  "app_version": "2.2.4",
+  "source_commit": "617c733d42a10a2fcba036385e19d66fabcc2cc1",
+  "official_workflow_run": 34063403042,
+  "publication_approval": false,
+  "source_identity": {
+    "workflow": {
+      "run_id": 34063403042,
+      "url": "https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34063403042",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "resolve-source",
+          "conclusion": "success",
+          "completed_utc": "2026-09-06T22:14:11Z"
+        },
+        {
+          "name": "build-directml",
+          "conclusion": "success",
+          "completed_utc": "2026-09-06T22:22:19Z"
+        },
+        {
+          "name": "build-windows",
+          "conclusion": "success",
+          "completed_utc": "2026-09-06T23:10:01Z"
+        }
+      ]
+    },
+    "source_archive": {
+      "name": "DeepLiveCamStudio-2.2.4-source-617c733d42a1.zip",
+      "bytes": 3953139,
+      "sha256": "ec59a3be3ffc4b4b58baafbc4fd4867ceeedea3fa66e3d86038dcb4dc4af7f8e",
+      "files": 287,
+      "payload_bytes": 6691483,
+      "manifest_sha256": "db85a8173b6247f477514cfdd2f9d23d36137e652cd7b08f741af767ca03fbd6",
+      "git_archive_per_file_bytes_match": true,
+      "git_archive_file_set_match": true
+    },
+    "later_documentation_attestations_change_binary_source": false
+  },
+  "tests": {
+    "local_combined_integration_passed": 744,
+    "source_ci_passed": 742,
+    "source_ci_skipped": 2,
+    "source_ci_run": 34063380350,
+    "source_ci_commit": "617c733d42a10a2fcba036385e19d66fabcc2cc1"
+  },
+  "installer_replacement": {
+    "status": "PASS",
+    "operation": "same-version-candidate-replacement",
+    "previous_version": "2.2.4",
+    "new_version": "2.2.4",
+    "previous_candidate_source": "753aab70c34ae585d525a06b9f7de2d721b7f491",
+    "previous_cli_sha256": "9f762064b9079721c9597610689f48e306a9a0ca8483856b09f2546b2c387748",
+    "installer_sha256": "d91080bef32a6bb731830599bfda90eeca4844d20af6d34e67957c0bda2b48bf",
+    "installed_cli_sha256": "a047d8e7060dd8704d838eebd1ee51650dee4cde19478fa020478a22c54f32eb",
+    "installed_gui_sha256": "b7e5d120d4a00b51db8a87805f7f011fbbd74ccc3e45e39b24e9aab221951fad",
+    "installer_executed": true,
+    "exit_code": 0,
+    "user_data_backup_verified": true,
+    "user_data_unchanged": true,
+    "historical_2_2_3_upgrade_proof_preserved": true,
+    "historical_user_data_backup_preserved": true,
+    "independent_full_payload_manifest": "NOT_PROVIDED",
+    "hash_basis": "Post-install CLI/GUI measurements from the verified corrected installer execution; this is not a new 2.2.3-to-corrected-2.2.4 upgrade claim.",
+    "preservation_counts": {
+      "BeforeUserFileCount": 7,
+      "AfterUserFileCount": 7,
+      "BeforeUserBytes": 1558270376,
+      "AfterUserBytes": 1558270376,
+      "RequiredInstalledFilesVerified": 30,
+      "InstalledPayloadFileCount": 2418
+    }
+  },
+  "cuda": {
+    "runtime_preflight": "PASS",
+    "render": {
+      "status": "PASS",
+      "active_providers": [
+        "CPUExecutionProvider",
+        "CUDAExecutionProvider"
+      ],
+      "image": {
+        "shape": [
+          560,
+          448,
+          3
+        ],
+        "changed_pixels": 69189,
+        "sha256": "3e0484925c8deb8ecf826f5a147910a8b413732a8ffa95577631096510a5fba3"
+      },
+      "videos": [
+        {
+          "kind": "silent",
+          "sha256": "f4b3c973e07a7f19d3f568c19202bb09527d7808167f2fb6f7f7adadfff9ba59",
+          "width": 448,
+          "height": 560,
+          "decoded_frames": 4,
+          "has_audio": false,
+          "duration_seconds": 1.0
+        },
+        {
+          "kind": "audio",
+          "sha256": "a302402f7b3f8d99f8239c0ef27a2be64a7b1ae61a8f042dd0a57f0f4ec62eea",
+          "width": 448,
+          "height": 560,
+          "decoded_frames": 4,
+          "has_audio": true,
+          "duration_seconds": 1.002
+        }
+      ],
+      "video_scope": "Verified silent and audio clips",
+      "failed_export_preserved": true,
+      "failed_export_destination_sha256": "3e0484925c8deb8ecf826f5a147910a8b413732a8ffa95577631096510a5fba3"
+    },
+    "cpu_fallback": {
+      "status": "PASS",
+      "active_providers": [
+        "CPUExecutionProvider"
+      ],
+      "image": {
+        "shape": [
+          560,
+          448,
+          3
+        ],
+        "changed_pixels": 69199,
+        "sha256": "dbd781ea1e8a844d2777989fa790ba80d349a67484102bcad7ce677b579cb1d3"
+      },
+      "videos": [],
+      "video_scope": "Not run; image-only CPU fallback",
+      "failed_export_preserved": true,
+      "failed_export_destination_sha256": "dbd781ea1e8a844d2777989fa790ba80d349a67484102bcad7ce677b579cb1d3"
+    },
+    "compliance": {
+      "technical_status": "PASS",
+      "runtime_inventory_rows": 91,
+      "total_inventory_rows": 100,
+      "notice_files_matched_upstream": 77,
+      "notice_reference_sha256": "99ecde19efb27d7ddc586a1017b309132171d94db20e5a9e632bf1a33ee4976d",
+      "archive_support_module_counts": {
+        "DeepLiveCamStudioCLI.exe": {
+          "pip": 353,
+          "setuptools": 143,
+          "pkg_resources": 0,
+          "PyInstaller": 0,
+          "_pyinstaller_hooks_contrib": 0
+        },
+        "DeepLiveCamStudio.exe": {
+          "pip": 353,
+          "setuptools": 143,
+          "pkg_resources": 0,
+          "PyInstaller": 0,
+          "_pyinstaller_hooks_contrib": 0
+        }
+      },
+      "native_identities": [
+        {
+          "path": "_internal/cublas64_12.dll",
+          "fixed_file_version": "6.14.11.1284",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6,14,11,1284",
+            "ProductName": "NVIDIA CUDA BLAS Library",
+            "ProductVersion": "6,14,11,1284"
+          },
+          "sha256": "9513540e4ec4c51ee9e7304138c2cc255c29a8c181f9e80c38efa25738becd99"
+        },
+        {
+          "path": "_internal/cublasLt64_12.dll",
+          "fixed_file_version": "6.14.11.1284",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6,14,11,1284",
+            "ProductName": "NVIDIA CUDA BLAS Library",
+            "ProductVersion": "6,14,11,1284"
+          },
+          "sha256": "b199d1ff892a81b7fd3d57ba1781549609b41500b36008fef326038393ad46c7"
+        },
+        {
+          "path": "_internal/cudart64_12.dll",
+          "fixed_file_version": "6.14.11.12080",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6,14,11,12080",
+            "ProductName": "NVIDIA CUDA 12.8.90 Runtime",
+            "ProductVersion": "6,14,11,12080"
+          },
+          "sha256": "c2c9a9c22a9bcba90e261825968836787b331038047a26770cffb7a583c28344"
+        },
+        {
+          "path": "_internal/cudnn64_9.dll",
+          "fixed_file_version": "9.19.0.56",
+          "string_versions": {
+            "CompanyName": "Windows (R) Win 7 DDK provider",
+            "FileVersion": "9.19.0.56",
+            "ProductName": "NVIDIA cuDNN Library",
+            "ProductVersion": "9.19.0.56"
+          },
+          "sha256": "c6de55089c4759a545ff63459c00a6223dacffa5e797109a6be2be0477fb6c5c"
+        },
+        {
+          "path": "_internal/cudnn_adv64_9.dll",
+          "fixed_file_version": "9.19.0.56",
+          "string_versions": {
+            "CompanyName": "Windows (R) Win 7 DDK provider",
+            "FileVersion": "9.19.0.56",
+            "ProductName": "NVIDIA cuDNN Adv Library",
+            "ProductVersion": "9.19.0.56"
+          },
+          "sha256": "a8aed3390144ea20d96c0d618462a12cbc7897620380e60438489329b9722531"
+        },
+        {
+          "path": "_internal/cudnn_cnn64_9.dll",
+          "fixed_file_version": "9.19.0.56",
+          "string_versions": {
+            "CompanyName": "Windows (R) Win 7 DDK provider",
+            "FileVersion": "9.19.0.56",
+            "ProductName": "NVIDIA cuDNN CNN Library",
+            "ProductVersion": "9.19.0.56"
+          },
+          "sha256": "acac8bf8f924ecd60928877310ba360d2ee5eb1e4ec80ff6475bf9d819d3a5c8"
+        },
+        {
+          "path": "_internal/cudnn_engines_precompiled64_9.dll",
+          "fixed_file_version": "9.19.0.56",
+          "string_versions": {
+            "CompanyName": "Windows (R) Win 7 DDK provider",
+            "FileVersion": "9.19.0.56",
+            "ProductName": "NVIDIA cuDNN Precompiled Engines Library",
+            "ProductVersion": "9.19.0.56"
+          },
+          "sha256": "3a97df241beb2b75eb5d6152996a9a90d2155c2d4da1aeac5bd66850ed2446c1"
+        },
+        {
+          "path": "_internal/cudnn_engines_runtime_compiled64_9.dll",
+          "fixed_file_version": "9.19.0.56",
+          "string_versions": {
+            "CompanyName": "Windows (R) Win 7 DDK provider",
+            "FileVersion": "9.19.0.56",
+            "ProductName": "NVIDIA cuDNN ENGINES_RUNTIME_COMPILED Library",
+            "ProductVersion": "9.19.0.56"
+          },
+          "sha256": "81c5e5475e386269825ae6da0652f4554fa1c58af6c90908a180314689e12350"
+        },
+        {
+          "path": "_internal/cudnn_graph64_9.dll",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "f5453cb541402218cb5459e669db1d578656ebef394c755ab5acc2bec1165657"
+        },
+        {
+          "path": "_internal/cudnn_heuristic64_9.dll",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "3b1cb10835204fb7a45bf03aeb353842185cb2ebb34f59db20d9cb6fe5c1c556"
+        },
+        {
+          "path": "_internal/cudnn_ops64_9.dll",
+          "fixed_file_version": "9.19.0.56",
+          "string_versions": {
+            "CompanyName": "Windows (R) Win 7 DDK provider",
+            "FileVersion": "9.19.0.56",
+            "ProductName": "NVIDIA cuDNN Ops Library",
+            "ProductVersion": "9.19.0.56"
+          },
+          "sha256": "922897bd15a66acecde7c026ecc835b0fc5662c9ae08c120fd89f0f73affa7da"
+        },
+        {
+          "path": "_internal/cufft64_11.dll",
+          "fixed_file_version": "6.14.11.1133",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6,14,11,1133",
+            "ProductName": "NVIDIA CUDA FFT Library",
+            "ProductVersion": "6,14,11,1133"
+          },
+          "sha256": "f4fea9227b14843894ad5436725f9638b172171142c95291fc6ae7a493248221"
+        },
+        {
+          "path": "_internal/cufftw64_11.dll",
+          "fixed_file_version": "6.14.11.1133",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6,14,11,1133",
+            "ProductName": "NVIDIA CUDA FFTW Library",
+            "ProductVersion": "6,14,11,1133"
+          },
+          "sha256": "84c86dcc4d4b770e75766964149ef688c901dc89e380278fe399dd3c03608541"
+        },
+        {
+          "path": "_internal/curand64_10.dll",
+          "fixed_file_version": "6.14.11.1039",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6,14,11,1039",
+            "ProductName": "NVIDIA CUDA RAND Library",
+            "ProductVersion": "6,14,11,1039"
+          },
+          "sha256": "3465fd1b46e551339b8f44c455756a0f2cba8bd846562eb659040d48edb7aaac"
+        },
+        {
+          "path": "_internal/cusolver64_11.dll",
+          "fixed_file_version": "6.14.11.1173",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6,14,11,1173",
+            "ProductName": "NVIDIA CUDA CUSOLVER Library",
+            "ProductVersion": "6,14,11,1173"
+          },
+          "sha256": "3d4f7a66b5f352db56d4bb5962bb453a42d5feb2d831779f4a0bebc9971c36fb"
+        },
+        {
+          "path": "_internal/cusolverMg64_11.dll",
+          "fixed_file_version": "6.14.11.1173",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6,14,11,1173",
+            "ProductName": "NVIDIA CUDA CUSOLVERMG Library",
+            "ProductVersion": "6,14,11,1173"
+          },
+          "sha256": "c3377f10606ff0606be2f08401d54aff6c37f137b78d6b6e21be356a5b4d6cc2"
+        },
+        {
+          "path": "_internal/cusparse64_12.dll",
+          "fixed_file_version": "6.14.11.1258",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6,14,11,1258",
+            "ProductName": "NVIDIA CUDA SPARSE BLAS Library",
+            "ProductVersion": "6,14,11,1258"
+          },
+          "sha256": "f4688daa6163c47a0b5293926ec7ae367de6b4af54ea201638b308831b322a0e"
+        },
+        {
+          "path": "_internal/nvJitLink_120_0.dll",
+          "fixed_file_version": "6.14.11.9000",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6.14.11.9000",
+            "ProductName": "NVIDIA CUDA 12.8.93 NVJITLINK Library",
+            "ProductVersion": "6.14.11.9000"
+          },
+          "sha256": "959d3cb44527ec884db8dc20772520b584dbe7d622d11b0530e6326417078b3e"
+        },
+        {
+          "path": "_internal/nvrtc-builtins64_128.dll",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "a7afa2a40cbd3f922a33d8bf71c13cb26ca707c7016a9bc5fcde36759ba668f5"
+        },
+        {
+          "path": "_internal/nvrtc64_120_0.dll",
+          "fixed_file_version": "6.14.11.9000",
+          "string_versions": {
+            "CompanyName": "NVIDIA Corporation",
+            "FileVersion": "6.14.11.9000",
+            "ProductName": "NVIDIA CUDA 12.8.93 NVRTC Library",
+            "ProductVersion": "6.14.11.9000"
+          },
+          "sha256": "02d2d7ef4690bf1a55dda1d3ac94c86ce8d16920071c87bcd3e70e94ef346e93"
+        },
+        {
+          "path": "_internal/nvToolsExt64_1.dll",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "0fe54f1b80ad3e44da2a3d9f0956e7c3903029d6319689ce1c4068f7a20932f3"
+        },
+        {
+          "path": "_internal/onnxruntime/capi/onnxruntime_providers_cuda.dll",
+          "fixed_file_version": "1.24.26.316",
+          "string_versions": {
+            "CompanyName": "Microsoft Corporation",
+            "FileVersion": "1.24.20260316.2.2d92497",
+            "ProductName": "Microsoft\u00ae Windows\u00ae Operating System",
+            "ProductVersion": "1.24.20260316.2.2d92497"
+          },
+          "sha256": "6a02338c8fcf9e913767c1eb57033959f69076567d5290cee59c541793d16354"
+        },
+        {
+          "path": "_internal/onnxruntime/capi/onnxruntime_providers_shared.dll",
+          "fixed_file_version": "1.24.26.316",
+          "string_versions": {
+            "CompanyName": "Microsoft Corporation",
+            "FileVersion": "1.24.20260316.2.2d92497",
+            "ProductName": "Microsoft\u00ae Windows\u00ae Operating System",
+            "ProductVersion": "1.24.20260316.2.2d92497"
+          },
+          "sha256": "93f33380e5819cb9befbfe0e5212394dcb0c9983970c73a01bf51100bb1f13ee"
+        },
+        {
+          "path": "_internal/onnxruntime/capi/onnxruntime_pybind11_state.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "98a1398a33f10174929f512e6c17238693a99ad92a676e97500ce752a2cad10b"
+        },
+        {
+          "path": "_internal/PySide6/Qt6Core.dll",
+          "fixed_file_version": "6.11.1.0",
+          "string_versions": {
+            "CompanyName": "The Qt Company Ltd.",
+            "FileVersion": "6.11.1.0",
+            "ProductName": "Qt6",
+            "ProductVersion": "6.11.1.0"
+          },
+          "sha256": "65fe6224b6c47a15b058738031d31dce9928c4d7a58e1b8db6434f6f5cddd702"
+        },
+        {
+          "path": "_internal/PySide6/QtCore.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "be52341a5df1f76ecca2fb1e94eb429dfa46f0b659ed6536f25119b565b21ea8"
+        },
+        {
+          "path": "_internal/PySide6/QtGui.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "f0549716b10a8b4fbd5c6c041f36af215223809f919f4c4722d44cc199d5c593"
+        },
+        {
+          "path": "_internal/PySide6/QtWidgets.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "85cb6c2181b4b09887a7d8507dd950844d1b8f74a9c4002c7b71169f75bf6fda"
+        },
+        {
+          "path": "_internal/python311.dll",
+          "fixed_file_version": "3.11.9150.1013",
+          "string_versions": {
+            "CompanyName": "Python Software Foundation",
+            "FileVersion": "3.11.9",
+            "ProductName": "Python",
+            "ProductVersion": "3.11.9"
+          },
+          "sha256": "0817a2a657a24c0d5fbb60df56960f42fc66b3039d522ec952dab83e2d869364"
+        },
+        {
+          "path": "_internal/shiboken6/Shiboken.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "0e2c5318c5ac60a016a12230bbb1f6a9d990c45cbf4a7c4af24aefb5ab7dc40a"
+        },
+        {
+          "path": "_internal/zlibwapi.dll",
+          "fixed_file_version": "1.2.3.0",
+          "string_versions": {
+            "FileVersion": "1.2.3.0",
+            "ProductName": "ZLib.DLL"
+          },
+          "sha256": "1f047faec08d9a35c304fb4a7cf13853589359a8f7cbfdd48c5d5807712dcf05"
+        }
+      ],
+      "qt_shared_full_texts": {
+        "LGPL-3.0-only": {
+          "path": "LICENSES/THIRD_PARTY_LICENSES/easydict-1.13/LICENSE",
+          "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
+        },
+        "GPL-3.0-only": {
+          "path": "LICENSES/THIRD_PARTY_LICENSES/cv2_enumerate_cameras-1.1.15/LICENSE",
+          "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+        },
+        "GPL-2.0-only": {
+          "path": "LICENSES/THIRD_PARTY_LICENSES/pyvirtualcam-0.15.0/licenses/LICENSE",
+          "sha256": "189b1af95d661151e054cea10c91b3d754e4de4d3fecfb074c1fb29476f7167b"
+        }
+      },
+      "torch_jit_weights_ffmpeg_absent": true
+    }
+  },
+  "directml": {
+    "archive_sha256": "f6b077f0364bb523e75ec7950b096d62763a5b4aa2de181d0eaffa47f9bf6f04",
+    "archive_bytes": 641624275,
+    "artifact_id": 9998298095,
+    "executable_hashes": {
+      "cli": "d7898571000e39d9925e3de7edc6f222ced40c8cf56f53cfd80328aeb732f61e",
+      "gui": "a1578d25460c681d9610dc878d1ef15f26ec32060a3cac5d129e2acba4281da2"
+    },
+    "runtime_preflight": "PASS",
+    "adapter": {
+      "description": "AMD Radeon(TM) Graphics",
+      "vendor_id": "0x1002",
+      "device_id": 1
+    },
+    "image_changed_pixels": 69199,
+    "image_size": [
+      448,
+      560
+    ],
+    "unicode_image_output": true,
+    "videos": [
+      {
+        "kind": "silent",
+        "width": 448,
+        "height": 560,
+        "decoded_frame_count": 4,
+        "has_audio": false,
+        "sha256": "e354430c84e5ee58b5b914bda47c1d2898465e795e420b4ae7c3d2e30b5e064c"
+      },
+      {
+        "kind": "audio",
+        "width": 448,
+        "height": 560,
+        "decoded_frame_count": 4,
+        "has_audio": true,
+        "sha256": "2013dbded9ef0640c719c7435585c739aa3f8d65e0d036360d44de9085bffaa8"
+      }
+    ],
+    "failed_export_preserved": true,
+    "compliance": {
+      "technical_status": "PASS",
+      "runtime_inventory_rows": 94,
+      "total_inventory_rows": 102,
+      "notice_files_matched_upstream": 77,
+      "notice_reference_sha256": "99ecde19efb27d7ddc586a1017b309132171d94db20e5a9e632bf1a33ee4976d",
+      "archive_support_module_counts": {
+        "DeepLiveCamStudioCLI.exe": {
+          "pip": 353,
+          "setuptools": 143,
+          "pkg_resources": 0,
+          "PyInstaller": 0,
+          "_pyinstaller_hooks_contrib": 0
+        },
+        "DeepLiveCamStudio.exe": {
+          "pip": 353,
+          "setuptools": 143,
+          "pkg_resources": 0,
+          "PyInstaller": 0,
+          "_pyinstaller_hooks_contrib": 0
+        }
+      },
+      "native_identities": [
+        {
+          "path": "_internal/onnxruntime/capi/DirectML.dll",
+          "fixed_file_version": "1.15.4.0",
+          "string_versions": {
+            "CompanyName": "Microsoft Corporation",
+            "FileVersion": "1.15.4+241025-1615.1.dml-1.15.fac7597",
+            "ProductName": "DirectML Redistributable Library",
+            "ProductVersion": "1.15.4+241025-1615.1.dml-1.15.fac7597"
+          },
+          "sha256": "0489a854150b171c9eb6495c38c7e6363c9528151b9cdae066cfe770a18fd5b4"
+        },
+        {
+          "path": "_internal/onnxruntime/capi/onnxruntime.dll",
+          "fixed_file_version": "1.23.25.924",
+          "string_versions": {
+            "CompanyName": "Microsoft Corporation",
+            "FileVersion": "1.23.20250924.2.be835ef",
+            "ProductName": "Microsoft\u00ae Windows\u00ae Operating System",
+            "ProductVersion": "1.23.20250924.2.be835ef"
+          },
+          "sha256": "a358e2ec051a8948091fee74c6a836f61ea9e97f8ce1171b9261ebb2da237ec9"
+        },
+        {
+          "path": "_internal/onnxruntime/capi/onnxruntime_pybind11_state.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "627e0ec071c029bc7d69da33ebcfb6ed28174fd903ac0e196ce8671c62aeb2e4"
+        },
+        {
+          "path": "_internal/PySide6/Qt6Core.dll",
+          "fixed_file_version": "6.11.1.0",
+          "string_versions": {
+            "CompanyName": "The Qt Company Ltd.",
+            "FileVersion": "6.11.1.0",
+            "ProductName": "Qt6",
+            "ProductVersion": "6.11.1.0"
+          },
+          "sha256": "65fe6224b6c47a15b058738031d31dce9928c4d7a58e1b8db6434f6f5cddd702"
+        },
+        {
+          "path": "_internal/PySide6/QtCore.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "be52341a5df1f76ecca2fb1e94eb429dfa46f0b659ed6536f25119b565b21ea8"
+        },
+        {
+          "path": "_internal/PySide6/QtGui.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "f0549716b10a8b4fbd5c6c041f36af215223809f919f4c4722d44cc199d5c593"
+        },
+        {
+          "path": "_internal/PySide6/QtWidgets.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "85cb6c2181b4b09887a7d8507dd950844d1b8f74a9c4002c7b71169f75bf6fda"
+        },
+        {
+          "path": "_internal/python311.dll",
+          "fixed_file_version": "3.11.9150.1013",
+          "string_versions": {
+            "CompanyName": "Python Software Foundation",
+            "FileVersion": "3.11.9",
+            "ProductName": "Python",
+            "ProductVersion": "3.11.9"
+          },
+          "sha256": "0817a2a657a24c0d5fbb60df56960f42fc66b3039d522ec952dab83e2d869364"
+        },
+        {
+          "path": "_internal/shiboken6/Shiboken.pyd",
+          "fixed_file_version": null,
+          "string_versions": {},
+          "sha256": "0e2c5318c5ac60a016a12230bbb1f6a9d990c45cbf4a7c4af24aefb5ab7dc40a"
+        }
+      ],
+      "qt_shared_full_texts": {
+        "LGPL-3.0-only": {
+          "path": "LICENSES/THIRD_PARTY_LICENSES/easydict-1.13/LICENSE",
+          "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
+        },
+        "GPL-3.0-only": {
+          "path": "LICENSES/THIRD_PARTY_LICENSES/cv2_enumerate_cameras-1.1.15/LICENSE",
+          "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+        },
+        "GPL-2.0-only": {
+          "path": "LICENSES/THIRD_PARTY_LICENSES/pyvirtualcam-0.15.0/licenses/LICENSE",
+          "sha256": "189b1af95d661151e054cea10c91b3d754e4de4d3fecfb074c1fb29476f7167b"
+        }
+      },
+      "torch_jit_weights_ffmpeg_absent": true
+    },
+    "image": {
+      "shape": [
+        560,
+        448,
+        3
+      ],
+      "changed_pixels": 69199,
+      "sha256": "54ed863dadffdd41850d7c418896e52415d8d4f5b831d836f8eb39ab6506495f"
+    }
+  },
+  "model_catalogue": {
+    "consent_cancellation": "PASS",
+    "authorized_owned_cache_download": "PASS",
+    "file_count": 5,
+    "total_bytes": 1557775109,
+    "remaining_partial_files": 0,
+    "model_files_are_release_assets": false
+  },
+  "fresh_hosted_bytes": [
+    {
+      "scope": "cuda_and_source",
+      "release_id": 383709629,
+      "draft": true,
+      "fresh_asset_count": 5,
+      "files": [
+        {
+          "name": "DeepLiveCamStudio-2.2.4-x64-setup.exe",
+          "bytes": 1716394725,
+          "sha256": "d91080bef32a6bb731830599bfda90eeca4844d20af6d34e67957c0bda2b48bf",
+          "asset_id": 547799014
+        },
+        {
+          "name": "DeepLiveCamStudio-2.2.4-x64-setup.exe.sha256",
+          "bytes": 105,
+          "sha256": "1a0c045a1747b01922d626be17f4512434159d24c98f12c6df35d4d4c957bdf7",
+          "asset_id": 547799019
+        },
+        {
+          "name": "DeepLiveCamStudio-2.2.4-source-617c733d42a1.zip",
+          "bytes": 3953139,
+          "sha256": "ec59a3be3ffc4b4b58baafbc4fd4867ceeedea3fa66e3d86038dcb4dc4af7f8e",
+          "asset_id": 547799008
+        },
+        {
+          "name": "DeepLiveCamStudio-2.2.4-source-617c733d42a1.zip.sha256",
+          "bytes": 115,
+          "sha256": "08ff4829475c11b53483e66c54ba90bece9e4b7a70d84c848fd9537ca4ca9bbb",
+          "asset_id": 547799009
+        },
+        {
+          "name": "DeepLiveCamStudio-2.2.4-source-617c733d42a1.manifest.md",
+          "bytes": 6382,
+          "sha256": "db85a8173b6247f477514cfdd2f9d23d36137e652cd7b08f741af767ca03fbd6",
+          "asset_id": 547799006
+        }
+      ],
+      "fresh_hosted_amd_preflight_status": "NOT_APPLICABLE"
+    },
+    {
+      "scope": "directml",
+      "release_id": 383709629,
+      "draft": true,
+      "fresh_asset_count": 2,
+      "files": [
+        {
+          "name": "DeepLiveCamStudio-2.2.4-DirectML-x64-portable.zip",
+          "asset_id": 547799012,
+          "bytes": 641624275,
+          "sha256": "f6b077f0364bb523e75ec7950b096d62763a5b4aa2de181d0eaffa47f9bf6f04"
+        },
+        {
+          "name": "DeepLiveCamStudio-2.2.4-DirectML-x64-portable.zip.sha256",
+          "asset_id": 547799010,
+          "bytes": 117,
+          "sha256": "147b8a02a042fb7e627041055ea5a7903741985d4946079c08a01a37d4dcfc89"
+        }
+      ],
+      "fresh_hosted_amd_preflight_status": "PASS"
+    }
+  ],
+  "retained_torch_exception": {
+    "version": "2.11.0+cu128",
+    "source_lock_sha256": "4852094a97b7bf0174be1a6c4750538909c2f6c2e9d58a6306a5d5c60ae90a01",
+    "policy": "docs/DEPENDENCY_LOCKS.md",
+    "advisory": "PYSEC-2025-194 / GHSA-rrmf-rvhw-rf47 / CVE-2025-3000",
+    "patched_claim": false,
+    "new_approval": false,
+    "scope": "Existing isolated CUDA DLL-source wheel exception. Final Torch/JIT Python absence is checked independently."
+  },
+  "manual_gates": {
+    "gui_preview_live": "PENDING",
+    "physical_webcam": "PENDING",
+    "packaged_external_receiver": "PENDING",
+    "clean_windows_vm": "PENDING",
+    "publication_approval": "PENDING"
+  },
+  "limitations": [
+    "Historical source-only synthetic OBS receiver checks do not approve packaged GUI/Preview/Live or physical-camera receiver behavior.",
+    "The existing affected Torch DLL-source-wheel exception is retained; no new vulnerability-free or patched-wheel claim is made.",
+    "Receipt-level technical evidence is summarized without copying raw logs, private absolute paths, fixture images, model bytes or credentials.",
+    "The hosted installer fixture is separate from the actual corrected same-version installer execution; manual gates remain pending."
+  ],
+  "evidence_inputs": [
+    {
+      "identifier": "upgrade-receipt",
+      "sha256": "e3f871c756554a689a43e7e2a2315bc811ea0611328ef8c84eaff58bca75dfdf"
+    },
+    {
+      "identifier": "installed-runtime-receipt",
+      "sha256": "ef15b8e001a9ab3f7ed282c630638f9a94d2a1de9b028a2a7498240be0f03506"
+    },
+    {
+      "identifier": "build-source-receipt",
+      "sha256": "dba511cf92448e6322a7ae43279b16976fd6ef1e63ac9f40abaf347adcf53b87"
+    },
+    {
+      "identifier": "cuda-compliance-receipt",
+      "sha256": "9aa725dd5a37093a122428106f96736d99290cf77770407656e8431039e69f53"
+    },
+    {
+      "identifier": "directml-compliance-receipt",
+      "sha256": "84eee36536444f1a03a1236603bfe42665cf4ad3388dcf498af45532948900ff"
+    },
+    {
+      "identifier": "directml-validation-receipt",
+      "sha256": "f9fbd4d3cba228f740922dffb31fab82a4e0458db660f5b484466f9e555bebe1"
+    },
+    {
+      "identifier": "source-ci-metadata-receipt",
+      "sha256": "ecb7ded6f719704b5e98167000bdc6fc948a4532f40f3a3c65e3bb463c4ef636"
+    },
+    {
+      "identifier": "official-bytes-receipt",
+      "sha256": "0804b1043c9232db2228fb508d5c0cc1db027e7dddc36f70cf7284d776c8be77"
+    },
+    {
+      "identifier": "cuda-render-receipt",
+      "sha256": "4dfe1aad95bba6ae7c79321c7c1f527342d8f9cbc7b48565290d8543bba22312"
+    },
+    {
+      "identifier": "cpu-render-receipt",
+      "sha256": "ae71e6b72961a37f2d727f6cdd6156bcb44b2024b3e186a862fb5f2d179ffe49"
+    },
+    {
+      "identifier": "directml-render-receipt",
+      "sha256": "a0e36601cc6e2032ba6730a9b6b31bdd84aa579b45b52e8be3f63e344cb9d527"
+    },
+    {
+      "identifier": "combined-local-tests-log",
+      "sha256": "336cbfb802d93777e6c9529667d5a6ffbc71ec23f844eebbe303199a9aeb925c"
+    },
+    {
+      "identifier": "exact-source-ci-log",
+      "sha256": "909f45dd4901cfe0daa001d90b1c1aa3094c9e8c52027fe482eafaf10525faa6"
+    },
+    {
+      "identifier": "fresh-hosted-byte-receipt-1",
+      "sha256": "0694291a19fa8130012f7a3d0c2831e76643cf59aac75b46861edcea0b492ef0"
+    },
+    {
+      "identifier": "fresh-hosted-byte-receipt-2",
+      "sha256": "847cef11ef70e394eb8c6c7737f26ff7fc8343d36f9cce62e9fc5235ff1b991f"
+    }
+  ],
+  "official_asset_inventory": {
+    "asset_count": 36,
+    "checksum_manifest_sha256": "a3efe53cfd8e78f7f8e36dc39f1b1017a1ed0f7608fb5c249068d96687654fa4",
+    "files": [
+      {
+        "name": "BUNDLED_BINARY_OBLIGATIONS.md",
+        "bytes": 4769,
+        "sha256": "bd391eed9717417201af2a0b50e41e54be8ca314417b8b39d7c754011b825a8b"
+      },
+      {
+        "name": "CHANGELOG.md",
+        "bytes": 9532,
+        "sha256": "87a26e8278b0c39f60051c9e315177f120e462a6a36edd5e671d96fbbd9c6880"
+      },
+      {
+        "name": "CLEAN_RELEASE_WORKTREE_VERIFICATION.md",
+        "bytes": 1539,
+        "sha256": "86a8784a4ca750fbee0afcf3530dc54ba003443740c39ebe153262294a37aa62"
+      },
+      {
+        "name": "CLEAN_VM_VERIFICATION.md",
+        "bytes": 1613,
+        "sha256": "20fce8f5ddedfbd9be5e259bcf6c2cdb0a1936a0dcbba6f6fabe85d4a82349a5"
+      },
+      {
+        "name": "COMPLIANCE.md",
+        "bytes": 7531,
+        "sha256": "4e82c3c9f02183b5074933aeb0b1552ac3515f0e2605b0376c0b798ecfdc6e8b"
+      },
+      {
+        "name": "DeepLiveCamStudio-2.2.4-DirectML-x64-portable.zip",
+        "bytes": 641624275,
+        "sha256": "f6b077f0364bb523e75ec7950b096d62763a5b4aa2de181d0eaffa47f9bf6f04"
+      },
+      {
+        "name": "DeepLiveCamStudio-2.2.4-DirectML-x64-portable.zip.sha256",
+        "bytes": 117,
+        "sha256": "147b8a02a042fb7e627041055ea5a7903741985d4946079c08a01a37d4dcfc89"
+      },
+      {
+        "name": "DeepLiveCamStudio-2.2.4-source-617c733d42a1.manifest.md",
+        "bytes": 6382,
+        "sha256": "db85a8173b6247f477514cfdd2f9d23d36137e652cd7b08f741af767ca03fbd6"
+      },
+      {
+        "name": "DeepLiveCamStudio-2.2.4-source-617c733d42a1.zip",
+        "bytes": 3953139,
+        "sha256": "ec59a3be3ffc4b4b58baafbc4fd4867ceeedea3fa66e3d86038dcb4dc4af7f8e"
+      },
+      {
+        "name": "DeepLiveCamStudio-2.2.4-source-617c733d42a1.zip.sha256",
+        "bytes": 115,
+        "sha256": "08ff4829475c11b53483e66c54ba90bece9e4b7a70d84c848fd9537ca4ca9bbb"
+      },
+      {
+        "name": "DeepLiveCamStudio-2.2.4-x64-setup.exe",
+        "bytes": 1716394725,
+        "sha256": "d91080bef32a6bb731830599bfda90eeca4844d20af6d34e67957c0bda2b48bf"
+      },
+      {
+        "name": "DeepLiveCamStudio-2.2.4-x64-setup.exe.sha256",
+        "bytes": 105,
+        "sha256": "1a0c045a1747b01922d626be17f4512434159d24c98f12c6df35d4d4c957bdf7"
+      },
+      {
+        "name": "LEGAL_REVIEW.md",
+        "bytes": 2227,
+        "sha256": "0ab6ad0099d2b59812708b5641b9130828103e3fc023b347aa91c4cdd7116198"
+      },
+      {
+        "name": "LICENSE",
+        "bytes": 35184,
+        "sha256": "6f1e622c82a380075843bb084a7ec3b1f1d12a4a02526d75e78b0924a860aa75"
+      },
+      {
+        "name": "MANUAL_RELEASE_GATES.md",
+        "bytes": 4266,
+        "sha256": "74418feec17b0f9ef57fee8a1358e15b0e21c94eee62ed124d3a5f1af854f393"
+      },
+      {
+        "name": "MODEL_DOWNLOAD_VERIFICATION.md",
+        "bytes": 1254,
+        "sha256": "51759ca73c5ff0b0f8568c1484f395e45b8ccdd36bb2b108c267d8dfde4d7c50"
+      },
+      {
+        "name": "MODEL_LICENSE_AUDIT.md",
+        "bytes": 4542,
+        "sha256": "74c74d25b7314ec42b69cde9671dca1429ac4b7e70f55c90f3724ef79467729e"
+      },
+      {
+        "name": "OBS_VIRTUAL_CAMERA_VERIFICATION.md",
+        "bytes": 1224,
+        "sha256": "766c648e8ddfac1950b5012bdf0f9694c5792563dd8210e3d43df2aa24f6eadc"
+      },
+      {
+        "name": "PROCESSING_VERIFICATION.md",
+        "bytes": 1618,
+        "sha256": "0a7ea2d0c4d58b377a902cb02ac03149c0f6fa747d92c962d0ffbe8dee48a375"
+      },
+      {
+        "name": "PYTHON_DEPENDENCIES.md",
+        "bytes": 8641,
+        "sha256": "0b7872bb93667ad6334200b858ef02351cc974f3b5ddff6be8423cb9b90df22c"
+      },
+      {
+        "name": "PYTHON_DEPENDENCIES_DIRECTML.md",
+        "bytes": 8249,
+        "sha256": "38a493de101a5492df20fe4b9d7c85832c2b60c515929e26402889a60e71bf32"
+      },
+      {
+        "name": "README.md",
+        "bytes": 11620,
+        "sha256": "1d27de02e63c02b502fe62d616178e18777244725c54884826d27fe31e1caee9"
+      },
+      {
+        "name": "RELEASE_ASSETS.md",
+        "bytes": 2169,
+        "sha256": "ac36d3e350e873601cdf33207a98753ad3c0cb566f1242eaaefc528382936fb5"
+      },
+      {
+        "name": "RELEASE_CHECKLIST.md",
+        "bytes": 7076,
+        "sha256": "741e2c5a8fb913c01d312ef2686002a739268990a1af6aac4f92a3a683d5e0a6"
+      },
+      {
+        "name": "RELEASE_COMPLETION_AUDIT.md",
+        "bytes": 1388,
+        "sha256": "7d420632ed6f9de967da96d1c752983df1238039bf14314fe891962c3dbcbcb9"
+      },
+      {
+        "name": "RELEASE_CUTOVER_PLAN.md",
+        "bytes": 3430,
+        "sha256": "9ce103368894b474f7689c78a6282d5fbb5703bbb2e1a468712abd3a416dac29"
+      },
+      {
+        "name": "RELEASE_CUTOVER_STATUS.md",
+        "bytes": 17075,
+        "sha256": "cfa36cd944e7f9320348e5315388d20231077ee3a29773d98a63a37fc4fa6d07"
+      },
+      {
+        "name": "RELEASE_NOTES.md",
+        "bytes": 7930,
+        "sha256": "554ec6c1712e60f8962e9cb37f5e498e949e58a3284c1a772e571127d1f982b3"
+      },
+      {
+        "name": "RELEASE_NOTES_TEMPLATE.md",
+        "bytes": 7871,
+        "sha256": "a962c898b24314d1fc2f803edd3697801d0d6d31226292d697909b2dd33fd7be"
+      },
+      {
+        "name": "RELEASE_PUBLISH_HANDOFF.md",
+        "bytes": 5847,
+        "sha256": "c9c93f74bef310e778a87f21a438579f16e9e4cf8e2d00bc8046593c339d6622"
+      },
+      {
+        "name": "RELEASE_REPORT.md",
+        "bytes": 6150,
+        "sha256": "dc5c94192b6678c230f08e7ea98197b94ee8a468f4a68bb112e1d2b9d78f198a"
+      },
+      {
+        "name": "RELEASE_SOURCE_PREP.md",
+        "bytes": 3572,
+        "sha256": "d982e267dac2c7e80ef73cf5a22f5b3f5cfa331e89f31f609762eb01e7ce3480"
+      },
+      {
+        "name": "RELEASE_VERIFICATION.md",
+        "bytes": 7861,
+        "sha256": "55085c8d89abd25da6c9c2fc4288ec9d781a469cb7daa1be96248685c90c2c77"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "bytes": 3346,
+        "sha256": "a3efe53cfd8e78f7f8e36dc39f1b1017a1ed0f7608fb5c249068d96687654fa4"
+      },
+      {
+        "name": "THIRD_PARTY_NOTICES.md",
+        "bytes": 6350,
+        "sha256": "8557ce8db4fa66d25d3a44d9240eaa511c13c7664ecbc358a0a5f8685d1ee995"
+      },
+      {
+        "name": "WINDOWS_BUNDLE_MANIFEST.md",
+        "bytes": 14050,
+        "sha256": "23919e6f14cc0759b8ae7f3bb8ad6ae27e76be85259e6c4a2cc62f6f3342afdb"
+      }
+    ],
+    "full_hosted_api_name_size_digest_verification": true
+  }
+}

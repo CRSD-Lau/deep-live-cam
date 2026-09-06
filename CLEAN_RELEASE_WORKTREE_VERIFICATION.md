@@ -7,26 +7,18 @@ date: 2026-09-06
 
 # Clean Release Worktree Verification
 
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
-
-
 Release: `2.2.4`
 
-Status: PENDING FINAL SOURCE AND ATTESTATION RECONCILIATION
+Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
-Binary/source commit: the corrected immutable SHA recorded in the final source manifest
+Status: PASS — FROZEN BUILD/SOURCE SCOPE
 
-The [2.2.3 preparation snapshot](docs/release-evidence/v2.2.3/preparation/CLEAN_RELEASE_WORKTREE_VERIFICATION.md)
-is retained unchanged, including its original base commit and completed items.
-Those observations are historical and are not a new clean-worktree attestation.
+The separate rebuilt release checkout is clean at the full commit above. The successful source resolver and both runtime build jobs identify that same commit. The source archive contains 287 files / 6,691,483 unpacked bytes; all 119 required entries exist. Each member and its bytes match a fresh native Git archive of the immutable commit, with no model or local environment entries.
 
-For this candidate, record the clean build checkout, both runtime/source provenance
-records, annotated tag target and final source manifest. A later documentation-only
-PR may record the completed checks without retargeting the release to that PR's
-commit. No uncommitted notes, local models or user data belong in corresponding
-source. Current artifact and manual release gates remain pending until documented.
+Source ZIP: `DeepLiveCamStudio-2.2.4-source-617c733d42a1.zip`
+
+SHA-256: `ec59a3be3ffc4b4b58baafbc4fd4867ceeedea3fa66e3d86038dcb4dc4af7f8e`
+
+[Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
+
+The existing draft targets the frozen build commit. No public `v2.2.4` tag has been created. Create and verify that tag only during the later publication step, after all manual gates pass. Later documentation attestations preserve the seven frozen binary/source files and their original hashes; they do not become corresponding source for these binaries.

@@ -7,57 +7,20 @@ date: 2026-09-06
 
 # Windows 2.2.4 Release Cutover Plan
 
-Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
+Release: `2.2.4`
 
+Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
+Status: DRAFT — MANUAL VERIFICATION REMAINS
 
-## Scope
+The fixes, builds, configured-host installation, CLI processing, source matching, model setup and notice correction have completed their automated checks. Preserve the exact tested binaries and source; later documentation does not change their identity.
 
-Release the export-integrity, Unicode-path, temporary-workspace, model-transfer,
-settings and camera-lifecycle fixes as `v2.2.4`. CUDA and DirectML remain separate
-downloads. The binary and corresponding-source commit is fixed at
-the corrected immutable SHA recorded in the final source manifest. Later documentation/attestation commits
-do not change this artifact identity. Preserve `v2.2.3` as rollback.
+[Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
 
-## Complete the current candidate
+1. Complete the pending clean-Windows, packaged Preview, physical-camera Live Output and independent receiver checks.
+2. Update only the relevant current-version evidence with observed results; run the strict manual gate summary.
+3. After all gates pass, create/verify the annotated tag at the frozen commit and reconcile the final checksum manifest and hosted files.
+4. Recheck repository/security status, publish the existing draft, then verify public download availability and hashes.
+5. Keep `v2.2.3` and the verified data backups available for a deliberate recovery decision.
 
-1. Confirm the exact merged source's required CI and CodeQL results. Candidate
-   workflow dispatched after the packaging fixes merge
-   must finish successfully for both runtime profiles and source packaging.
-2. Download and hash the complete official asset set. Require both binary jobs
-   and the source manifest to identify the fixed commit above.
-3. Validate CUDA and DirectML separately, including provider identity, real
-   processing, Unicode exports, video/audio integrity and failure retention.
-4. Verify the exact official installer and stable 2.2.3 upgrade with user-data
-   preservation. Keep clean-Windows, legacy migration and uninstall evidence
-   separate from that host upgrade and from the rebuilt test-GUID fixture.
-5. Complete the final packaged GUI/Preview/Live Output, receiving-application,
-   model-setup and compliance gates in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
-6. Record honest current-release evidence in the documentation follow-up.
-   Archive older preparation snapshots; do not relabel historical PASS claims.
-   Keep the original verified binaries and git-ref source archive unchanged.
-7. Verify the annotated `v2.2.4` tag resolves to the binary/source commit.
-   Complete the existing draft's asset set and reviewed release notes.
-8. Compare hosted digests and download both draft-hosted runtime assets for
-   repeat official-byte checks.
-9. Recheck the repository queue and security alerts, then publish only when
-   the strict 2.2.4 manual summary and generated publish-readiness report pass.
-10. Verify public downloads and retain the recorded `v2.2.3` rollback path.
-
-## Stop conditions
-
-Keep the draft unpublished if required tests, jobs, provider or artifact checks
-fail; source or hashes do not match; model/checkpoint weights are distributed;
-the DirectML ZIP lacks `_internal/sklearn/.libs/vcomp140.dll`; or any required
-current-release manual gate remains pending. Historical hardware reports,
-synthetic virtual-camera tests, and an upgrade on a configured workstation
-cannot close the distinct final-GUI and clean-Windows checks.
-
-The complete handling and rollback procedure is in
-[RELEASE_PUBLISH_HANDOFF.md](RELEASE_PUBLISH_HANDOFF.md).
+Do not substitute a source-only camera sender test, a test-GUID installer, historical 2.2.3 reports, or a version-string match for the pending final-package checks. The complete procedure is in [RELEASE_PUBLISH_HANDOFF.md](RELEASE_PUBLISH_HANDOFF.md).
