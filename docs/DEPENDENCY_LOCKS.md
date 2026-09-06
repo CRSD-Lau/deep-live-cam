@@ -61,6 +61,8 @@ The CUDA build installs PyTorch into an isolated helper environment and copies o
 
 The generated audit companion removes the `+cu128` local build suffix so `pip-audit` can query the upstream `torch` version. As reviewed on 2026-09-06, [GHSA-rrmf-rvhw-rf47 / CVE-2025-3000](https://github.com/advisories/GHSA-rrmf-rvhw-rf47), also tracked as `PYSEC-2025-194`, lists versions through 2.12.1 as affected and 2.13.0 as patched. The locked 2.11.0 DLL-source wheel is therefore within the advisory's affected version range. The older OSV range ending at 2.6.0 does not establish that this wheel is patched.
 
+On the same date, the [official PyTorch CUDA 12.8 wheel index](https://download.pytorch.org/whl/cu128/torch/) listed 2.11.0 as its newest `cp311-cp311-win_amd64` wheel and had no patched 2.13.0-or-newer wheel for that profile. A version-only update cannot currently provide the fix within the supported release matrix. Recheck wheel availability when reviewing this exception; changing the CUDA runtime profile requires the provider and release validation above.
+
 The audit exception is limited to the build-only DLL source because the [reported failure is in `torch.jit.script`](https://github.com/pytorch/pytorch/issues/149623), which the application and build do not call. Its continued use depends on these boundaries:
 
 - `build/windows/build_windows.ps1` installs the hash-locked wheel without dependencies in a separate helper environment.
