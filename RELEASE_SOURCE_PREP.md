@@ -1,50 +1,70 @@
+---
+author: Neil Mitchell
+creator: Neil Mitchell
+last_modified_by: Neil Mitchell
+date: 2026-09-06
+---
+
 # Release Source Preparation
 
-Release: `2.2.3`
+Release: `2.2.4`
 
-The AGPL corresponding-source archive must be created from the exact merged
-release commit after all release-owned source and documentation changes are
-merged. The annotated tag is created on that same commit after asset
-verification.
+Status: DRAFT — FINAL ASSET VERIFICATION PENDING
 
-## Prepare
+Binary and corresponding-source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`
+
+The corresponding-source archive must come from the same immutable merged
+commit as both runtime builds. The candidate is already tied to the commit
+above. Later documentation/evidence commits must not replace it with `HEAD`
+or move the release tag. Publish those attestations separately and identify
+their source commit separately from the binary/source commit.
+
+## Inspect the source identity
 
 ```powershell
-git fetch crsd --tags
 git status --short
-git show --no-patch --decorate RELEASE_COMMIT
+git show --no-patch --decorate 753aab70c34ae585d525a06b9f7de2d721b7f491
 ```
 
-The release tree must contain only committed files. Build outputs, virtual
-environments, model files, logs, and user data remain untracked and excluded.
+Use a clean release worktree. Local environments, build outputs, models, logs
+and user data remain excluded. When the release tag exists, verify its peeled
+commit matches the fixed SHA; do not use an unverified moving branch tip.
 
 ## Package exact source
 
+The official candidate workflow packages source. If preparing it separately,
+use the exact commit and a separate output directory; do not overwrite already
+approved asset bytes just to refresh documentation.
+
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.3 -GitRef RELEASE_COMMIT
+powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef 753aab70c34ae585d525a06b9f7de2d721b7f491 -OutputDir build\windows\source-verification\2.2.4
 ```
 
 Required output:
 
-- `DeepLiveCamStudio-2.2.3-source-<ref>.zip`
+- `DeepLiveCamStudio-2.2.4-source-<ref>.zip`
 - matching `.zip.sha256`
 - matching `.manifest.md`
 
-The manifest must report `Archive mode: git-ref`, the resolved tag commit, all
-required source entries, and a passing forbidden-model scan.
+Require `Archive mode: git-ref`, the exact resolved SHA, required source entries
+and a passing forbidden-model scan. The archive includes application code,
+build/installer scripts, both dependency profiles and workflows, tests, licences,
+compliance records and packaging scripts from that commit. It excludes model
+weights, secrets, local environments and build output.
 
-## Validate
+## Validate the complete release set
 
 ```powershell
-python tools\validate_windows_release_artifacts.py --app-version 2.2.3 --require-git-ref-source
+python tools\validate_windows_release_artifacts.py --app-version 2.2.4 --output-dir build\windows\release-assets\2.2.4 --release-assets-dir build\windows\release-assets\2.2.4 --require-git-ref-source --require-directml-portable
 ```
 
-The source must include application code, build and installer scripts, CUDA
-and DirectML dependency definitions, both GitHub workflows, tests, licences,
-compliance documents, and the portable packaging script. It must not include
-`.onnx`, `.pth`, `.safetensors`, `models/`, `checkpoints/`, secrets, local
-virtual environments, or build output.
+This command assumes the complete approved combined asset set is at the shown
+path, including installer, portable ZIP, source and required evidence. It is
+not a source-only command. Use the real combined directory for both options.
+Corresponding source stays beside both runtime downloads; a repository link
+alone does not identify the exact source used for the shipped binaries.
 
-Publish the exact source archive beside both binary runtime downloads. A green
-repository source link alone is not a substitute for identifying the exact
-corresponding source used for the release.
+Older release instructions inside the fixed source archive are historical
+content of that commit. The current external handoff supersedes those procedures
+without altering the source archive or claiming that later documentation was
+compiled into the binaries.

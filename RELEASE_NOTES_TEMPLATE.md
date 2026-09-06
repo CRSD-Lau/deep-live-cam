@@ -1,4 +1,15 @@
+---
+author: Neil Mitchell
+creator: Neil Mitchell
+last_modified_by: Neil Mitchell
+date: 2026-09-06
+---
+
 # Deep Live Cam Studio 2.2.4 Windows Release
+
+Draft template: final artifact and manual verification remain pending.
+Binary and corresponding-source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`.
+Later documentation/evidence commits do not change this artifact identity.
 
 This patch release protects existing exports when rendering fails, isolates
 temporary frames from user folders, and improves settings, model-transfer, and
@@ -64,7 +75,7 @@ exact binary release is attached and identified by the source ref above.
 The source archive is produced with:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef HEAD
+powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef 753aab70c34ae585d525a06b9f7de2d721b7f491
 ```
 
 This release preserves attribution to the

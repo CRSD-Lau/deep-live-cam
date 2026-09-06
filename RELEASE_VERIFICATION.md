@@ -1,22 +1,27 @@
+---
+author: Neil Mitchell
+creator: Neil Mitchell
+last_modified_by: Neil Mitchell
+date: 2026-09-06
+---
+
 # Windows Release Verification
 
-App version: `2.2.3`
+App version: `2.2.4`
 
-Status: RELEASE PREPARATION
+Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
 
-This committed report describes the source state before the final tagged build.
-The generated copy in the GitHub Release asset set contains the exact binary
-and source hashes used for publication.
+Binary/source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`
 
-- Local installer automation passed: PENDING FINAL TAGGED BUILD
-- DirectML portable runtime validation passed: PENDING FINAL TAGGED BUILD
-- Public-release source archive from clean Git ref: PENDING FINAL MERGED COMMIT
-- Manual clean-install gate: PASS (risk-based delta revalidation required on final asset)
-- Manual OBS/Live Output gate: PASS (CUDA and two Radeon DirectML hardware records; implementation unchanged)
-- Manual Preview gate: PASS (Radeon RX 6900 XT autoplay, geometry, sequential playback, controls, seek, and close)
-- Manual legal/compliance gate: PASS (2.2.0 through 2.2.3 deltas documented)
-- Ready to publish without remaining manual gates: NO — FINAL ASSET AND PUBLIC-DOWNLOAD VERIFICATION REQUIRED
+- Local installer automation passed: PENDING CURRENT FINAL-ARTIFACT ATTESTATION
+- Public-release source archive from clean Git ref: PENDING FINAL-ASSET VERIFICATION
+- Ready to publish without remaining manual gates: NO
 
-The final release workflow and strict local checks overwrite this preparation
-report in the assembled upload set. Publication is blocked unless that generated
-report says `Ready to publish without remaining manual gates: YES`.
+This is a pending source-document placeholder, not a generated final verification
+report. The [2.2.3 preparation snapshot](docs/release-evidence/v2.2.3/preparation/RELEASE_VERIFICATION.md)
+is preserved unchanged; its manual PASS claims do not apply to 2.2.4.
+
+The final generated report must identify the actual installer, portable and source
+assets, their hashes, and current-release evidence. Only completed checks may be
+recorded as PASS. Keep the draft unpublished while any required gate is pending.
+Later documentation attestations do not change the fixed binary/source commit.

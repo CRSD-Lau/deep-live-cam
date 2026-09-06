@@ -1,60 +1,105 @@
+---
+author: Neil Mitchell
+creator: Neil Mitchell
+last_modified_by: Neil Mitchell
+date: 2026-09-06
+---
+
 # Windows Release Publish Handoff
 
-Release: `2.2.3`
+Release: `2.2.4`
 
-Status: RELEASE-CANDIDATE UNTIL FINAL ASSET VERIFICATION
+Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
 
-## Intended public downloads
+Binary and corresponding-source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`
 
-- `DeepLiveCamStudio-2.2.3-x64-setup.exe` — NVIDIA/CUDA installer
-- `DeepLiveCamStudio-2.2.3-DirectML-x64-portable.zip` — AMD/Intel DirectML
+Rollback release: `v2.2.3`
+
+The release draft targets this merged commit. Keep it unpublished while any
+required check remains pending. A later documentation/evidence commit does not
+change the commit used for these binaries or their corresponding-source archive.
+This current external handoff supersedes the older 2.2.3 instructions embedded
+in the candidate's packaged documentation; preserve the verified artifact bytes.
+
+## Intended downloads
+
+- `DeepLiveCamStudio-2.2.4-x64-setup.exe` — NVIDIA/CUDA installer
+- `DeepLiveCamStudio-2.2.4-DirectML-x64-portable.zip` — AMD/Intel DirectML
 - matching SHA-256 sidecars
 - exact corresponding-source ZIP, SHA-256 sidecar, and source manifest
-- the compliance and release evidence listed by `RELEASE_ASSETS.md`
+- complete compliance and evidence files listed by the final `RELEASE_ASSETS.md`
 
-Model/checkpoint files are intentionally excluded from every artifact.
+A partial draft upload is not the complete release. Model/checkpoint files must
+be absent from every distributed runtime and source archive.
 
-## Build automation
+## Build identity
 
-Dispatch `.github/workflows/windows-release.yml` with:
+Candidate workflow [34056909310](https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34056909310)
+uses `.github/workflows/windows-release.yml` with `app_version: 2.2.4` and the
+exact commit above as `git_ref`. Both binary jobs and source packaging must
+resolve to that commit. Check their manifests before accepting the final assets.
+Hosted workflow success does not approve publication.
 
-- `app_version`: `2.2.3`
-- `git_ref`: the exact merged release commit
+`run_release_checks.ps1` is a build-stage command: it copies documentation and
+licences, repackages the installer, and regenerates evidence/source outputs.
+Run it in a release worktree before freezing the asset bytes. Do not use it as
+a read-only smoke test of an already downloaded or installed official artifact.
+For the prepared build-stage checks, see [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
 
-The workflow builds the DirectML ZIP first, then the CUDA installer and source
-asset set. The final combined artifact is validated with
-`--require-directml-portable` so the hidden scikit-learn runtime DLL and model
-exclusion are checked before upload.
+## Final artifact and manual gates
 
-Hosted CI intentionally does not grant publish approval. Final approval comes
-from the repository's strict local/manual gates.
-
-## Final local gates
+Run the checks against the actual final CUDA installer/bundle, DirectML ZIP,
+and matching source archive. Record exact artifact hashes with the evidence.
 
 ```powershell
-python tools\summarize_manual_release_gates.py --strict
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.3 -GitRef RELEASE_COMMIT -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
-python tools\validate_windows_release_artifacts.py --app-version 2.2.3 --release-assets-dir build\windows\release-assets\2.2.3 --require-git-ref-source --require-directml-portable
+python tools\summarize_manual_release_gates.py --app-version 2.2.4 --strict
+python tools\validate_windows_release_artifacts.py --app-version 2.2.4 --output-dir build\windows\release-assets\2.2.4 --release-assets-dir build\windows\release-assets\2.2.4 --require-git-ref-source --require-directml-portable
 ```
 
-All three commands must pass against the exact files intended for GitHub.
+The second command assumes the complete combined asset set is staged at the
+shown path; use the actual approved asset directory for both directory options.
+It checks artifact integrity and required evidence structure. It does not
+replace the strict current-release manual summary or publish-readiness report.
 
-## Publish and verify
+Confirm the generated `RELEASE_VERIFICATION.md` reports
+`Ready to publish without remaining manual gates: YES` only after all current
+gates are satisfied. Preserve earlier failed attempts and historical records.
+Required evidence includes:
 
-1. Create annotated tag `v2.2.3` on the fully verified merged commit, then
-   create a draft release from that tag.
-2. Use `RELEASE_NOTES.md` as the release body.
-3. Upload every file listed in `RELEASE_ASSETS.md`.
-4. Compare GitHub's live asset digests with `SHA256SUMS.txt`.
-5. Download both public runtime assets into clean temporary folders.
-6. Run the CUDA installer smoke test and DirectML provider/runtime checks.
-7. Publish the draft only after those public-download checks pass.
-8. Verify there are no unexpected release-blocking issues, PRs, or security
-   alerts; record unrelated queue items rather than bypassing them.
+- strict CUDA and DirectML provider checks and real processing on identified
+  NVIDIA/AMD adapters using the final runtimes;
+- actual official installer execution, a stable 2.2.3-to-2.2.4 upgrade with
+  user-data preservation, and separate clean-Windows and migration/uninstall
+  coverage; the rebuilt test-GUID fixture is distinct evidence;
+- final packaged Preview, Live Output lifecycle and processed output in a
+  receiving application; synthetic sender tests establish only their subset;
+- current model-setup/transfer and compliance checks, with all five gate
+  documents explicitly PASS for 2.2.4 and no unchecked items.
+
+## Complete the draft and publish
+
+1. Verify the annotated `v2.2.4` tag resolves to
+   `753aab70c34ae585d525a06b9f7de2d721b7f491`; do not retarget it to a later
+   documentation commit.
+2. Update the existing draft with the reviewed `RELEASE_NOTES.md` and every file
+   listed in `RELEASE_ASSETS.md`. Keep binary/source provenance separate from
+   the commit containing later validation attestations.
+3. Compare GitHub asset digests with the complete `SHA256SUMS.txt`.
+4. Download both draft-hosted runtime assets into separate owned folders,
+   verify their hashes, and repeat official-byte provider/runtime/upgrade checks.
+5. Recheck this repository's issues, PRs and security alerts, and record any
+   unresolved or inaccessible checks.
+6. Publish only after all required gates pass. Then verify public download
+   availability and hashes without changing the already verified payloads.
 
 ## Rollback
 
-If a post-release check fails, keep or restore `v2.2.2` as the latest stable
-release, mark `v2.2.3` as a pre-release or draft, and document the failed asset
-and hash. Do not replace files under the same version without updating every
-binary, source, manifest, checksum, and release note that identifies it.
+Keep `v2.2.3` available as the stable rollback release. If candidate validation
+fails, leave `v2.2.4` as a draft and record the failed asset and hash. If a defect
+is discovered after publication, stop promoting the affected release and record
+the recovery decision. A local reinstall or downgrade requires its own explicit
+execution decision and verified user-data backup; there is no automatic rollback.
+
+Do not silently replace a published binary or change its source identity.
+Any replacement release must carry matching binaries, corresponding source,
+manifests, hashes and release notes.

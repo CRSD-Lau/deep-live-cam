@@ -7,7 +7,8 @@ date: 2026-09-06
 # Project review — 6 September 2026
 
 This review prioritizes reliable exports, preservation of existing files, and
-recovery from failed operations. Changes are on `codex/project-review-20260906`.
+recovery from failed operations. The fixes were merged in [PR #62](https://github.com/CRSD-Lau/deep-live-cam/pull/62)
+and [PR #63](https://github.com/CRSD-Lau/deep-live-cam/pull/63).
 The initial review used default-branch commit `8ce01f795b0558e77de255b9fa1c839a8a6a738b`;
 release preparation incorporates the subsequent `9bdb9cf` audit documentation fix.
 This is source-review evidence, not a new binary release approval.
@@ -50,7 +51,7 @@ are claimed from the source changes.
 The unchanged baseline passed all 514 tests. Ruff's CI-critical selection and
 Bandit's medium/high checks also passed before modification.
 
-The final integrated suite passed **619 tests**, including **105 additional
+The initial integrated review suite passed **619 tests**, including **105 additional
 regression/integration cases**, in 11.83 seconds. It used Python 3.11.9, ONNX
 Runtime DirectML 1.23.0, and pinned pytest 9.1.1/Ruff 0.16.5 tools in an isolated
 overlay. CI-critical Ruff checks passed; Bandit found no medium/high issues
@@ -98,5 +99,35 @@ exception; this review neither adds nor broadens that exception.
   processing ends. No new watchdog for hung GPU drivers or native camera calls
   is introduced.
 
-The installed application, existing model caches, user settings, recordings,
-other projects, release tags, and hosted releases were not modified.
+At the end of the initial source-review pass, the installed application, model
+caches, settings, recordings, other projects, tags, and hosted releases had not
+been modified. The subsequently authorized release work is recorded separately
+below and in the current release evidence.
+
+## Subsequent release validation and improvements
+
+Release preparation added strict version-matched manual-evidence checks and an
+immutable source resolver for the CUDA, DirectML, and corresponding-source jobs.
+Packaging now uses the actual build environment for dependency/license snapshots.
+Hooks advance to 2026.7 and Ruff to 0.16.5; runtime dependency versions retain the
+reviewed locks and the scoped build-only Torch exception remains documented.
+
+Real Windows inference exposed an additional Unicode export defect: OpenCV's
+filename-based writer could create a mojibake sibling while the requested output
+remained unchanged. Shared Unicode-safe encoding and atomic publication now cover
+all four processors, mapper images, visual QA, and export tools. Regressions also
+confirm that an unsupported output format preserves an existing Unicode-named file.
+
+The resulting source at `753aab70c34ae585d525a06b9f7de2d721b7f491` passed
+**722 local tests**; exact-commit hosted CI passed **720 tests with 2 skipped**.
+The official and freshly draft-downloaded DirectML bytes passed real AMD device-1
+inference, with full image/video and failure-preservation evidence for the same
+ZIP hash. Separate current evidence covers fresh model downloads and the actual
+OBS virtual-camera driver/receiver subset. These are scoped checks, not a claim
+that physical-camera, clean-Windows, or packaged GUI/manual gates are complete.
+
+See [the current release report](../RELEASE_REPORT.md),
+[publication handoff](../RELEASE_PUBLISH_HANDOFF.md), and
+[DirectML payload inspection](release-evidence/v2.2.4/DIRECTML_COMPLIANCE_TECHNICAL.md).
+The 2.2.4 candidate remains a draft while mandatory release checks are pending;
+historical 2.2.3 evidence is retained under `docs/release-evidence/v2.2.3/`.

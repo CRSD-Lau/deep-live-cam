@@ -1,28 +1,24 @@
+---
+author: Neil Mitchell
+creator: Neil Mitchell
+last_modified_by: Neil Mitchell
+date: 2026-09-06
+---
+
 # Clean Release Worktree Verification
 
-Release: `2.2.3`
+Release: `2.2.4`
 
-Status: READY FOR RELEASE-CANDIDATE BUILD
+Status: PENDING FINAL SOURCE AND ATTESTATION RECONCILIATION
 
-The release was prepared on a dedicated branch from the current production
-branch. The worktree contained no unrelated user changes when preparation
-started.
+Binary/source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`
 
-## Completed source proof
+The [2.2.3 preparation snapshot](docs/release-evidence/v2.2.3/preparation/CLEAN_RELEASE_WORKTREE_VERIFICATION.md)
+is retained unchanged, including its original base commit and completed items.
+Those observations are historical and are not a new clean-worktree attestation.
 
-- [x] Release preparation started from production commit
-  `31f215887e168d30bdbc8dff7fa56529ff35925c` after Preview PR #53 was merged.
-- [x] Only release-owned version defaults, workflow metadata, and documentation
-  files are changed in this worktree.
-- [x] Model/checkpoint files are not staged.
-- [x] Full tests pass before release-branch publication.
-
-## Post-merge proof
-
-The release operator must still verify that the preparation PR is merged,
-annotated tag `v2.2.3` resolves to the final production commit, source
-packaging runs from that exact commit in `git-ref` mode, and the checkout is
-clean.
-Those results belong in the generated `RELEASE_VERIFICATION.md` distributed
-with the final asset set; this source document intentionally does not claim
-that future work has already happened.
+For this candidate, record the clean build checkout, both runtime/source provenance
+records, annotated tag target and final source manifest. A later documentation-only
+PR may record the completed checks without retargeting the release to that PR's
+commit. No uncommitted notes, local models or user data belong in corresponding
+source. Current artifact and manual release gates remain pending until documented.
