@@ -1,6 +1,8 @@
 import inspect
 from types import SimpleNamespace
 
+import pytest
+
 from modules import ui
 
 
@@ -105,3 +107,63 @@ def test_file_preview_does_not_start_while_live_output_is_open(monkeypatch):
     ui.MainWindow._on_toggle_preview(FakeWindow())
 
     assert statuses == ["Stop live output before opening file Preview."]
+
+
+@pytest.mark.parametrize("method", ["_on_start", "_select_output_and_start"])
+@pytest.mark.parametrize("visible", [False, True])
+@pytest.mark.parametrize("mapped", [False, True])
+def test_file_render_does_not_interrupt_active_or_stopping_live_output(
+    monkeypatch, method, visible, mapped
+):
+    statuses = []
+    original_mapping = [{"id": 7}]
+    live_preview = SimpleNamespace(isVisible=lambda: visible)
+
+    def unexpected_operation(*_args, **_kwargs):
+        raise AssertionError("render must not start or interrupt live output")
+
+    window = SimpleNamespace(
+        _file_operation_running=False,
+        _select_output_and_start=unexpected_operation,
+    )
+    monkeypatch.setattr(ui, "_WEBCAM_PREVIEW", live_preview)
+    monkeypatch.setattr(ui, "_MAPPER", None)
+    monkeypatch.setattr(ui, "_PREVIEW", None)
+    monkeypatch.setattr(ui, "update_status", statuses.append)
+    monkeypatch.setattr(ui.modules.globals, "map_faces", mapped)
+    monkeypatch.setattr(ui.modules.globals, "source_target_map", original_mapping)
+    monkeypatch.setattr(ui.modules.globals, "target_path", "target.mp4")
+    monkeypatch.setattr(ui, "is_video", lambda _path: True)
+    monkeypatch.setattr(ui, "is_image", lambda _path: False)
+    monkeypatch.setattr(ui.QFileDialog, "getSaveFileName", unexpected_operation)
+    monkeypatch.setattr(ui.modules.globals, "output_path", "previous-output.mp4")
+    monkeypatch.setattr(
+        ui, "_open_mapper_dialog", unexpected_operation
+    )
+    monkeypatch.setattr(
+        "modules.face_analyser.get_unique_faces_from_target_video", unexpected_operation
+    )
+
+    getattr(ui.MainWindow, method)(window)
+
+    assert statuses == ["Stop live output before rendering a file."]
+    assert ui._WEBCAM_PREVIEW is live_preview
+    assert ui.modules.globals.source_target_map is original_mapping
+    assert ui.modules.globals.output_path == "previous-output.mp4"
+
+
+def test_live_output_waits_for_file_operation_to_finish(monkeypatch):
+    statuses = []
+
+    def unexpected_camera_selection():
+        raise AssertionError("live output must not start during file processing")
+
+    window = SimpleNamespace(
+        _file_operation_running=True,
+        cb_camera=SimpleNamespace(currentIndex=unexpected_camera_selection),
+    )
+    monkeypatch.setattr(ui, "update_status", statuses.append)
+
+    ui.MainWindow._on_live(window)
+
+    assert statuses == ["Wait for file processing to finish before starting live output."]

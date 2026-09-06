@@ -11,10 +11,12 @@ Public API kept stable for the rest of the codebase:
 from __future__ import annotations
 
 import inspect
+import math
 import os
 import platform
 import queue
 import sys
+import tempfile
 import threading
 import time
 import traceback
@@ -66,7 +68,6 @@ from modules.capturer import (
 from modules.enhancement_registry import (
     ENHANCER_KEYS,
     active_enhancer_key,
-    default_enhancer_state,
     enhancer_key_for_processor_name,
     get_enhancer_choices,
 )
@@ -461,50 +462,106 @@ def save_switch_states():
         "compositing_color_match_strength": modules.globals.compositing_color_match_strength,
     }
     state.update(quality_profile_runtime_state(modules.globals))
+    temporary_path = None
     try:
-        with _switch_state_path().open("w", encoding="utf-8") as f:
-            json.dump(state, f)
-    except OSError:
+        path = _switch_state_path()
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=path.parent,
+            prefix=f".{path.name}.", suffix=".tmp", delete=False,
+        ) as f:
+            temporary_path = f.name
+            json.dump(state, f, allow_nan=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temporary_path, path)
+    except (OSError, TypeError, ValueError):
         pass
+    finally:
+        if temporary_path is not None:
+            try:
+                os.unlink(temporary_path)
+            except OSError:
+                pass
+
+
+def _saved_setting(
+    state: dict[str, Any],
+    name: str,
+    default: bool | int | float,
+    *,
+    minimum: float | None = None,
+    maximum: float | None = None,
+) -> bool | int | float:
+    """Accept persisted values only when they match the setting's runtime type."""
+    value = state.get(name, default)
+    if isinstance(default, bool):
+        return value if isinstance(value, bool) else default
+    if isinstance(default, int):
+        if type(value) is not int:
+            return default
+    elif isinstance(default, float):
+        if type(value) not in (int, float):
+            return default
+    try:
+        if not math.isfinite(value):
+            return default
+    except (TypeError, OverflowError):
+        return default
+    if minimum is not None and value < minimum:
+        return default
+    if maximum is not None and value > maximum:
+        return default
+    return value
 
 
 def load_switch_states():
     try:
         with _switch_state_path().open("r", encoding="utf-8") as f:
             state = json.load(f)
-        modules.globals.keep_fps = state.get("keep_fps", True)
-        modules.globals.keep_audio = state.get("keep_audio", True)
-        modules.globals.keep_frames = state.get("keep_frames", False)
-        modules.globals.many_faces = state.get("many_faces", False)
-        modules.globals.map_faces = state.get("map_faces", False)
+        if not isinstance(state, dict):
+            return
+        modules.globals.keep_fps = _saved_setting(state, "keep_fps", True)
+        modules.globals.keep_audio = _saved_setting(state, "keep_audio", True)
+        modules.globals.keep_frames = _saved_setting(state, "keep_frames", False)
+        modules.globals.many_faces = _saved_setting(state, "many_faces", False)
+        modules.globals.map_faces = _saved_setting(state, "map_faces", False)
         quality_mode = state.get("quality_mode", "balanced")
         if quality_mode not in QUALITY_MODE_NAMES:
             quality_mode = "balanced"
         apply_quality_profile(quality_mode, modules.globals)
-        modules.globals.color_correction = state.get("color_correction", False)
-        modules.globals.nsfw_filter = state.get("nsfw_filter", False)
-        modules.globals.live_mirror = state.get("live_mirror", False)
-        modules.globals.live_resizable = state.get("live_resizable", False)
-        if "fp_ui" in state:
-            saved_fp_ui = default_enhancer_state()
-            saved_fp_ui.update(state.get("fp_ui", {}))
-            modules.globals.fp_ui = saved_fp_ui
-        modules.globals.show_fps = state.get("show_fps", False)
+        modules.globals.color_correction = _saved_setting(state, "color_correction", False)
+        modules.globals.nsfw_filter = _saved_setting(state, "nsfw_filter", False)
+        modules.globals.live_mirror = _saved_setting(state, "live_mirror", False)
+        modules.globals.live_resizable = _saved_setting(state, "live_resizable", False)
+        saved_fp_ui = state.get("fp_ui")
+        if isinstance(saved_fp_ui, dict):
+            modules.globals.fp_ui = {
+                key: _saved_setting(saved_fp_ui, key, modules.globals.fp_ui[key])
+                for key in ENHANCER_KEYS
+            }
+        modules.globals.show_fps = _saved_setting(state, "show_fps", False)
         modules.globals.show_mouth_mask_box = False
-        modules.globals.compositing_extended_subject_mask = state.get(
+        modules.globals.compositing_extended_subject_mask = _saved_setting(
+            state,
             "compositing_extended_subject_mask",
             True,
         )
-        modules.globals.compositing_show_subject_mask = state.get(
+        modules.globals.compositing_show_subject_mask = _saved_setting(
+            state,
             "compositing_show_subject_mask",
             False,
         )
-        modules.globals.opacity = state.get("opacity", 1.0)
-        restore_quality_profile_runtime_state(modules.globals, state)
+        modules.globals.opacity = _saved_setting(state, "opacity", 1.0, minimum=0.0, maximum=1.0)
+        maximums = {"sharpness": 5.0, "mouth_mask_size": 100.0}
+        runtime_state = {
+            key: _saved_setting(state, key, default, minimum=0, maximum=maximums.get(key))
+            for key, default in quality_profile_runtime_state(modules.globals).items()
+        }
+        restore_quality_profile_runtime_state(modules.globals, runtime_state)
         modules.globals.mouth_mask = modules.globals.mouth_mask_size > 0
     except FileNotFoundError:
         pass
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeError, json.JSONDecodeError):
         pass
 
 
@@ -1396,6 +1453,10 @@ class MainWindow(QMainWindow):
     def _on_start(self) -> None:
         if self._file_operation_running:
             return
+        # The window remains registered while hidden workers finish stopping.
+        if _WEBCAM_PREVIEW is not None:
+            update_status("Stop live output before rendering a file.")
+            return
         if _MAPPER is not None and _MAPPER.isVisible():
             update_status("Please complete pop-up or close it.")
             return
@@ -1423,6 +1484,11 @@ class MainWindow(QMainWindow):
 
     def _select_output_and_start(self) -> None:
         global _RECENT_OUTPUT_DIR
+        if self._file_operation_running:
+            return
+        if _WEBCAM_PREVIEW is not None:
+            update_status("Stop live output before rendering a file.")
+            return
         if is_image(modules.globals.target_path):
             path, _f = QFileDialog.getSaveFileName(
                 self, _("save image output file"),
@@ -1465,6 +1531,9 @@ class MainWindow(QMainWindow):
             )
 
     def _on_live(self) -> None:
+        if self._file_operation_running:
+            update_status("Wait for file processing to finish before starting live output.")
+            return
         idx = self.cb_camera.currentIndex()
         if idx < 0 or idx >= len(self._camera_indices):
             update_status("No camera available")
@@ -2403,6 +2472,7 @@ class WebcamPreviewWindow(QWidget):
         self._image_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout.addWidget(self._image_label, 1)
 
+        self._cap: Optional[VideoCapturer] = None
         self._virtual_cam: Optional[VirtualCameraSink] = None
         self._capture_worker: Optional[_CaptureWorker] = None
         self._processing_worker: Optional[_ProcessingWorker] = None
@@ -2411,6 +2481,17 @@ class WebcamPreviewWindow(QWidget):
         self._stop_event = threading.Event()
         self._shutdown_started = False
         self._close_ready = False
+        try:
+            self._start_live_capture(camera_index)
+        except Exception as error:
+            traceback.print_exc()
+            self.shutdown(block=True)
+            self._finalize_shutdown()
+            self._close_ready = True
+            update_status(f"Failed to start camera: {error}")
+            QTimer.singleShot(0, self.close)
+
+    def _start_live_capture(self, camera_index: int) -> None:
         capture_width = modules.globals.camera_width or PREVIEW_DEFAULT_WIDTH
         capture_height = modules.globals.camera_height or PREVIEW_DEFAULT_HEIGHT
         capture_fps = modules.globals.camera_fps or 60
@@ -2425,9 +2506,7 @@ class WebcamPreviewWindow(QWidget):
 
         self._cap = VideoCapturer(camera_index)
         if not self._cap.start(capture_width, capture_height, capture_fps):
-            update_status("Failed to start camera")
-            QTimer.singleShot(0, self.close)
-            return
+            raise RuntimeError("the selected camera could not be opened")
 
         camera_fps = self._cap.actual_fps
         print(
@@ -2497,7 +2576,8 @@ class WebcamPreviewWindow(QWidget):
                     pass
 
             try:
-                self._cap.release()
+                if self._cap is not None:
+                    self._cap.release()
             except Exception:
                 pass
 
@@ -2543,7 +2623,8 @@ class WebcamPreviewWindow(QWidget):
         except Exception:
             pass
         try:
-            self._cap.release()
+            if self._cap is not None:
+                self._cap.release()
         except Exception:
             pass
         if self._virtual_cam is not None:
