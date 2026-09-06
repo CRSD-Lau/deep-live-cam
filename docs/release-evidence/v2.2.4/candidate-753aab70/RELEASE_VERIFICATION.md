@@ -7,19 +7,11 @@ date: 2026-09-06
 
 # Windows Release Verification
 
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
-
-
 App version: `2.2.4`
 
 Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
 
-Binary/source commit: the corrected immutable SHA recorded in the final source manifest
+Binary/source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`
 
 - Local installer automation passed: PENDING CURRENT FINAL-ARTIFACT ATTESTATION
 - Public-release source archive from clean Git ref: PENDING FINAL-ASSET VERIFICATION

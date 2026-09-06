@@ -4,6 +4,8 @@ param(
     [string]$InstallDir = "",
     [string]$DistDir = "",
     [string]$IsccPath = "",
+    [ValidateSet("lzma2/fast", "lzma2/normal", "lzma2/max", "lzma2/ultra64")]
+    [string]$FixtureCompression = "lzma2/fast",
     [switch]$KeepInstall
 )
 
@@ -105,7 +107,10 @@ try {
     $FixtureInstaller = Join-Path $FixtureOutputDir "DeepLiveCamStudio-2.2.1-upgrade-fixture.exe"
     $TestInstallerBaseName = "DeepLiveCamStudio-$AppVersion-isolated-test-setup"
     $InstallerScript = Join-Path $PSScriptRoot "installer.iss"
-    & $IsccPath "/DAppVersion=$AppVersion" "/DRepoRoot=$RepoRoot" "/DDistDir=$DistDir" "/DOutputDir=$FixtureOutputDir" "/DAppId=$TestDirectiveAppId" "/DAppIdRegistryValue=$TestAppId" "/DOutputBaseFilename=$TestInstallerBaseName" $InstallerScript
+    # Recompress the complete payload faster only for the random-AppId fixture.
+    # The public installer keeps installer.iss's lzma2/ultra64 default.
+    Write-Host "Compiling isolated candidate fixture with $FixtureCompression compression."
+    & $IsccPath "/DAppVersion=$AppVersion" "/DRepoRoot=$RepoRoot" "/DDistDir=$DistDir" "/DOutputDir=$FixtureOutputDir" "/DAppId=$TestDirectiveAppId" "/DAppIdRegistryValue=$TestAppId" "/DOutputBaseFilename=$TestInstallerBaseName" "/DInstallerCompression=$FixtureCompression" $InstallerScript
     if ($LASTEXITCODE -ne 0) {
         throw "Isolated candidate installer compilation failed with exit code $LASTEXITCODE."
     }

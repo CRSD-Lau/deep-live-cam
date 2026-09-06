@@ -1,0 +1,109 @@
+{
+  "author": "Neil Mitchell",
+  "creator": "Neil Mitchell",
+  "last_modified_by": "Neil Mitchell",
+  "source_commit": "753aab70c34ae585d525a06b9f7de2d721b7f491",
+  "status": "SUPERSEDED",
+  "files": [
+    {
+      "path": "CLEAN_VM_VERIFICATION.md",
+      "bytes": 3272,
+      "sha256": "678ee054a2d6fc69156b53806536128593b36eb75f04bda8d87b2681cbfe0346"
+    },
+    {
+      "path": "PROCESSING_VERIFICATION.md",
+      "bytes": 3771,
+      "sha256": "0f77ab933e5ba467d53033e0ddc1b9768e2839a6eadbd7843b1e8ec11d5c711e"
+    },
+    {
+      "path": "LEGAL_REVIEW.md",
+      "bytes": 2729,
+      "sha256": "7f486a0a3f12003a7569528374761d4755e130aa79feb55986f2bf39902cf5f7"
+    },
+    {
+      "path": "MODEL_DOWNLOAD_VERIFICATION.md",
+      "bytes": 2291,
+      "sha256": "495fe53a9820ecd061678d92415e09d412e73ccbfee20ee50e92c225401a04e7"
+    },
+    {
+      "path": "OBS_VIRTUAL_CAMERA_VERIFICATION.md",
+      "bytes": 2164,
+      "sha256": "be2bb84d3254a27bc5970e0e40d28903f56a46128763307d427a919ef79a2fc1"
+    },
+    {
+      "path": "RELEASE_REPORT.md",
+      "bytes": 5099,
+      "sha256": "c5424306a4f4c0995411101f2dc21a57246bb7a365d432831e72a8e8b5c86daa"
+    },
+    {
+      "path": "RELEASE_VERIFICATION.md",
+      "bytes": 1093,
+      "sha256": "5202ac4496ef4f2c8e8a3ef0e0e16d6ef9b3a54a1ee06f2032c3c083d2cd145d"
+    },
+    {
+      "path": "RELEASE_PUBLISH_HANDOFF.md",
+      "bytes": 5227,
+      "sha256": "fb3d9accad2172f892ce659561c28f8894f67293f2339798e7b2eb46701d7342"
+    },
+    {
+      "path": "RELEASE_CUTOVER_PLAN.md",
+      "bytes": 2871,
+      "sha256": "de1a313d288ffea3157cc89ddf92c1b7ca321124c59d68c25d48817c7fb19ad4"
+    },
+    {
+      "path": "RELEASE_CHECKLIST.md",
+      "bytes": 6466,
+      "sha256": "69fb1f789573f4853959accadabd8710d8ba125558f696c1e3c4bd0715152fdb"
+    },
+    {
+      "path": "RELEASE_SOURCE_PREP.md",
+      "bytes": 2892,
+      "sha256": "101decd993cd9c52deabd4774bbf1fd18202b0677eb9064d3be21e7f57ac9680"
+    },
+    {
+      "path": "RELEASE_NOTES_TEMPLATE.md",
+      "bytes": 7109,
+      "sha256": "c18c23c23d97bf7e46bc8fb6cfeca3e0115361391e58f78982ff6b2152a3bc6a"
+    },
+    {
+      "path": "CLEAN_RELEASE_WORKTREE_VERIFICATION.md",
+      "bytes": 972,
+      "sha256": "0142951cb41184b175bd464ab6353ce6a876303a4f810b98dbbba71c124647ae"
+    },
+    {
+      "path": "RELEASE_COMPLETION_AUDIT.md",
+      "bytes": 822,
+      "sha256": "de61e4730d9db9fc89df48edd75d4e3281244118a39e936313b448d641a91c2c"
+    },
+    {
+      "path": "RELEASE_CUTOVER_STATUS.md",
+      "bytes": 964,
+      "sha256": "97400309c3519eadfd708ddcf6f29342da8d27d0b5ca2025a4be792fadcc9723"
+    },
+    {
+      "path": "BUILD_SOURCE_VERIFICATION.md",
+      "bytes": 2976,
+      "sha256": "1cad0f29c1cb061aa1b5feb272673552c806726916553931211faf8fce0b1374"
+    },
+    {
+      "path": "build-source-verification.json",
+      "bytes": 5819,
+      "sha256": "f4e8b9b52eea5b13d7916fce16fc0e43ecd3f8ca0c7457dfa92909b6b2f4d068"
+    },
+    {
+      "path": "DIRECTML_COMPLIANCE_TECHNICAL.md",
+      "bytes": 11159,
+      "sha256": "a9a051ec6ae40b6b9326cd38438c0cc94c4fa309c1a2359701e1d916c25b414f"
+    },
+    {
+      "path": "directml_compliance_inventory.json",
+      "bytes": 82123,
+      "sha256": "9a503b8f89683c3a8ea9c0dec45f8762537f1ba11a97cd3125f3196be5539917"
+    },
+    {
+      "path": "CUDA_COMPLIANCE_TECHNICAL.md",
+      "bytes": 9735,
+      "sha256": "2ab687ee71f52c55a333386451a5feeefb5b09d22abbd506fea399bcdd06b81c"
+    }
+  ]
+}

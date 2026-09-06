@@ -1,5 +1,6 @@
 ---
 author: Neil Mitchell
+creator: Neil Mitchell
 last_modified_by: Neil Mitchell
 date: 2026-09-06
 ---
@@ -10,17 +11,18 @@ Status: PENDING
 
 Release: `2.2.4`
 
-The historical real-download/checksum run is preserved in
-`docs/release-evidence/v2.2.3/MODEL_DOWNLOAD_VERIFICATION.md`.
-This patch changes staging, failed-transfer cleanup and redirect handling.
+Candidate source: PENDING — record the corrected immutable build SHA and asset hashes.
 
-## Current release checks
+The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded. Its evidence is retained
+with original hashes and does not approve this rebuild.
 
-- [ ] Verify packaged consent/cancel behavior leaves no downloaded files.
-- [ ] Verify a current authorized download succeeds with the catalogue checksum.
-- [ ] Verify interrupted or failed transfers preserve existing model files and remove owned partial files.
+- [ ] Verify the replacement CLI identifies the catalogue sources, licence notes and checksums.
+- [ ] Verify cancellation without consent against an isolated empty model cache.
+- [ ] Verify authorized catalogue setup and all five expected file hashes using the replacement CLI.
+- [ ] Reconcile interrupted-transfer, checksum-failure, retained-destination and redirect source regressions.
 
-The source regression suite covers failed transfers and HTTPS redirect rejection.
-Existing locally verified models may be used for inference smoke tests without
-redistributing them. Historical successful downloads are not fresh packaged
-transfer evidence, and a provider probe is not a model download test.
+Keep model downloads in an owned test cache; preserve live caches and exclude all
+weights from release assets. Record exact executable/source hashes and distinguish
+packaged checks from source failure tests. GUI consent and dependency-managed
+InsightFace/OpenNSFW2 downloads remain distinct scopes. The first candidate's
+successful 1,557,775,109-byte download is archived with its original CLI hash.

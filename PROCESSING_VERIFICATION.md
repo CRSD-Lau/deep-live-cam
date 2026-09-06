@@ -1,5 +1,6 @@
 ---
 author: Neil Mitchell
+creator: Neil Mitchell
 last_modified_by: Neil Mitchell
 date: 2026-09-06
 ---
@@ -10,21 +11,24 @@ Status: PENDING
 
 Release: `2.2.4`
 
-Historical packaged processing results are preserved in
-`docs/release-evidence/v2.2.3/PROCESSING_VERIFICATION.md`.
+Candidate source: PENDING — record the corrected immutable build SHA and asset hashes.
 
-## Current release checks
+The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded. Its evidence is retained
+with original hashes and does not approve this rebuild.
 
-- [ ] Run real inference using the final CUDA runtime on the identified NVIDIA GPU.
-- [ ] Run `--check-execution-provider` without an external CUDA Toolkit or external PyTorch DLL paths.
-- [ ] Run real inference using the final DirectML runtime on an explicitly identified AMD adapter.
-- [ ] Render a real image with the packaged CPU fallback and GPU profiles.
-- [ ] Render short videos with and without audio, then validate frames, dimensions, duration and complete decode.
-- [ ] Confirm a failed export preserves an existing destination and cleans its owned workspaces.
-- [ ] Check processed Preview start, seeking and close against the final application.
+- [ ] Verify final CUDA and DirectML runtime identities and strict
+  `--check-execution-provider` probes.
+- [ ] Run CUDA checks without an external CUDA Toolkit or development PyTorch
+  DLL paths; retain the required compatible NVIDIA graphics driver.
+- [ ] Render real Unicode image exports on NVIDIA CUDA and identified AMD DirectML hardware.
+- [ ] Render and fully decode silent/audio videos with expected frame, dimension and audio metadata.
+- [ ] Verify failed export preserves the prior destination and cleans owned staging files.
+- [ ] Verify packaged CPU image fallback explicitly uses CPUExecutionProvider.
+- [ ] Confirm existing models and tested executable hashes remain unchanged.
+- [ ] Check packaged processed Preview start, seek and close in both final GUIs.
 
-The project review passed 619 source tests, including real FFmpeg media and
-cross-volume publication checks. These tests establish I/O and failure behavior;
-they do not establish final packaged inference or visual quality. Use non-sensitive
-fixtures and existing verified models. Record exact source, artifact hashes,
-provider identity and output validation in the final candidate evidence.
+Record device identity/index, binary/source SHA, tested models, render outputs and
+scope limits. CPU image evidence does not establish CPU video performance; CUDA
+FP32 inference does not establish FP16 inference. The archived first candidate
+passed the real CLI subsets on RTX 4070 and AMD device 1, but these results do not
+substitute for validation of replacement binaries.

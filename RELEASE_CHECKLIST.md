@@ -1,3 +1,10 @@
+---
+author: Neil Mitchell
+creator: Neil Mitchell
+last_modified_by: Neil Mitchell
+date: 2026-09-06
+---
+
 # Windows Release Checklist
 
 Use this checklist for every public Windows release. The release candidate is
@@ -5,6 +12,19 @@ Use this checklist for every public Windows release. The release candidate is
 
 - NVIDIA/CUDA installer
 - AMD/Intel DirectML portable ZIP
+
+Binary and corresponding-source commit: the corrected immutable SHA recorded in the final source manifest.
+The existing release remains a draft while final artifact or manual checks are pending.
+Later documentation/evidence commits do not move this artifact commit or release tag.
+Rollback release: `v2.2.3`.
+
+
+The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
+notices. Archive its tests and hashes; require new evidence for replacement bytes.
+The rebuild source SHA and final workflow run are not assigned by this preparation
+document. Freeze a clean merged checkout once, then retain its full SHA as
+`$ReleaseCommit` for every build/source command below. Later attestations must use
+that recorded SHA, never silently resolve a newer branch tip.
 
 ## Source and version
 
@@ -56,7 +76,8 @@ Use this checklist for every public Windows release. The release candidate is
 - [ ] Package source from the exact merged release commit:
 
   ```powershell
-  powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef RELEASE_COMMIT
+$ReleaseCommit = (git rev-parse --verify "HEAD^{commit}").Trim() # Clean merged release checkout only
+  powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef $ReleaseCommit
   ```
 
 - [ ] Confirm the source manifest reports `Archive mode: git-ref` and records
@@ -80,27 +101,31 @@ Use this checklist for every public Windows release. The release candidate is
 
 ## Final release gate
 
-Run the strict CUDA installer and source gate:
+Run the strict CUDA installer and source gate in the release worktree before
+freezing the final asset bytes. This command copies documents/licences,
+repackages the installer, and regenerates reports/source; it is not a read-only
+check of downloaded official artifacts. Keep later attestation-only changes
+separate from the verified payload:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.4 -GitRef RELEASE_COMMIT -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.4 -GitRef $ReleaseCommit -RequireFfmpeg -RequireCuda -RequireObsVirtualCam -RequirePublishReady
 ```
 
 Assemble the combined asset set after the DirectML ZIP is available:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\windows\assemble_release_assets.ps1 -AppVersion 2.2.4 -PortableDir build\windows\portable -RequireGitRefSource
-python tools\validate_windows_release_artifacts.py --app-version 2.2.4 --release-assets-dir build\windows\release-assets\2.2.4 --require-git-ref-source --require-directml-portable
+python tools\validate_windows_release_artifacts.py --app-version 2.2.4 --output-dir build\windows\release-assets\2.2.4 --release-assets-dir build\windows\release-assets\2.2.4 --require-git-ref-source --require-directml-portable
 ```
 
 ## GitHub Release
 
-- [ ] Create release `v2.2.4` from the annotated tag, initially as a draft.
+- [ ] Keep the existing `v2.2.4` release as a draft and verify its annotated tag resolves to the fixed binary/source commit.
 - [ ] Upload every file listed in `RELEASE_ASSETS.md`.
 - [ ] Verify live GitHub asset digests against `SHA256SUMS.txt`.
 - [ ] Download the draft-hosted CUDA installer and DirectML ZIP and re-run their
   smoke/provider checks.
-- [ ] Publish only after the public-download checks pass.
+- [ ] Publish only after the draft-hosted download checks and all required gates pass; then verify public download availability and hashes.
 - [ ] Update README links, close resolved issues, and thank external testers.
 - [ ] Confirm no unexpected release-blocking issues, pull requests, Dependabot
   alerts, code-scanning alerts, or secret-scanning alerts remain; record

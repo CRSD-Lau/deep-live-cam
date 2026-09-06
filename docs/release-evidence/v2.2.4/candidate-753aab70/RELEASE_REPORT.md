@@ -11,7 +11,7 @@ Release: `2.2.4`
 
 Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
 
-Binary/source commit: the corrected immutable SHA recorded in the final source manifest
+Binary/source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`
 
 The candidate contains export-integrity, Unicode-path, temporary-workspace,
 settings, model-transfer and camera-lifecycle fixes. CUDA remains an Inno Setup
@@ -27,14 +27,6 @@ is retained unchanged; its old build commands and validation claims are historic
 Final artifact hashes, licence inventories, processing/installer evidence and
 publication status belong in the reviewed asset attestations. This draft report
 does not mark any pending check as passed. Keep `v2.2.3` available as rollback.
-
-
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
 
 ## Packaging Approach
 
@@ -55,10 +47,9 @@ without altering frozen runtime or source bytes.
 The official workflow uses the following build-stage commands in its clean checkout:
 
 ```powershell
-$ReleaseCommit = (git rev-parse --verify "HEAD^{commit}").Trim() # Clean merged release checkout only
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Python python -Accelerator DirectML
 powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.4 -Accelerator DirectML -SkipAcceleratorProbe
-powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.4 -Python python -GitRef $ReleaseCommit -AllowDirtySource
+powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.4 -Python python -GitRef 753aab70c34ae585d525a06b9f7de2d721b7f491 -AllowDirtySource
 ```
 
 The hosted runner has no display adapter; actual GPU validation uses the downloaded
@@ -69,10 +60,9 @@ and is not a smoke test of already downloaded official bytes.
 
 Expected output is `DeepLiveCamStudio-2.2.4-x64-setup.exe`, with a SHA-256 sidecar.
 The matching DirectML ZIP, corresponding-source archive and complete checksum
-manifest belong in the existing draft. The first installer passed the actual
-2.2.3 upgrade and CLI processing subsets, as archived. The corrected installer
-requires fresh same-version replacement and runtime checks; GUI and clean-Windows
-checks remain pending.
+manifest belong in the existing draft. The verified installer upgraded the actual
+stable installation to 2.2.4 with unchanged user data. Installed CUDA and CPU-image
+checks passed; manual GUI and clean-Windows checks remain pending.
 
 ## Dependencies Bundled
 
@@ -98,12 +88,8 @@ and optional OpenNSFW2 downloads remain outside that explicit catalogue.
 
 Deep-Live-Cam is AGPL-3.0; the exact corresponding source, original attribution,
 dependency notices and model licence limitations accompany the release. The
-[DirectML technical inspection](docs/release-evidence/v2.2.4/candidate-753aab70/DIRECTML_COMPLIANCE_TECHNICAL.md)
+[DirectML technical inspection](docs/release-evidence/v2.2.4/DIRECTML_COMPLIANCE_TECHNICAL.md)
 records actual Qt metadata and the existing shared LGPL/GPL text locations.
-That inspection is historical: a later executable-archive inspection found
-embedded pip/setuptools code without its dedicated notices. The corrected
-candidate must include those package/vendor notices and pass a fresh payload
-inspection before this finding can be closed.
 
 ## Remaining Legal Risks
 

@@ -1,5 +1,6 @@
 ---
 author: Neil Mitchell
+creator: Neil Mitchell
 last_modified_by: Neil Mitchell
 date: 2026-09-06
 ---
@@ -10,19 +11,18 @@ Status: PENDING
 
 Release: `2.2.4`
 
-Historical NVIDIA/AMD confirmations remain in
-`docs/release-evidence/v2.2.3/OBS_VIRTUAL_CAMERA_VERIFICATION.md`.
-This patch changes camera failure cleanup and file/live operation exclusion,
-so historical live-output results alone cannot close this release gate.
+Candidate source: PENDING — record the corrected immutable build SHA and asset hashes.
 
-## Current release checks
+The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded. Its evidence is retained
+with original hashes and does not approve this rebuild.
 
-- [ ] Verify the final CUDA and DirectML runtimes on identified adapters.
-- [ ] Check Preview and Live Output start, stop, restart and failed camera startup.
-- [ ] Confirm file rendering and live processing cannot overlap.
-- [ ] Confirm processed Live Output appears in a receiving application.
-- [ ] Confirm the workflow still matches `docs/OBS_VIRTUAL_CAMERA.md`.
+- [ ] Verify final CUDA and identified AMD DirectML providers and real processing.
+- [ ] Check packaged Preview and physical-camera Live Output start, stop, restart and failed startup.
+- [ ] Confirm file rendering and live processing cannot overlap through the final GUIs.
+- [ ] Confirm actual processed Live Output reaches an independent receiving application.
+- [ ] Confirm the final workflow matches docs/OBS_VIRTUAL_CAMERA.md.
 
-The synthetic sender in `verify_obs_virtualcam_gate.ps1` verifies an automated
-subset. It does not by itself establish final-application processing or receiver
-visibility. Record receiver evidence and the actual adapter used separately.
+The archived source-component test delivered 240 changing synthetic frames through
+the actual OBS Virtual Camera driver across two start/stop cycles. No physical
+webcam, GPU inference or packaged GUI was used in that test. Retain its useful
+delivery/reacquisition evidence without calling it complete application approval.

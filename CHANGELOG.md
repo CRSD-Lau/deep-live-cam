@@ -8,10 +8,14 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.2.4] - 2026-09-06
 
+Release candidate; publication remains pending final artifact and manual checks.
+
 ### Changed
 
 - Updated PyInstaller hooks from 2026.6 to 2026.7 in both Windows package
   locks and Ruff from 0.16.4 to 0.16.5 in the development toolchain.
+- Use faster compression for the isolated installer-validation fixture while
+  retaining the public installer's compression and migration/uninstall checks.
 
 ### Fixed
 
@@ -34,6 +38,12 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Validate CLI resource values and check for both FFmpeg tools before video use.
 - Bind CUDA binaries, DirectML binaries, and corresponding source to the same
   resolved release commit, and reject stale release-gate evidence.
+- Include embedded pip/setuptools package and vendor notices, and classify build
+  support packages without claiming their code is absent from frozen executables.
+- Preserve PyInstaller's licence and bootloader exception and the contributed
+  hooks' licence texts; fail collection if declared or recorded notices are missing.
+- Install the CUDA DLL-source wheel using the main locked pip, including when an
+  existing helper environment contains older bootstrap tools.
 
 ### Documentation
 

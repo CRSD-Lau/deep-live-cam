@@ -11,24 +11,15 @@ Release: `2.2.4`
 
 Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
 
-Binary and corresponding-source commit: the corrected immutable SHA recorded in the final source manifest
+Binary and corresponding-source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`
 
 Rollback release: `v2.2.3`
 
-Set the release draft target to the corrected merged build commit after it is
-frozen. Keep it unpublished while any required check remains pending. A later
-documentation/evidence commit does not
+The release draft targets this merged commit. Keep it unpublished while any
+required check remains pending. A later documentation/evidence commit does not
 change the commit used for these binaries or their corresponding-source archive.
-The first candidate and its embedded documentation remain historical. Preserve
-its bytes separately while preparing the corrected candidate.
-
-
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
+This current external handoff supersedes the older 2.2.3 instructions embedded
+in the candidate's packaged documentation; preserve the verified artifact bytes.
 
 ## Intended downloads
 
@@ -43,9 +34,9 @@ be absent from every distributed runtime and source archive.
 
 ## Build identity
 
-The corrected candidate workflow
+Candidate workflow [34056909310](https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34056909310)
 uses `.github/workflows/windows-release.yml` with `app_version: 2.2.4` and the
-frozen commit as `git_ref`. Both binary jobs and source packaging must
+exact commit above as `git_ref`. Both binary jobs and source packaging must
 resolve to that commit. Check their manifests before accepting the final assets.
 Hosted workflow success does not approve publication.
 
@@ -88,7 +79,7 @@ Required evidence includes:
 ## Complete the draft and publish
 
 1. Verify the annotated `v2.2.4` tag resolves to
-   the corrected immutable SHA recorded in the final source manifest; do not retarget it to a later
+   `753aab70c34ae585d525a06b9f7de2d721b7f491`; do not retarget it to a later
    documentation commit.
 2. Update the existing draft with the reviewed `RELEASE_NOTES.md` and every file
    listed in `RELEASE_ASSETS.md`. Keep binary/source provenance separate from

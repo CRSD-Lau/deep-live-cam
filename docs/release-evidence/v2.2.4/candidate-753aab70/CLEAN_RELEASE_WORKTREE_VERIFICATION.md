@@ -7,19 +7,11 @@ date: 2026-09-06
 
 # Clean Release Worktree Verification
 
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
-
-
 Release: `2.2.4`
 
 Status: PENDING FINAL SOURCE AND ATTESTATION RECONCILIATION
 
-Binary/source commit: the corrected immutable SHA recorded in the final source manifest
+Binary/source commit: `753aab70c34ae585d525a06b9f7de2d721b7f491`
 
 The [2.2.3 preparation snapshot](docs/release-evidence/v2.2.3/preparation/CLEAN_RELEASE_WORKTREE_VERIFICATION.md)
 is retained unchanged, including its original base commit and completed items.

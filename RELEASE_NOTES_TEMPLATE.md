@@ -1,9 +1,25 @@
+---
+author: Neil Mitchell
+creator: Neil Mitchell
+last_modified_by: Neil Mitchell
+date: 2026-09-06
+---
+
 # Deep Live Cam Studio 2.2.4 Windows Release
+
+Draft template: final artifact and manual verification remain pending.
+Binary and corresponding-source commit: the corrected immutable SHA recorded in the final source manifest.
+Later documentation/evidence commits do not change this artifact identity.
 
 This patch release protects existing exports when rendering fails, isolates
 temporary frames from user folders, and improves settings, model-transfer, and
 camera lifecycle handling. It also tightens release source matching and rejects
 stale verification evidence.
+
+
+The first candidate was superseded for missing embedded-package notices. Its
+tests and hashes are archived separately. Only the corrected assets and their
+matching validation may be approved for publication.
 
 ## Downloads
 
@@ -45,6 +61,11 @@ old extracted folder after verifying the new copy.
   existing model. Insecure redirects are rejected before they are followed.
 - CLI resource validation rejects invalid values, requires both FFmpeg tools
   for video workflows, and returns failure status for unsuccessful renders.
+- Packaging includes embedded pip/setuptools and vendor notices. The CUDA DLL-source
+  helper uses the main locked pip, and only the isolated installer test fixture
+  uses faster compression; public installer compression stays unchanged.
+- Packaging also retains PyInstaller's licence and bootloader exception and the
+  contributed hooks' licence; missing declared or recorded notices fail the build.
 - Release builds pin both runtime profiles and corresponding source to one
   immutable commit. Verification rejects evidence for an earlier release.
 
@@ -61,7 +82,9 @@ See `docs/DEPENDENCY_LOCKS.md` for the exception's scope and limitations.
 Deep-Live-Cam is licensed under AGPL-3.0. Complete corresponding source for the
 exact binary release is attached and identified by the source ref above.
 
-The source archive is produced with:
+The asset assembler replaces HEAD below with the exact source-manifest SHA in
+the generated release notes. Run this template command only from the frozen
+clean release checkout:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\windows\package_source.ps1 -AppVersion 2.2.4 -GitRef HEAD
