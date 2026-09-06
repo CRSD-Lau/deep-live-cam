@@ -1,0 +1,102 @@
+---
+author: Neil Mitchell
+last_modified_by: Neil Mitchell
+date: 2026-09-06
+---
+
+# Project review — 6 September 2026
+
+This review prioritizes reliable exports, preservation of existing files, and
+recovery from failed operations. Changes are on `codex/project-review-20260906`.
+The initial review used default-branch commit `8ce01f795b0558e77de255b9fa1c839a8a6a738b`;
+release preparation incorporates the subsequent `9bdb9cf` audit documentation fix.
+This is source-review evidence, not a new binary release approval.
+
+## Coverage and approach
+
+The project-wide pass covered the CLI and desktop entry points, file rendering,
+Preview and live-output lifecycle, camera capture, processor dispatch, analysis,
+tracking/compositing/quality modules, model downloads, settings, diagnostic
+reports, dependency profiles, Windows packaging scripts, CI, and public docs.
+First-party tests and release validators were reviewed alongside implementation.
+Third-party library internals were inspected only where needed to trace behavior;
+bundled third-party code, models, licences, and binary assets were not rewritten.
+
+Three independent review passes and two anonymized peer reviews agreed that
+output-integrity defects offered the strongest immediate improvement. All used
+the same model; these were independent inspections, not cross-provider review.
+Temporary-directory ownership received extra scrutiny because face mapping
+extracts frames before rendering starts. No performance or visual-quality gains
+are claimed from the source changes.
+
+## Implemented findings
+
+| Area | Previous failure | Change |
+| --- | --- | --- |
+| FFmpeg diagnostics | Undrained stderr pipes could fill and block an export. | Owned temporary diagnostic files avoid pipe saturation; error output is limited to a 64 KiB tail. |
+| Decode completion | A successful encoder could conceal a failed decoder or incomplete final frame. | Check both process exit statuses, accumulate short reads, and reject partial frames. |
+| Process cleanup | Startup, metrics, or QA failures could leave children and streams open. | Close and reap children across success and failure paths. |
+| Image rendering | Failed preparation or image writes could be reported as success. | Process into a destination-side staging file, require processor success, decode-check the result, then replace the requested file. |
+| Video publication | The existing destination was deleted before moving the new file. Audio restoration wrote directly to it. | Stage copy/remux beside the destination and replace only on success; silent source videos use optional audio mapping. |
+| Temporary frames | Predictable input-adjacent directories could collide with existing folders, retained frames, or another video with the same stem. | Track unique process-owned workspaces, preserve the mapper-to-render handoff, and print retained-frame locations. |
+| Settings | Valid JSON with invalid types could crash startup; interrupted saves could truncate the prior settings. | Validate values and preserve valid choices; save atomically. |
+| Live startup | Camera construction and partially opened backends could leave resources active after failure. | Release partial capture/virtual-output state and report startup failure. |
+| Operation overlap | File rendering and live output could use shared processor state concurrently. | Gate overlapping operations while preserving the active operation. |
+| Model transfers | Interrupted downloads left partial files; final-URL checking happened after insecure redirects were followed. | Use unique temporary downloads, clean them on failure, and reject insecure redirects before the redirected request. |
+| CLI and probes | Missing output normalization could raise a TypeError; invalid resource values and missing ffprobe failed unclearly. | Handle absent output safely, validate resource inputs, and check both FFmpeg executables. |
+
+## Validation
+
+The unchanged baseline passed all 514 tests. Ruff's CI-critical selection and
+Bandit's medium/high checks also passed before modification.
+
+The final integrated suite passed **619 tests**, including **105 additional
+regression/integration cases**, in 11.83 seconds. It used Python 3.11.9, ONNX
+Runtime DirectML 1.23.0, and pinned pytest 9.1.1/Ruff 0.16.5 tools in an isolated
+overlay. CI-critical Ruff checks passed; Bandit found no medium/high issues
+(32 low-severity findings remain). The existing CUDA development environment was
+used for the baseline and focused regressions; it is not a freshly locked CUDA
+installation.
+
+The real media integration tests generate non-personal 96×64 clips with twelve
+frames at 12 FPS. They exercise the FFmpeg pipe export, destination replacement,
+audio and silent-video remux, ffprobe frame/dimension/duration checks, full output
+decode, and workspace cleanup. Separate real subprocess regressions write 2 MiB
+of stderr from each child to exercise the previous pipe-capacity failure.
+An additional physical D: to C: publication check verified cross-volume output
+replacement and private-workspace cleanup. No inference or personal media was
+used in these I/O checks.
+
+Dependency-lock regeneration in check mode reports current locks. The CUDA and
+DirectML runtime lock audits report no known vulnerabilities. The existing
+build-only Torch audit passes with its one pre-existing `PYSEC-2025-194`
+exception; this review neither adds nor broadens that exception.
+
+## Remaining limits and follow-up
+
+- **Dependency-managed model setup remains separate.** Current InsightFace
+  `FaceAnalysis` can fetch the missing `buffalo_l` analysis bundle automatically.
+  Optional OpenNSFW2 model initialization can also fetch missing weights. These
+  paths are outside the application's reviewed download catalogue. README now
+  states this limitation. Integrating them requires reviewed sources/checksums,
+  consent UX, and compatibility testing with existing caches; it is not solved
+  by the transfer-cleanup patch.
+- **Physical hardware and packaged builds need release validation.** Camera
+  failure tests use mocks; Qt runs offscreen. No claim is made about a new
+  physical-camera/OBS stability run, face-swap visual quality, NVIDIA/AMD/Intel
+  performance, clean-VM installation, or published binary behavior. Existing
+  release evidence remains historical.
+- **Large UI and processor modules remain.** Splitting them and tuning inference
+  or temporal behavior would require broader characterization and representative
+  media. Their size alone does not justify combining a redesign with these fixes.
+- **Per-frame inference recovery is unchanged.** Disk-based frame processors can
+  still log and recover from individual processing failures. The explicit image
+  success contract and FFmpeg completion checks do not establish that every
+  rendered video frame underwent a successful face transformation.
+- FFmpeg diagnostic capture uses temporary disk space. Error reads are bounded,
+  but unusually verbose failing decoders can grow those temporary files until
+  processing ends. No new watchdog for hung GPU drivers or native camera calls
+  is introduced.
+
+The installed application, existing model caches, user settings, recordings,
+other projects, release tags, and hosted releases were not modified.

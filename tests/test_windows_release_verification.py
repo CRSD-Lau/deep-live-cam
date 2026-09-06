@@ -1,5 +1,7 @@
 import zipfile
 
+import pytest
+
 from tools import generate_windows_release_verification as verification
 
 
@@ -30,8 +32,8 @@ def make_release_layout(tmp_path, monkeypatch):
     write_file(source_archive.with_suffix(".manifest.md"), "Archive mode: `git-ref`\n")
     write_file(source_archive.with_suffix(source_archive.suffix + ".sha256"), f"{verification.sha256(source_archive)}  {source_archive.name}\n")
 
-    write_file(repo_root / verification.MODEL_DOWNLOAD_VERIFICATION, "models verified")
-    write_file(repo_root / verification.PROCESSING_VERIFICATION, "processing verified")
+    write_file(repo_root / verification.MODEL_DOWNLOAD_VERIFICATION, "Status: PASS\nRelease: `2.1.7`\nmodels verified")
+    write_file(repo_root / verification.PROCESSING_VERIFICATION, "Status: PASS\nRelease: `2.1.7`\nprocessing verified")
     write_file(
         repo_root / verification.CUTOVER_STATUS,
         "\n".join(
@@ -65,23 +67,23 @@ def make_release_layout(tmp_path, monkeypatch):
 
 def test_manual_gate_evidence_requires_pass_and_no_open_items(tmp_path):
     evidence = tmp_path / "gate.md"
-    write_file(evidence, "Status: PASS\n\n- [ ] unfinished\n")
+    write_file(evidence, "Status: PASS\nRelease: `2.1.7`\n\n- [ ] unfinished\n")
 
     assert verification.evidence_status(evidence) == "PASS"
     assert verification.evidence_open_items(evidence) == 1
-    assert not verification.evidence_passed(evidence)
+    assert not verification.evidence_passed(evidence, "2.1.7")
 
-    write_file(evidence, "Status: PASS\n\n- [x] finished\n")
+    write_file(evidence, "Status: PASS\nRelease: `2.1.7`\n\n- [x] finished\n")
     assert verification.evidence_open_items(evidence) == 0
-    assert verification.evidence_passed(evidence)
+    assert verification.evidence_passed(evidence, "2.1.7")
 
 
 def test_publish_ready_requires_completed_manual_evidence(tmp_path, monkeypatch):
     repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
 
-    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
-    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [ ] obs still pending\n")
-    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
+    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] install checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [ ] obs still pending\n")
+    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\nRelease: `2.1.7`\n- [x] legal checked\n")
 
     text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.7")
 
@@ -89,9 +91,9 @@ def test_publish_ready_requires_completed_manual_evidence(tmp_path, monkeypatch)
     assert blockers
     assert "`OBS_VIRTUAL_CAMERA_VERIFICATION.md`" in text
     assert "Open checklist items: `1`" in text
-    assert "OBS_VIRTUAL_CAMERA_VERIFICATION.md is `PASS` with 1 open checklist item(s)." in text
+    assert "OBS_VIRTUAL_CAMERA_VERIFICATION.md has 1 open checklist item(s)." in text
 
-    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] obs checked\n")
     text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.7")
 
     assert publishable
@@ -101,9 +103,9 @@ def test_publish_ready_requires_completed_manual_evidence(tmp_path, monkeypatch)
 
 def test_named_release_checks_are_stable_and_pass_when_ready(tmp_path, monkeypatch):
     repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
-    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
-    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
-    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
+    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] install checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] obs checked\n")
+    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\nRelease: `2.1.7`\n- [x] legal checked\n")
 
     context = verification.collect_verification_context(
         repo_root, dist_dir, output_dir, "2.1.7"
@@ -124,9 +126,9 @@ def test_named_release_checks_are_stable_and_pass_when_ready(tmp_path, monkeypat
 def test_publish_ready_requires_matching_source_hash_sidecar(tmp_path, monkeypatch):
     repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
 
-    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
-    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
-    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
+    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] install checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] obs checked\n")
+    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\nRelease: `2.1.7`\n- [x] legal checked\n")
     write_file(output_dir / "DeepLiveCamStudio-2.1.7-source-testref.zip.sha256", "BADHASH  source.zip\n")
 
     text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.7")
@@ -140,9 +142,9 @@ def test_publish_ready_requires_matching_source_hash_sidecar(tmp_path, monkeypat
 def test_publish_ready_requires_clean_cutover_status(tmp_path, monkeypatch):
     repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
 
-    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
-    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
-    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
+    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] install checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] obs checked\n")
+    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\nRelease: `2.1.7`\n- [x] legal checked\n")
     write_file(
         repo_root / verification.CUTOVER_STATUS,
         "Dirty paths: `2`\n\n"
@@ -167,9 +169,9 @@ def test_publish_ready_requires_clean_cutover_status(tmp_path, monkeypatch):
 def test_git_ref_source_allows_known_mixed_scope_dirty_worktree(tmp_path, monkeypatch):
     repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
 
-    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
-    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
-    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
+    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] install checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] obs checked\n")
+    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\nRelease: `2.1.7`\n- [x] legal checked\n")
     write_file(
         repo_root / verification.CUTOVER_STATUS,
         "\n".join(
@@ -215,9 +217,9 @@ def test_git_ref_source_allows_known_mixed_scope_dirty_worktree(tmp_path, monkey
 def test_git_ref_source_still_blocks_unknown_dirty_paths(tmp_path, monkeypatch):
     repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
 
-    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\n- [x] install checked\n")
-    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\n- [x] obs checked\n")
-    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\n- [x] legal checked\n")
+    write_file(repo_root / "CLEAN_VM_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] install checked\n")
+    write_file(repo_root / "OBS_VIRTUAL_CAMERA_VERIFICATION.md", "Status: PASS\nRelease: `2.1.7`\n- [x] obs checked\n")
+    write_file(repo_root / "LEGAL_REVIEW.md", "Status: PASS\nRelease: `2.1.7`\n- [x] legal checked\n")
     write_file(
         repo_root / verification.CUTOVER_STATUS,
         "Dirty paths: `1`\n\n"
@@ -257,3 +259,56 @@ def test_release_verification_prefers_git_ref_source_archive(tmp_path, monkeypat
     assert "RELEASE_ASSETS.md" in text
     assert "DeepLiveCamStudio-*-source-*.zip" in text
     assert "source-worktree-testref.zip`" not in text
+
+
+@pytest.mark.parametrize("gate_path", [
+    "CLEAN_VM_VERIFICATION.md", "OBS_VIRTUAL_CAMERA_VERIFICATION.md",
+    "LEGAL_REVIEW.md", "MODEL_DOWNLOAD_VERIFICATION.md", "PROCESSING_VERIFICATION.md",
+])
+@pytest.mark.parametrize("evidence", [
+    "Status: PASS\nRelease: `2.1.6`\n- [x] historical check\n",
+    "Status: PASS\n- [x] no release specified\n",
+    "Historical verification document exists, without a verdict.\n",
+    "Status: PASS\nRelease: `2.1.7`\n* [ ] incomplete check\n",
+    "Status: PENDING\nRelease: `2.1.7`\n- [x] subset checked\n",
+    "Status: PASS\nRelease: `2.1.7`\nRelease: `2.1.6`\n",
+    None,
+])
+def test_every_gate_rejects_stale_or_unapproved_evidence(
+    tmp_path, monkeypatch, gate_path, evidence,
+):
+    repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
+    for path in (
+        "CLEAN_VM_VERIFICATION.md", "OBS_VIRTUAL_CAMERA_VERIFICATION.md",
+        "LEGAL_REVIEW.md", "MODEL_DOWNLOAD_VERIFICATION.md", "PROCESSING_VERIFICATION.md",
+    ):
+        write_file(repo_root / path, "Status: PASS\nRelease: `2.1.7`\n- [x] checked\n")
+    if evidence is None:
+        (repo_root / gate_path).unlink()
+    else:
+        write_file(repo_root / gate_path, evidence)
+
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.7")
+
+    assert not publishable
+    assert any(gate_path in blocker for blocker in blockers)
+    assert "Release" in text
+    if evidence is None:
+        assert not (repo_root / gate_path).exists()
+    else:
+        assert (repo_root / gate_path).read_text(encoding="utf-8") == evidence
+
+
+def test_stale_model_evidence_is_not_reported_as_current_verification(tmp_path, monkeypatch):
+    repo_root, dist_dir, output_dir = make_release_layout(tmp_path, monkeypatch)
+    write_file(
+        repo_root / verification.MODEL_DOWNLOAD_VERIFICATION,
+        "Status: PASS\nRelease: `2.1.6`\n",
+    )
+
+    text, publishable, blockers = verification.generate(repo_root, dist_dir, output_dir, "2.1.7")
+
+    assert not publishable
+    assert "Real model download/checksum evidence passes for requested release: **NO**" in text
+    assert "Release version: `2.1.6`; requested: `2.1.7`" in text
+    assert any("Release version `2.1.6` does not match requested app version `2.1.7`" in blocker for blocker in blockers)

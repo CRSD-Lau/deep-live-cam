@@ -35,6 +35,7 @@ class VideoCapturer:
 
     def start(self, width: int = 960, height: int = 540, fps: int = 60) -> bool:
         """Initialize and start video capture"""
+        self.release()
         try:
             if platform.system() == "Windows":
                 # device_index comes from pygrabber.FilterGraph (DirectShow
@@ -68,9 +69,9 @@ class VideoCapturer:
                         self.cap = cv2.VideoCapture(dev_id, backend, open_params)
                         if self.cap.isOpened():
                             break
-                        self.cap.release()
                     except Exception:
-                        continue
+                        pass
+                    self.release()
             else:
                 # Unix-like systems (Linux/Mac) capture method
                 self.cap = cv2.VideoCapture(self.device_index)
@@ -107,8 +108,7 @@ class VideoCapturer:
 
         except Exception as e:
             print(f"Failed to start capture: {str(e)}")
-            if self.cap:
-                self.cap.release()
+            self.release()
             return False
 
     def read(self) -> Tuple[bool, Optional[np.ndarray]]:
@@ -126,10 +126,19 @@ class VideoCapturer:
 
     def release(self) -> None:
         """Stop capture and release resources"""
-        if self.is_running and self.cap is not None:
-            self.cap.release()
-            self.is_running = False
-            self.cap = None
+        capture = self.cap
+        self.is_running = False
+        self.cap = None
+        self._current_frame = None
+        self._frame_ready.clear()
+        self.actual_width = 0
+        self.actual_height = 0
+        self.actual_fps = 0.0
+        if capture is not None:
+            try:
+                capture.release()
+            except Exception as error:
+                print(f"Failed to release capture: {error}")
 
     def _measure_fps(self, warmup: int = 10, sample: int = 30,
                      fallback: float = 30.0) -> float:

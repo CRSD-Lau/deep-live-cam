@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.2.3",
+    [string]$AppVersion = "2.2.4",
     [string]$Python = "python",
     [string]$GitRef = "HEAD",
     [string]$IsccPath = "",
@@ -68,8 +68,8 @@ if (-not $SkipBuild) {
 
 Invoke-ReleaseStep "Refresh Python dependency license snapshot" {
     $LicensePythonCandidates = @(
-        (Join-Path $RepoRoot "venv\Scripts\python.exe"),
         (Join-Path $RepoRoot ".venv-build-windows\Scripts\python.exe"),
+        (Join-Path $RepoRoot "venv\Scripts\python.exe"),
         $Python
     )
     $LicensePython = ($LicensePythonCandidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1)

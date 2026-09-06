@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+from http.client import HTTPException
 import os
 import sys
+import tempfile
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -89,7 +91,7 @@ def hash_file(path: Path) -> str:
 
 
 def verify_model(path: Path, spec: ModelSpec) -> bool:
-    return path.exists() and hash_file(path).lower() == spec.sha256.lower()
+    return path.is_file() and hash_file(path).lower() == spec.sha256.lower()
 
 
 def missing_models(required_only: bool = False) -> list[ModelSpec]:
@@ -134,17 +136,32 @@ def download_models(assume_yes: bool = False, required_only: bool = False) -> in
 
     for spec in specs:
         destination = local_model_path(spec.file_name)
-        temporary = destination.with_suffix(destination.suffix + ".download")
-        _download_file(spec.url, temporary)
-        actual = hash_file(temporary)
-        if actual.lower() != spec.sha256.lower():
-            temporary.unlink(missing_ok=True)
-            print(
-                f"Checksum mismatch for {spec.file_name}. "
-                f"Expected {spec.sha256}, got {actual}."
-            )
+        temporary = None
+        try:
+            # Keep concurrent downloads separate and install only verified bytes.
+            with tempfile.NamedTemporaryFile(
+                dir=destination.parent, prefix=f".{spec.file_name}.",
+                suffix=".download", delete=False,
+            ) as handle:
+                temporary = Path(handle.name)
+            _download_file(spec.url, temporary)
+            actual = hash_file(temporary)
+            if actual.lower() != spec.sha256.lower():
+                print(
+                    f"Checksum mismatch for {spec.file_name}. "
+                    f"Expected {spec.sha256}, got {actual}."
+                )
+                return 1
+            os.replace(temporary, destination)
+        except (OSError, ValueError, HTTPException) as exc:
+            print(f"Download failed for {spec.file_name}: {exc}")
             return 1
-        os.replace(temporary, destination)
+        finally:
+            if temporary is not None:
+                try:
+                    temporary.unlink(missing_ok=True)
+                except OSError as exc:
+                    print(f"Could not remove temporary download {temporary}: {exc}")
         print(f"Verified {destination}")
     return 0
 
@@ -153,8 +170,9 @@ def _download_file(url: str, destination: Path) -> None:
     _require_https(url)
     destination.parent.mkdir(parents=True, exist_ok=True)
     request = urllib.request.Request(url, headers={"User-Agent": "DeepLiveCamStudio/installer"})
-    # The input and final redirect target are restricted to HTTPS.
-    with urllib.request.urlopen(request, timeout=60) as response:  # nosec B310
+    opener = urllib.request.build_opener(_HTTPSRedirectHandler())
+    # Reject insecure redirects before making the redirected request.
+    with opener.open(request, timeout=60) as response:
         _require_https(response.geturl())
         total = int(response.headers.get("Content-Length", 0))
         with tqdm(total=total, desc=destination.name, unit="B", unit_scale=True, unit_divisor=1024) as progress:
@@ -171,3 +189,9 @@ def _require_https(url: str) -> None:
     parsed = urlsplit(url)
     if parsed.scheme.lower() != "https" or not parsed.netloc:
         raise ValueError(f"Refusing non-HTTPS model download URL: {url}")
+
+
+class _HTTPSRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        _require_https(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)

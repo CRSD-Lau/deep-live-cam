@@ -19,6 +19,7 @@ Use this index to find the right guide without searching through release and com
 | [Dependency locks](DEPENDENCY_LOCKS.md) | Supported Windows matrix and reproducible dependency updates |
 | [Contributing](../CONTRIBUTING.md) | Contribution scope, required evidence, and pull-request expectations |
 | [Engineering audit](../REPOSITORY_AUDIT.md) | Current architecture, quality findings, and deferred technical work |
+| [September 2026 project review](PROJECT_REVIEW_2026-09-06.md) | Export integrity and lifecycle fixes, validation, and remaining limits |
 
 ## Maintain and Release
 

@@ -1,9 +1,13 @@
 import glob
+import math
 import mimetypes
 import os
 import shutil
 import subprocess
+import tempfile
+import threading
 import urllib.request
+from contextlib import contextmanager
 from pathlib import Path
 from typing import List, Any
 from urllib.parse import urlsplit
@@ -16,7 +20,8 @@ from tqdm import tqdm
 import modules.globals
 
 TEMP_FILE = "temp.mp4"
-TEMP_DIRECTORY = "temp"
+_TEMP_WORKSPACES: dict[str, str] = {}
+_TEMP_WORKSPACES_LOCK = threading.RLock()
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".avif")
 IMAGE_FILE_FILTER = "Images (*.png *.jpg *.jpeg *.gif *.bmp *.webp *.avif)"
 MEDIA_FILE_FILTER = "Media (*.png *.jpg *.jpeg *.gif *.bmp *.webp *.avif *.mp4 *.mkv)"
@@ -61,23 +66,26 @@ def detect_fps(target_path: str) -> float:
         "default=noprint_wrappers=1:nokey=1",
         target_path,
     ]
-    output = subprocess.check_output(command).decode().strip().split("/")
     try:
+        output = subprocess.check_output(command).decode().strip().split("/")
         numerator, denominator = map(int, output)
-        return numerator / denominator
-    except Exception:
+        fps = numerator / denominator
+        if math.isfinite(fps) and fps > 0:
+            return fps
+    except (OSError, subprocess.CalledProcessError, ValueError, ZeroDivisionError):
         pass
     return 30.0
 
 
-def extract_frames(target_path: str) -> None:
+def extract_frames(target_path: str) -> bool:
     """Extract frames with hardware acceleration and optimized settings."""
     temp_directory_path = get_temp_directory_path(target_path)
     
     # Write a contiguous image sequence so the later "%04d.png" input pattern
     # used during encoding can consume every frame reliably.
-    run_ffmpeg(
+    return run_ffmpeg(
         [
+            "-y",
             "-i", target_path,
             "-vf", "format=rgb24",  # Use video filter for format conversion (faster)
             "-vsync", "0",  # Prevent frame duplication
@@ -199,37 +207,46 @@ def create_video(target_path: str, fps: float = 30.0) -> bool:
     return success and os.path.isfile(temp_output_path)
 
 
-def restore_audio(target_path: str, output_path: str) -> None:
+def restore_audio(target_path: str, output_path: str) -> bool:
+    """Remux into a destination-side staging file before replacing an export."""
     temp_output_path = get_temp_output_path(target_path)
-    done = run_ffmpeg(
-        [
-            "-i",
-            temp_output_path,
-            "-i",
-            target_path,
-            "-c:v",
-            "copy",
-            "-map",
-            "0:v:0",
-            "-map",
-            "1:a:0",
-            "-y",
-            output_path,
-        ]
-    )
-    if not done:
-        move_temp(target_path, output_path)
+    try:
+        with staged_output_path(output_path) as staging_path:
+            done = run_ffmpeg(
+                [
+                    "-i", temp_output_path,
+                    "-i", target_path,
+                    "-c:v", "copy",
+                    "-map", "0:v:0",
+                    # Silent source videos are valid exports too.
+                    "-map", "1:a:0?",
+                    "-y", staging_path,
+                ]
+            )
+            if not done or os.path.getsize(staging_path) == 0:
+                return False
+            os.replace(staging_path, output_path)
+        return True
+    except OSError as error:
+        print(f"Failed to publish video with audio: {error}")
+        return False
 
 
 def get_temp_frame_paths(target_path: str) -> List[str]:
     temp_directory_path = get_temp_directory_path(target_path)
-    return glob.glob((os.path.join(glob.escape(temp_directory_path), "*.png")))
+    return sorted(
+        glob.glob(os.path.join(glob.escape(temp_directory_path), "*.png")),
+        key=lambda path: (len(Path(path).stem), Path(path).stem),
+    )
 
 
 def get_temp_directory_path(target_path: str) -> str:
-    target_name, _ = os.path.splitext(os.path.basename(target_path))
-    target_directory_path = os.path.dirname(target_path)
-    return os.path.join(target_directory_path, TEMP_DIRECTORY, target_name)
+    """Return this process's private workspace, shared by mapping and render."""
+    key = os.path.normcase(os.path.realpath(target_path))
+    with _TEMP_WORKSPACES_LOCK:
+        if key not in _TEMP_WORKSPACES:
+            _TEMP_WORKSPACES[key] = tempfile.mkdtemp(prefix="deep-live-cam-")
+        return _TEMP_WORKSPACES[key]
 
 
 def get_temp_output_path(target_path: str) -> str:
@@ -237,8 +254,8 @@ def get_temp_output_path(target_path: str) -> str:
     return os.path.join(temp_directory_path, TEMP_FILE)
 
 
-def normalize_output_path(source_path: str, target_path: str, output_path: str) -> Any:
-    if source_path and target_path:
+def normalize_output_path(source_path: str, target_path: str, output_path: str | None) -> Any:
+    if source_path and target_path and output_path:
         source_name, _ = os.path.splitext(os.path.basename(source_path))
         target_name, target_extension = os.path.splitext(os.path.basename(target_path))
         if os.path.isdir(output_path):
@@ -249,25 +266,71 @@ def normalize_output_path(source_path: str, target_path: str, output_path: str) 
 
 
 def create_temp(target_path: str) -> None:
-    temp_directory_path = get_temp_directory_path(target_path)
-    Path(temp_directory_path).mkdir(parents=True, exist_ok=True)
+    get_temp_directory_path(target_path)
 
 
-def move_temp(target_path: str, output_path: str) -> None:
+@contextmanager
+def staged_output_path(output_path: str):
+    """Create a same-volume staging file and remove it if publication fails."""
+    destination = Path(output_path).absolute()
+    descriptor, staging_path = tempfile.mkstemp(
+        prefix=f".{destination.stem}-", suffix=destination.suffix,
+        dir=destination.parent,
+    )
+    os.close(descriptor)
+    try:
+        yield staging_path
+    finally:
+        Path(staging_path).unlink(missing_ok=True)
+
+
+def move_temp(target_path: str, output_path: str) -> bool:
+    """Publish safely even when the workspace and destination use different drives."""
     temp_output_path = get_temp_output_path(target_path)
-    if os.path.isfile(temp_output_path):
-        if os.path.isfile(output_path):
-            os.remove(output_path)
-        shutil.move(temp_output_path, output_path)
+    try:
+        if not os.path.isfile(temp_output_path) or os.path.getsize(temp_output_path) == 0:
+            return False
+        with staged_output_path(output_path) as staging_path:
+            shutil.copyfile(temp_output_path, staging_path)
+            os.replace(staging_path, output_path)
+        return True
+    except OSError as error:
+        print(f"Failed to publish video: {error}")
+        return False
 
 
-def clean_temp(target_path: str) -> None:
-    temp_directory_path = get_temp_directory_path(target_path)
-    parent_directory_path = os.path.dirname(temp_directory_path)
-    if not modules.globals.keep_frames and os.path.isdir(temp_directory_path):
-        shutil.rmtree(temp_directory_path)
-    if os.path.exists(parent_directory_path) and not os.listdir(parent_directory_path):
-        os.rmdir(parent_directory_path)
+def clean_temp(target_path: str) -> bool:
+    # Never derive a deletion target from a user's input path. Only directories
+    # allocated by this process are eligible for cleanup.
+    key = os.path.normcase(os.path.realpath(target_path))
+    with _TEMP_WORKSPACES_LOCK:
+        temp_directory_path = _TEMP_WORKSPACES.get(key)
+        if temp_directory_path is None:
+            return True
+        if not os.path.lexists(temp_directory_path):
+            _TEMP_WORKSPACES.pop(key)
+            return True
+        if modules.globals.keep_frames:
+            print(f"Temporary frames retained in: {temp_directory_path}", flush=True)
+        else:
+            try:
+                shutil.rmtree(temp_directory_path)
+            except OSError as error:
+                # Keep ownership for a later retry. A sharing violation after
+                # publication must not turn an otherwise successful export into
+                # a failure, or cause the next render to reuse stale frames.
+                print(f"Temporary cleanup failed for {temp_directory_path}: {error}", flush=True)
+                return False
+        _TEMP_WORKSPACES.pop(key)
+        return True
+
+
+def clean_all_temp() -> None:
+    """Release registered workspaces, including abandoned face-mapping sessions."""
+    with _TEMP_WORKSPACES_LOCK:
+        targets = list(_TEMP_WORKSPACES)
+    for target_path in targets:
+        clean_temp(target_path)
 
 
 def read_image(image_path: str, flags: int = cv2.IMREAD_COLOR) -> Any:

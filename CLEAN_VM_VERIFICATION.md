@@ -1,57 +1,29 @@
+---
+author: Neil Mitchell
+last_modified_by: Neil Mitchell
+date: 2026-09-06
+---
+
 # Clean Windows Verification
 
-Status: PASS
+Status: PENDING
 
-Release: `2.2.3`
+Release: `2.2.4`
 
-This gate covers the per-user CUDA installer. Exact final hashes are recorded
-outside the installed payload in `RELEASE_ASSETS.md` and `SHA256SUMS.txt` to
-avoid circular binary-hash documentation.
+The previous signed-off record is preserved in
+`docs/release-evidence/v2.2.3/CLEAN_VM_VERIFICATION.md`. It is historical evidence,
+not a test of the 2.2.4 installer. Installer identity, migration and user-data
+paths remain unchanged. Packaging hooks and application code have changed.
 
-## Required checks
+## Current release checks
 
-- [x] Installation succeeds without elevation into one stable per-user path.
-- [x] Upgrade removes the registered legacy version directory and recognizable
-  orphaned version directories, then leaves one uninstall registration.
-- [x] Start Menu and optional desktop shortcuts launch the GUI.
-- [x] The installed CLI reports the expected application version.
-- [x] Model setup shows source URLs, licence notes, and checksums before
-  download.
-- [x] Missing-model messages point to model setup.
-- [x] Silent uninstall preserves `%LOCALAPPDATA%\DeepLiveCamStudio\models`.
-- [x] Interactive uninstall asks before removing downloaded models.
-- [x] Installed files contain no model/checkpoint weights.
-- [x] Required licence, compliance, changelog, and runtime documentation is
-  present.
+- [ ] Validate the final downloaded installer, its expected version and file set.
+- [ ] Exercise legacy migration, stable-version upgrade and uninstall with model preservation.
+- [ ] Verify installation without elevation and shortcut launch in a clean Windows environment.
+- [ ] Check model-setup consent, missing-model messaging and interactive uninstall choices.
+- [ ] Confirm both runtime payloads contain notices and no model/checkpoint files.
 
-## Evidence and delta assessment
-
-- Tester: Neil Mitchell
-- Baseline: the published `2.2.1` per-user installer uses a version-named
-  directory and can leave older version directories behind.
-- The `2.2.2` installer uses one stable directory. An isolated functional test
-  installed a registered `2.2.1` legacy-layout fixture, added an orphaned
-  `2.1.9` installation directory, upgraded to `2.2.2`, and verified that both
-  old directories were removed, one `2.2.2` uninstall entry remained, and the
-  user-model sentinel survived.
-- Installer automation uses a unique test-only GUID, validates the installed
-  file set, launches the CLI, scans for model weights, and verifies
-  silent-uninstall model preservation without changing a real installation.
-- The project owner confirmed Preview, Start Render, and Live Output on the
-  CUDA runtime after the `2.2.0` runtime changes; `2.2.2` changes packaging and
-  dependency patches without changing face-processing behavior.
-- The `2.2.3` delta changes processed file Preview behavior only. Installer
-  identity, stable install path, migration logic, dependency locks, user-data
-  paths, and uninstall behavior are unchanged from `2.2.2`.
-- Radeon RX 6900 XT testing passed autoplay, stable Preview geometry,
-  sequential playback, controls, seeking, and responsive close. This is runtime
-  evidence and does not replace the final downloaded-installer smoke/upgrade
-  check.
-- Final publication additionally requires downloading the GitHub-hosted
-  installer and repeating the automated install/CLI/uninstall smoke check.
-
-Run the repeatable gate with:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build\windows\verify_clean_vm_gate.ps1 -AppVersion 2.2.3
-```
+`test_installer.ps1` compiles an isolated test-GUID installer from the payload.
+Its result validates installer logic; it does not prove execution of the
+supplied official installer EXE. Record actual hosted-installer execution
+separately. Automated evidence must identify the tested source and artifacts.

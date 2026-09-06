@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 from dataclasses import dataclass
@@ -26,6 +27,8 @@ GATES = (
         "LEGAL_REVIEW.md",
         "build/windows/manual-evidence/legal-review",
     ),
+    ("Real model download", "MODEL_DOWNLOAD_VERIFICATION.md", ""),
+    ("CPU/CUDA processing", "PROCESSING_VERIFICATION.md", ""),
 )
 
 
@@ -36,10 +39,18 @@ class GateSummary:
     status: str
     open_items: list[str]
     latest_evidence: str
+    release_version: str = ""
+    app_version: str = ""
+
+    @property
+    def failures(self) -> list[str]:
+        return gate_failures(
+            self.status, self.release_version, self.app_version, len(self.open_items)
+        )
 
     @property
     def passed(self) -> bool:
-        return self.status == "PASS" and not self.open_items
+        return not self.failures
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -49,30 +60,96 @@ class GateSummary:
             "open_items": self.open_items,
             "open_item_count": len(self.open_items),
             "latest_evidence": self.latest_evidence,
+            "release_version": self.release_version,
+            "app_version": self.app_version,
+            "failures": self.failures,
             "passed": self.passed,
         }
 
 
 def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
+    return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
+
+
+def evidence_field(text: str, field: str) -> str:
+    """Require one unambiguous top-level field, rather than old copied verdicts."""
+    values = re.findall(
+        rf"^{re.escape(field)}:[ \t]*([^\r\n]*)$",
+        text,
+        flags=re.MULTILINE | re.IGNORECASE,
+    )
+    return values[0].strip() if len(values) == 1 else ""
 
 
 def gate_status(text: str, exists: bool) -> str:
     if not exists:
         return "MISSING"
-    match = re.search(r"^Status:\s*(\S+)", text, flags=re.MULTILINE | re.IGNORECASE)
-    return match.group(1).upper() if match else "UNKNOWN"
+    return evidence_field(text, "Status").upper() or "UNKNOWN"
+
+
+def gate_release_version(text: str) -> str:
+    value = evidence_field(text, "Release")
+    if len(value) >= 2 and value.startswith("`") and value.endswith("`"):
+        return value[1:-1].strip()
+    return value
+
+
+def gate_failures(
+    status: str, release_version: str, app_version: str, open_item_count: int,
+) -> list[str]:
+    failures = []
+    if status != "PASS":
+        failures.append(f"status is `{status}`; expected explicit `PASS`.")
+    if open_item_count:
+        failures.append(f"has {open_item_count} open checklist item(s).")
+    if not app_version:
+        failures.append(
+            "requested app version is missing; provide --app-version or "
+            "a literal version in modules/metadata.py."
+        )
+    elif not release_version:
+        failures.append(f"Release version is missing or ambiguous; expected `{app_version}`.")
+    elif release_version != app_version:
+        failures.append(
+            f"Release version `{release_version}` does not match "
+            f"requested app version `{app_version}`."
+        )
+    return failures
+
+
+def infer_app_version(repo_root: Path) -> str:
+    """Read the declared version without importing or executing repository code."""
+    try:
+        tree = ast.parse(read_text(repo_root / "modules/metadata.py"))
+        declarations = [
+            node.value
+            for node in tree.body
+            if isinstance(node, ast.Assign)
+            and any(isinstance(target, ast.Name) and target.id == "version" for target in node.targets)
+        ]
+    except (OSError, SyntaxError):
+        return ""
+    if (
+        len(declarations) != 1
+        or not isinstance(declarations[0], ast.Constant)
+        or not isinstance(declarations[0].value, str)
+    ):
+        return ""
+    return declarations[0].value.strip()
 
 
 def open_checklist_items(text: str) -> list[str]:
     items: list[str] = []
     for line in text.splitlines():
-        if re.match(r"^\s*-\s*\[\s\]", line):
-            items.append(re.sub(r"^\s*-\s*\[\s\]\s*", "", line).strip())
+        checklist_prefix = r"^\s*(?:[-+*]|\d+[.)])\s+\[\s\]\s*"
+        if re.match(checklist_prefix, line):
+            items.append(re.sub(checklist_prefix, "", line).strip())
     return items
 
 
 def latest_evidence(repo_root: Path, evidence_dir: str) -> str:
+    if not evidence_dir:
+        return ""
     directory = repo_root / evidence_dir
     if not directory.exists():
         return ""
@@ -83,7 +160,8 @@ def latest_evidence(repo_root: Path, evidence_dir: str) -> str:
     return latest.relative_to(repo_root).as_posix()
 
 
-def collect(repo_root: Path) -> list[GateSummary]:
+def collect(repo_root: Path, app_version: str | None = None) -> list[GateSummary]:
+    app_version = infer_app_version(repo_root) if app_version is None else app_version.strip()
     summaries: list[GateSummary] = []
     for name, gate_path, evidence_dir in GATES:
         path = repo_root / gate_path
@@ -92,9 +170,11 @@ def collect(repo_root: Path) -> list[GateSummary]:
             GateSummary(
                 name=name,
                 path=gate_path,
-                status=gate_status(text, path.exists()),
+                status=gate_status(text, path.is_file()),
                 open_items=open_checklist_items(text),
                 latest_evidence=latest_evidence(repo_root, evidence_dir),
+                release_version=gate_release_version(text),
+                app_version=app_version,
             )
         )
     return summaries
@@ -108,13 +188,17 @@ def render_markdown(summaries: list[GateSummary]) -> str:
         "It does not approve the release; it shows which human gates still need",
         "completion before publishing.",
         "",
+        f"Requested app version: `{summaries[0].app_version or 'MISSING'}`" if summaries else "Requested app version: `MISSING`",
+        "",
         "## Status",
         "",
     ]
     for summary in summaries:
         marker = "PASS" if summary.passed else "BLOCKED"
         evidence = summary.latest_evidence or "none found"
-        lines.append(f"- {marker}: `{summary.path}` status=`{summary.status}` open_items=`{len(summary.open_items)}` latest_evidence=`{evidence}`")
+        lines.append(f"- {marker}: `{summary.path}` status=`{summary.status}` release=`{summary.release_version or 'MISSING'}` open_items=`{len(summary.open_items)}` latest_evidence=`{evidence}`")
+        for failure in summary.failures:
+            lines.append(f"  - {failure}")
 
     lines.extend(["", "## Open Items", ""])
     any_open = False
@@ -136,13 +220,14 @@ def render_markdown(summaries: list[GateSummary]) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Summarize manual Windows release gates.")
     parser.add_argument("--repo-root", default=".", help="Repository root.")
+    parser.add_argument("--app-version", help="Required release version; defaults to the literal version in modules/metadata.py.")
     parser.add_argument("--output", help="Write markdown summary to this path.")
     parser.add_argument("--json-output", help="Write JSON summary to this path.")
-    parser.add_argument("--strict", action="store_true", help="Exit non-zero unless every gate is PASS with no open checklist items.")
+    parser.add_argument("--strict", action="store_true", help="Exit non-zero unless every gate is PASS for the requested release with no open checklist items.")
     args = parser.parse_args(argv)
 
     repo_root = Path(args.repo_root).resolve()
-    summaries = collect(repo_root)
+    summaries = collect(repo_root, args.app_version)
     markdown = render_markdown(summaries)
     print(markdown)
 
@@ -153,6 +238,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.json_output:
         payload = {
+            "app_version": summaries[0].app_version,
             "ready": all(summary.passed for summary in summaries),
             "gates": [summary.to_dict() for summary in summaries],
         }

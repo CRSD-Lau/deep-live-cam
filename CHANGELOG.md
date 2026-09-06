@@ -6,6 +6,40 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.4] - 2026-09-06
+
+### Changed
+
+- Updated PyInstaller hooks from 2026.6 to 2026.7 in both Windows package
+  locks and Ruff from 0.16.4 to 0.16.5 in the development toolchain.
+
+### Fixed
+
+- Preserve existing image and video exports when processing, audio restoration,
+  or final file replacement fails; report image processor failures accurately.
+- Reject failed FFmpeg decoding and incomplete frames, handle short pipe reads,
+  and prevent diagnostic output from blocking video exports.
+- Use private temporary workspaces so frame extraction and cleanup cannot
+  collide with unrelated folders or same-named videos. Retained-frame locations
+  are printed in the processing log.
+- Recover from malformed saved settings and preserve the previous settings file
+  when a save is interrupted.
+- Release camera and virtual-camera resources after startup failures, and
+  prevent file rendering from overlapping live output.
+- Clean up interrupted model downloads, preserve existing models when download
+  publication fails, and reject insecure redirects before following them.
+- Validate CLI resource values and check for both FFmpeg tools before video use.
+- Bind CUDA binaries, DirectML binaries, and corresponding source to the same
+  resolved release commit, and reject stale release-gate evidence.
+
+### Documentation
+
+- Clarified which model downloads use Set Up Models and which may be initiated
+  by dependencies on first use.
+- Corrected the build-only PyTorch security exception: the pinned 2.11.0 wheel
+  is in the advisory's affected range; the exception relies on excluding
+  Torch/JIT code from the application and copying only reviewed CUDA/cuDNN DLLs.
+
 ## [2.2.3] - 2026-08-28
 
 ### Changed
@@ -142,7 +176,8 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed alpha-channel preview frames before face detection and swap inference.
 - Fixed packaged desktop startup on clean Windows laptops.
 
-[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.3...HEAD
+[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.4...HEAD
+[2.2.4]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.0...v2.2.1
