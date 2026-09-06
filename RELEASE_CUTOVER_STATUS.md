@@ -9,17 +9,18 @@ date: 2026-09-06
 
 The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
 notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
+The corrected candidate is frozen at `617c733d42a10a2fcba036385e19d66fabcc2cc1`, with official
+workflow [34063403042](https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34063403042).
+The clean build checkout and both runtime/source jobs use that SHA. Later
+documentation attestations do not change the frozen binaries or source;
+use the recorded SHA rather than a later documentation checkout's HEAD.
 
 
 Release: `2.2.4`
 
 Status: PENDING CURRENT-RELEASE CUTOVER EVIDENCE
 
-Binary/source commit: the corrected immutable SHA recorded in the final source manifest
+Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
 - BLOCKED: Final artifact and current-release manual verification remain pending.
 

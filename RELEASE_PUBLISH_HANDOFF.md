@@ -11,12 +11,12 @@ Release: `2.2.4`
 
 Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
 
-Binary and corresponding-source commit: the corrected immutable SHA recorded in the final source manifest
+Binary and corresponding-source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
 Rollback release: `v2.2.3`
 
-Set the release draft target to the corrected merged build commit after it is
-frozen. Keep it unpublished while any required check remains pending. A later
+Set the release draft target to the frozen corrected build commit when its
+complete verified replacement assets are uploaded. Keep it unpublished while any required check remains pending. A later
 documentation/evidence commit does not
 change the commit used for these binaries or their corresponding-source archive.
 The first candidate and its embedded documentation remain historical. Preserve
@@ -25,10 +25,11 @@ its bytes separately while preparing the corrected candidate.
 
 The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
 notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
+The corrected candidate is frozen at `617c733d42a10a2fcba036385e19d66fabcc2cc1`, with official
+workflow [34063403042](https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34063403042).
+The clean build checkout and both runtime/source jobs use that SHA. Later
+documentation attestations do not change the frozen binaries or source;
+use the recorded SHA rather than a later documentation checkout's HEAD.
 
 ## Intended downloads
 
@@ -88,7 +89,7 @@ Required evidence includes:
 ## Complete the draft and publish
 
 1. Verify the annotated `v2.2.4` tag resolves to
-   the corrected immutable SHA recorded in the final source manifest; do not retarget it to a later
+   `617c733d42a10a2fcba036385e19d66fabcc2cc1`; do not retarget it to a later
    documentation commit.
 2. Update the existing draft with the reviewed `RELEASE_NOTES.md` and every file
    listed in `RELEASE_ASSETS.md`. Keep binary/source provenance separate from

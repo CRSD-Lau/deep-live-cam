@@ -11,10 +11,19 @@ Status: PENDING
 
 Release: `2.2.4`
 
-Candidate source: PENDING — record the corrected immutable build SHA and asset hashes.
+Candidate source: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
+
+Workflow: [34063403042](https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34063403042).
+Artifact hashes and completed checks remain to be recorded; source identity alone
+is not validation of built files.
 
 The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded. Its evidence is retained
 with original hashes and does not approve this rebuild.
+
+The corrected [DirectML artifact/runtime checks](docs/release-evidence/v2.2.4/candidate-617c733d/DIRECTML_VALIDATION.md)
+passed on the configured host, including safe extraction, strict preflight,
+AMD processing and consent cancellation. This portable-runtime evidence does
+not establish installation or clean-Windows behavior.
 
 - [ ] Verify the replacement official installer and DirectML ZIP hashes and provenance.
 - [ ] Execute the verified replacement installer, preserving current user data and a verified backup.

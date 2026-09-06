@@ -11,7 +11,7 @@ Release: `2.2.4`
 
 Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
 
-Binary/source commit: the corrected immutable SHA recorded in the final source manifest
+Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
 The candidate contains export-integrity, Unicode-path, temporary-workspace,
 settings, model-transfer and camera-lifecycle fixes. CUDA remains an Inno Setup
@@ -31,10 +31,11 @@ does not mark any pending check as passed. Keep `v2.2.3` available as rollback.
 
 The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
 notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The rebuild source SHA and final workflow run are not assigned by this preparation
-document. Freeze a clean merged checkout once, then retain its full SHA as
-`$ReleaseCommit` for every build/source command below. Later attestations must use
-that recorded SHA, never silently resolve a newer branch tip.
+The corrected candidate is frozen at `617c733d42a10a2fcba036385e19d66fabcc2cc1`, with official
+workflow [34063403042](https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34063403042).
+The clean build checkout and both runtime/source jobs use that SHA. Later
+documentation attestations do not change the frozen binaries or source;
+use the recorded SHA rather than a later documentation checkout's HEAD.
 
 ## Packaging Approach
 
@@ -55,7 +56,7 @@ without altering frozen runtime or source bytes.
 The official workflow uses the following build-stage commands in its clean checkout:
 
 ```powershell
-$ReleaseCommit = (git rev-parse --verify "HEAD^{commit}").Trim() # Clean merged release checkout only
+$ReleaseCommit = '617c733d42a10a2fcba036385e19d66fabcc2cc1' # Frozen binary/source commit
 powershell -ExecutionPolicy Bypass -File build\windows\build_windows.ps1 -Python python -Accelerator DirectML
 powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion 2.2.4 -Accelerator DirectML -SkipAcceleratorProbe
 powershell -ExecutionPolicy Bypass -File build\windows\run_release_checks.ps1 -AppVersion 2.2.4 -Python python -GitRef $ReleaseCommit -AllowDirtySource

@@ -11,10 +11,26 @@ Status: PENDING
 
 Release: `2.2.4`
 
-Candidate source: PENDING — record the corrected immutable build SHA and asset hashes.
+Candidate source: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
+
+Workflow: [34063403042](https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34063403042).
+Artifact hashes and completed checks remain to be recorded; source identity alone
+is not validation of built files.
 
 The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded. Its evidence is retained
 with original hashes and does not approve this rebuild.
+
+The rebuilt [DirectML automated checks](docs/release-evidence/v2.2.4/candidate-617c733d/DIRECTML_VALIDATION.md)
+passed on the identified AMD Radeon(TM) Graphics device 1. Unicode image output
+was readable at 448x560 with 69,199 changed pixels. Silent and audio exports each
+contained four fully decoded frames with the expected dimensions/audio behavior.
+An unsupported output format failed without changing the prior destination or
+leaving sibling files. The provider logs identify DirectML device 1 for all three
+successful renders. Existing models and tested executables remained unchanged.
+
+Portable ZIP SHA-256:
+`f6b077f0364bb523e75ec7950b096d62763a5b4aa2de181d0eaffa47f9bf6f04`.
+The remaining checklist covers combined-profile and GUI completion.
 
 - [ ] Verify final CUDA and DirectML runtime identities and strict
   `--check-execution-provider` probes.

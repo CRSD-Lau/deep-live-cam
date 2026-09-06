@@ -1,0 +1,174 @@
+{
+  "author": "Neil Mitchell",
+  "creator": "Neil Mitchell",
+  "last_modified_by": "Neil Mitchell",
+  "status": "PASS",
+  "scope": "Official rebuilt DirectML artifact provenance, isolated runtime/render, and authorized fresh-cache catalogue checks only",
+  "source_commit": "617c733d42a10a2fcba036385e19d66fabcc2cc1",
+  "version": "2.2.4",
+  "workflow_run": 34063403042,
+  "artifact_id": 9998298095,
+  "archive_sha256": "f6b077f0364bb523e75ec7950b096d62763a5b4aa2de181d0eaffa47f9bf6f04",
+  "archive_bytes": 641624275,
+  "cli_sha256": "d7898571000e39d9925e3de7edc6f222ced40c8cf56f53cfd80328aeb732f61e",
+  "gui_sha256": "a1578d25460c681d9610dc878d1ef15f26ec32060a3cac5d129e2acba4281da2",
+  "extraction": {
+    "status": "PASS",
+    "entries": 2404,
+    "expanded_bytes": 1852508405,
+    "forbidden_model_files": []
+  },
+  "packaged_runtime_preflight": {
+    "status": "PASS",
+    "exit_code": 0,
+    "adapter_scope": "Windows default adapter; explicit AMD device-1 rendering verified separately"
+  },
+  "amd_device1": {
+    "description": "AMD Radeon(TM) Graphics",
+    "vendor_id": "0x1002",
+    "dxgi_enumeration_methods_agree": true,
+    "render_status": "PASS",
+    "image_changed_pixels": 69199,
+    "image_size": [
+      448,
+      560
+    ],
+    "unicode_image_output": true,
+    "active_provider_evidence": [
+      {
+        "step": "render-image",
+        "configured_device": 1,
+        "active_providers": [
+          "[DLC.FACE-SWAPPER] Face swapper active providers: ['DmlExecutionProvider', 'CPUExecutionProvider']"
+        ]
+      },
+      {
+        "step": "render-video-silent",
+        "configured_device": 1,
+        "active_providers": [
+          "[DLC.FACE-SWAPPER] Face swapper active providers: ['DmlExecutionProvider', 'CPUExecutionProvider']"
+        ]
+      },
+      {
+        "step": "render-video-audio",
+        "configured_device": 1,
+        "active_providers": [
+          "[DLC.FACE-SWAPPER] Face swapper active providers: ['DmlExecutionProvider', 'CPUExecutionProvider']"
+        ]
+      }
+    ],
+    "videos": [
+      {
+        "kind": "silent",
+        "width": 448,
+        "height": 560,
+        "decoded_frame_count": 4,
+        "has_audio": false,
+        "sha256": "e354430c84e5ee58b5b914bda47c1d2898465e795e420b4ae7c3d2e30b5e064c"
+      },
+      {
+        "kind": "audio",
+        "width": 448,
+        "height": 560,
+        "decoded_frame_count": 4,
+        "has_audio": true,
+        "sha256": "2013dbded9ef0640c719c7435585c739aa3f8d65e0d036360d44de9085bffaa8"
+      }
+    ],
+    "failed_export": {
+      "exit_nonzero": true,
+      "prior_output_sha256_unchanged": "54ed863dadffdd41850d7c418896e52415d8d4f5b831d836f8eb39ab6506495f",
+      "unexpected_sibling_files": []
+    }
+  },
+  "catalogue": {
+    "consent_cancellation": {
+      "status": "PASS",
+      "exit_code": 2,
+      "model_files_created": 0,
+      "all_five_catalogue_notices_verified": true
+    },
+    "authorized_download": {
+      "status": "PASS",
+      "files": {
+        "gfpgan-1024.onnx": {
+          "bytes": 365875079,
+          "sha256": "ee8dd6415e388b3a410689d5d9395a2bf50b5973b588421ebfa57bc266f19e24"
+        },
+        "GPEN-BFR-256.onnx": {
+          "bytes": 75715262,
+          "sha256": "aa5bd3ab238640a378c59e4a560f7a7150627944cf2129e6311ae4720e833271"
+        },
+        "GPEN-BFR-512.onnx": {
+          "bytes": 284250449,
+          "sha256": "0960f836488735444d508b588e44fb5dfd19c68fde9163ad7878aa24d1d5115e"
+        },
+        "inswapper_128.onnx": {
+          "bytes": 554253681,
+          "sha256": "e4a3f08c753cb72d04e10aa0f7dbe3deebbf39567d4ead6dce08e98aa49e16af"
+        },
+        "inswapper_128_fp16.onnx": {
+          "bytes": 277680638,
+          "sha256": "6d51a9278a1f650cffefc18ba53f38bf2769bf4bbff89267822cf72945f8a38b"
+        }
+      },
+      "temporary_download_files_remaining": 0
+    },
+    "cache_scope": "New owned validation cache only; model bytes are not release deliverables"
+  },
+  "preservation": {
+    "real_app_data_unchanged": true,
+    "real_buffalo_cache_unchanged": true,
+    "installed_executables_unchanged": true,
+    "official_cli_unchanged": true,
+    "render_models_unchanged": true,
+    "extraction_receipt_unchanged_since_handoff": true
+  },
+  "evidence": [
+    {
+      "path": "metadata/run-metadata.json",
+      "sha256": "073729bd544115504d0fc1b16b20dc1caf0b3dc7667dc64bb159fa41b65c44da"
+    },
+    {
+      "path": "metadata/artifact-metadata.json",
+      "sha256": "f5865ac8698a2571647d5e326c9e3cf675aa47b1699d8c8ce6e65d0a1864d131"
+    },
+    {
+      "path": "metadata/resolve-source.log",
+      "sha256": "c00e193fd68555dbca838482480fb8535dee63709a90e9771de78318b99bc066"
+    },
+    {
+      "path": "metadata/enumerate_dxgi_adapters.json",
+      "sha256": "8a5ae9b9754fdfb8b3a120c92f8e44cf37dfefa22695980820237562fad75a42"
+    },
+    {
+      "path": "metadata/runtime-script-source-equivalence.json",
+      "sha256": "f03f6678cd5c5664f8172507a7fbec72434ce4d349cd38b8102d453acaffcae3"
+    },
+    {
+      "path": "directml-byte-receipt.json",
+      "sha256": "7acc24a8abfef387b7f67e87c5a68fc8549da71be37a0daaeb791912103a8dac"
+    },
+    {
+      "path": "candidate/validation.json",
+      "sha256": "00d256d483ec16e4552c41e0f1e6540b19baeffe7f7e0cf09a24136f7a95fbd6"
+    },
+    {
+      "path": "amd-device1-render/rebuilt-directml-amd1-20260906T222519Z-8ec75250/results.json",
+      "sha256": "a0e36601cc6e2032ba6730a9b6b31bdd84aa579b45b52e8be3f63e344cb9d527"
+    },
+    {
+      "path": "catalogue-20260906T222519Z-d88e48d1/validation.json",
+      "sha256": "64f98f94800ad39f9ae6b4fe01c2d921d95e3c59cf5cb2deb1fdb5cf1152b8ad"
+    }
+  ],
+  "completed_utc": "2026-09-06T22:28:43.160611+00:00",
+  "publication_approval": false,
+  "limitations": [
+    "No GUI, camera, OBS/receiver, clean-VM, or interactive installation checks were performed.",
+    "CUDA artifact and installed CUDA replacement verification are separate work.",
+    "Face-swap inference used DirectML device 1; face analyser components used the existing designed CPU policy.",
+    "Pixel-change and file-integrity checks do not establish subjective image quality or live-camera behavior.",
+    "The extraction/preflight receipt is frozen; model weights remain only in the new local validation cache."
+  ]
+}

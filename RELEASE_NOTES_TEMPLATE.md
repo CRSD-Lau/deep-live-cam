@@ -8,7 +8,7 @@ date: 2026-09-06
 # Deep Live Cam Studio 2.2.4 Windows Release
 
 Draft template: final artifact and manual verification remain pending.
-Binary and corresponding-source commit: the corrected immutable SHA recorded in the final source manifest.
+Binary and corresponding-source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`.
 Later documentation/evidence commits do not change this artifact identity.
 
 This patch release protects existing exports when rendering fails, isolates
