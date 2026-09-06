@@ -7,30 +7,26 @@ date: 2026-09-06
 
 # Windows Release Verification
 
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The corrected candidate is frozen at `617c733d42a10a2fcba036385e19d66fabcc2cc1`, with official
-workflow [34063403042](https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34063403042).
-The clean build checkout and both runtime/source jobs use that SHA. Later
-documentation attestations do not change the frozen binaries or source;
-use the recorded SHA rather than a later documentation checkout's HEAD.
-
-
-App version: `2.2.4`
-
-Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
+Release: `2.2.4`
 
 Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
-- Local installer automation passed: PENDING CURRENT FINAL-ARTIFACT ATTESTATION
-- Public-release source archive from clean Git ref: PENDING FINAL-ASSET VERIFICATION
+App version: `2.2.4`
+
+Status: DRAFT — AUTOMATED ARTIFACT CHECKS PASS; MANUAL GATES PENDING
+
+- Local installer automation passed: YES — corrected official EXE replacement plus separate hosted migration/uninstall fixture.
+- Public-release source archive from clean Git ref: YES — all 287 source files match the immutable commit.
 - Ready to publish without remaining manual gates: NO
 
-This is a pending source-document placeholder, not a generated final verification
-report. The [2.2.3 preparation snapshot](docs/release-evidence/v2.2.3/preparation/RELEASE_VERIFICATION.md)
-is preserved unchanged; its manual PASS claims do not apply to 2.2.4.
+The official workflow 34063403042 passed for both runtime profiles and exact corresponding source. All 36 original assets passed their checksum and structure checks; fresh draft-hosted downloads matched the verified runtime/source files.
 
-The final generated report must identify the actual installer, portable and source
-assets, their hashes, and current-release evidence. Only completed checks may be
-recorded as PASS. Keep the draft unpublished while any required gate is pending.
-Later documentation attestations do not change the fixed binary/source commit.
+The corrected installer ran successfully over the superseded 2.2.4 candidate. Seven user-data files totaling 1,558,270,376 bytes remained identical, with a verified backup and the earlier 2.2.3 upgrade evidence preserved. One stable registration and 30 required installed files were verified. Installed executable hashes are post-install measurements; no independent full-payload manifest was supplied.
+
+Real CUDA and AMD device-1 DirectML image and silent/audio video processing passed, including Unicode output and failed-export preservation. CPU fallback passed its image-only checks. Existing model and executable hashes remained unchanged. The fresh five-model catalogue download and cancellation checks passed.
+
+Both payload audits matched all 77 upstream tool notice files and every locked inventory row. The affected build-only Torch exception remains documented; runtime audits, critical lint, security checks and CodeQL passed. Local integration passed 744 tests; exact-source CI passed 742 with two platform skips.
+
+[Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
+
+Packaged GUI Preview/Live Output, physical-camera/receiving-application behavior, and clean-Windows/interactive installation checks remain pending. Keep `v2.2.4` as a draft; `v2.2.3` remains public stable and rollback.

@@ -7,7 +7,7 @@ date: 2026-09-06
 
 # Deep Live Cam Studio 2.2.4 Windows Release
 
-Draft template: final artifact and manual verification remain pending.
+Draft candidate: automated artifact checks passed; manual verification remains pending.
 Binary and corresponding-source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`.
 Later documentation/evidence commits do not change this artifact identity.
 
@@ -128,29 +128,18 @@ The model-manager downloads are stored under:
 
 ## Release evidence
 
-This release candidate is not publish-approved by release notes alone.
-Final artifact verification is pending during candidate preparation. The
-uploaded `RELEASE_VERIFICATION.md`, `MANUAL_RELEASE_GATES.md`, and
-`LEGAL_REVIEW.md` record the current decisions and supporting evidence.
+This release candidate is not publish-approved while the required manual gates remain open.
 
-Source-level tests, static and dependency checks, synthetic FFmpeg exports,
-and cross-drive publication checks passed during the project review. These
-results do not establish final packaged CUDA/DirectML, installer, or OBS
-workflow success. Historical `2.2.3` hardware reports remain historical.
+Official workflow 34063403042 passed from the exact binary/source commit above. Local tests passed 744 cases; exact-source CI passed 742 with two platform skips. Both final runtime packages and corresponding source were freshly downloaded from the draft and matched the verified build bytes.
+
+The corrected installer passed actual same-version replacement with unchanged models/settings and verified backups. CUDA and identified AMD DirectML image/video processing, CPU image fallback, Unicode output, failure preservation, catalogue downloads and both complete package-notice audits passed. The earlier first candidate is superseded and retained separately.
+
+The isolated installer fixture compiled in 336.468 seconds versus 1,465.188 seconds for the public installer in this run; public ultra64 compression remains unchanged. Its prior-run fixture time was 1,542.828 seconds. This observed timing improvement is not a controlled cross-run benchmark.
 
 Remaining publish blockers:
 
-- Build both runtime profiles and exact corresponding source from the merged
-  release commit; verify the complete asset set and hashes.
-- Complete final packaged CUDA and identified AMD/DirectML provider,
-  processing, Preview, and Live Output checks.
-- Complete the current-release clean Windows install/upgrade/uninstall and
-  receiving-application checks, with model preservation evidence.
-- Complete the current-release license and redistribution review, including
-  the packaging dependency delta and build-only PyTorch exception.
-- Download the draft-hosted runtime artifacts, compare their hashes, and
-  repeat their smoke/provider checks before publishing.
+- Complete packaged Preview, physical-camera Live Output lifecycle and processed output in an independent receiving application.
+- Complete final clean-Windows installation/2.2.3 upgrade, shortcut/model-consent and interactive uninstall checks.
+- Make the strict current-version manual summary pass, then verify the tag, final manifest and public downloads during publication.
 
-Resolve each item using the current candidate's evidence. Keep the release
-as a draft while any required gate remains pending; preserve `v2.2.3` as the
-rollback release.
+`RELEASE_VALIDATION.md`, `RELEASE_VERIFICATION.md`, `MANUAL_RELEASE_GATES.md` and `LEGAL_REVIEW.md` contain current evidence and limits. Keep this release draft until the remaining gates pass; `v2.2.3` remains public stable and rollback.

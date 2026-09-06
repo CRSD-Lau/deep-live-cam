@@ -1,0 +1,2219 @@
+{
+  "author": "Neil Mitchell",
+  "creator": "Neil Mitchell",
+  "last_modified_by": "Neil Mitchell",
+  "app_version": "2.2.4",
+  "source_commit": "617c733d42a10a2fcba036385e19d66fabcc2cc1",
+  "profile": "cuda",
+  "source_clean": true,
+  "technical_status": "PASS",
+  "publication_approval": false,
+  "inspected_utc": "2026-09-06T23:18:57.213484+00:00",
+  "scope": "Offline final payload files and archives; no application launch, DLL load, GPU inference, GUI, physical camera, clean VM or legal approval",
+  "expected_executable_hashes": {
+    "cli": "a047d8e7060dd8704d838eebd1ee51650dee4cde19478fa020478a22c54f32eb",
+    "gui": "b7e5d120d4a00b51db8a87805f7f011fbbd74ccc3e45e39b24e9aab221951fad"
+  },
+  "identity_receipt": {
+    "name": "upgrade-report.json",
+    "sha256": "e3f871c756554a689a43e7e2a2315bc811ea0611328ef8c84eaff58bca75dfdf",
+    "hash_basis": "post-install-verified-installer",
+    "independent_pre_extracted_installer_manifest": false
+  },
+  "findings": [],
+  "dependency_inventory": {
+    "snapshot": "LICENSES/PYTHON_DEPENDENCIES.md",
+    "snapshot_sha256": "0b7872bb93667ad6334200b858ef02351cc974f3b5ddff6be8423cb9b90df22c",
+    "source_lock_sha256": "cfcef1a511221149ff83d3e08baee2c83d3157208091aa1d37caebe1208497aa",
+    "rows": [
+      {
+        "name": "absl-py",
+        "version": "2.5.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.5.0",
+        "matches_lock": true
+      },
+      {
+        "name": "albucore",
+        "version": "0.0.24",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.0.24",
+        "matches_lock": true
+      },
+      {
+        "name": "albumentations",
+        "version": "2.0.8",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.0.8",
+        "matches_lock": true
+      },
+      {
+        "name": "annotated-types",
+        "version": "0.8.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.8.0",
+        "matches_lock": true
+      },
+      {
+        "name": "astunparse",
+        "version": "1.6.3",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.6.3",
+        "matches_lock": true
+      },
+      {
+        "name": "beautifulsoup4",
+        "version": "4.15.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "4.15.0",
+        "matches_lock": true
+      },
+      {
+        "name": "certifi",
+        "version": "2026.7.22",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2026.7.22",
+        "matches_lock": true
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.4.9",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.4.9",
+        "matches_lock": true
+      },
+      {
+        "name": "colorama",
+        "version": "0.4.6",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.4.6",
+        "matches_lock": true
+      },
+      {
+        "name": "comtypes",
+        "version": "1.4.16",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.4.16",
+        "matches_lock": true
+      },
+      {
+        "name": "contourpy",
+        "version": "1.3.3",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.3.3",
+        "matches_lock": true
+      },
+      {
+        "name": "cv2_enumerate_cameras",
+        "version": "1.1.15",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.1.15",
+        "matches_lock": true
+      },
+      {
+        "name": "cycler",
+        "version": "0.12.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.12.1",
+        "matches_lock": true
+      },
+      {
+        "name": "Cython",
+        "version": "3.2.9",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.2.9",
+        "matches_lock": true
+      },
+      {
+        "name": "easydict",
+        "version": "1.13",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.13",
+        "matches_lock": true
+      },
+      {
+        "name": "filelock",
+        "version": "3.32.2",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.32.2",
+        "matches_lock": true
+      },
+      {
+        "name": "flatbuffers",
+        "version": "25.12.19",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "25.12.19",
+        "matches_lock": true
+      },
+      {
+        "name": "fonttools",
+        "version": "4.63.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "4.63.0",
+        "matches_lock": true
+      },
+      {
+        "name": "gast",
+        "version": "0.7.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.7.0",
+        "matches_lock": true
+      },
+      {
+        "name": "gdown",
+        "version": "6.1.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "6.1.0",
+        "matches_lock": true
+      },
+      {
+        "name": "google-pasta",
+        "version": "0.2.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.2.0",
+        "matches_lock": true
+      },
+      {
+        "name": "grpcio",
+        "version": "1.83.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.83.0",
+        "matches_lock": true
+      },
+      {
+        "name": "h5py",
+        "version": "3.16.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.16.0",
+        "matches_lock": true
+      },
+      {
+        "name": "idna",
+        "version": "3.18",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.18",
+        "matches_lock": true
+      },
+      {
+        "name": "ImageIO",
+        "version": "2.37.4",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.37.4",
+        "matches_lock": true
+      },
+      {
+        "name": "insightface",
+        "version": "0.7.3",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.7.3",
+        "matches_lock": true
+      },
+      {
+        "name": "joblib",
+        "version": "1.5.3",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.5.3",
+        "matches_lock": true
+      },
+      {
+        "name": "keras",
+        "version": "3.15.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.15.1",
+        "matches_lock": true
+      },
+      {
+        "name": "kiwisolver",
+        "version": "1.5.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.5.0",
+        "matches_lock": true
+      },
+      {
+        "name": "lazy-loader",
+        "version": "0.5",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.5",
+        "matches_lock": true
+      },
+      {
+        "name": "libclang",
+        "version": "18.1.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "18.1.1",
+        "matches_lock": true
+      },
+      {
+        "name": "Markdown",
+        "version": "3.10.3",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.10.3",
+        "matches_lock": true
+      },
+      {
+        "name": "markdown-it-py",
+        "version": "4.2.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "4.2.0",
+        "matches_lock": true
+      },
+      {
+        "name": "MarkupSafe",
+        "version": "3.0.3",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.0.3",
+        "matches_lock": true
+      },
+      {
+        "name": "matplotlib",
+        "version": "3.11.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.11.1",
+        "matches_lock": true
+      },
+      {
+        "name": "mdurl",
+        "version": "0.1.2",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.1.2",
+        "matches_lock": true
+      },
+      {
+        "name": "ml_dtypes",
+        "version": "0.5.4",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.5.4",
+        "matches_lock": true
+      },
+      {
+        "name": "mpmath",
+        "version": "1.3.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.3.0",
+        "matches_lock": true
+      },
+      {
+        "name": "namex",
+        "version": "0.1.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.1.0",
+        "matches_lock": true
+      },
+      {
+        "name": "narwhals",
+        "version": "2.24.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.24.0",
+        "matches_lock": true
+      },
+      {
+        "name": "networkx",
+        "version": "3.6.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.6.1",
+        "matches_lock": true
+      },
+      {
+        "name": "numpy",
+        "version": "1.26.4",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.26.4",
+        "matches_lock": true
+      },
+      {
+        "name": "onnx",
+        "version": "1.22.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.22.0",
+        "matches_lock": true
+      },
+      {
+        "name": "onnxruntime-gpu",
+        "version": "1.24.4",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.24.4",
+        "matches_lock": true
+      },
+      {
+        "name": "opencv-python",
+        "version": "4.10.0.84",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "4.10.0.84",
+        "matches_lock": true
+      },
+      {
+        "name": "opencv-python-headless",
+        "version": "4.11.0.86",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "4.11.0.86",
+        "matches_lock": true
+      },
+      {
+        "name": "opennsfw2",
+        "version": "0.18.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.18.0",
+        "matches_lock": true
+      },
+      {
+        "name": "opt_einsum",
+        "version": "3.4.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.4.0",
+        "matches_lock": true
+      },
+      {
+        "name": "optree",
+        "version": "0.19.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.19.1",
+        "matches_lock": true
+      },
+      {
+        "name": "packaging",
+        "version": "26.2",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "26.2",
+        "matches_lock": true
+      },
+      {
+        "name": "pillow",
+        "version": "12.3.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "12.3.0",
+        "matches_lock": true
+      },
+      {
+        "name": "prettytable",
+        "version": "3.18.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.18.0",
+        "matches_lock": true
+      },
+      {
+        "name": "protobuf",
+        "version": "5.29.6",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "5.29.6",
+        "matches_lock": true
+      },
+      {
+        "name": "psutil",
+        "version": "5.9.8",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "5.9.8",
+        "matches_lock": true
+      },
+      {
+        "name": "pydantic",
+        "version": "2.13.4",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.13.4",
+        "matches_lock": true
+      },
+      {
+        "name": "pydantic_core",
+        "version": "2.46.4",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.46.4",
+        "matches_lock": true
+      },
+      {
+        "name": "Pygments",
+        "version": "2.20.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.20.0",
+        "matches_lock": true
+      },
+      {
+        "name": "pygrabber",
+        "version": "0.2",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.2",
+        "matches_lock": true
+      },
+      {
+        "name": "pyparsing",
+        "version": "3.3.2",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.3.2",
+        "matches_lock": true
+      },
+      {
+        "name": "PySide6",
+        "version": "6.11.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "6.11.1",
+        "matches_lock": true
+      },
+      {
+        "name": "PySide6_Addons",
+        "version": "6.11.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "6.11.1",
+        "matches_lock": true
+      },
+      {
+        "name": "PySide6_Essentials",
+        "version": "6.11.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "6.11.1",
+        "matches_lock": true
+      },
+      {
+        "name": "PySocks",
+        "version": "1.7.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.7.1",
+        "matches_lock": true
+      },
+      {
+        "name": "python-dateutil",
+        "version": "2.9.0.post0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.9.0.post0",
+        "matches_lock": true
+      },
+      {
+        "name": "pyvirtualcam",
+        "version": "0.15.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.15.0",
+        "matches_lock": true
+      },
+      {
+        "name": "PyYAML",
+        "version": "6.0.3",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "6.0.3",
+        "matches_lock": true
+      },
+      {
+        "name": "requests",
+        "version": "2.34.2",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.34.2",
+        "matches_lock": true
+      },
+      {
+        "name": "rich",
+        "version": "15.0.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "15.0.0",
+        "matches_lock": true
+      },
+      {
+        "name": "scikit-image",
+        "version": "0.26.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.26.0",
+        "matches_lock": true
+      },
+      {
+        "name": "scikit-learn",
+        "version": "1.9.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.9.0",
+        "matches_lock": true
+      },
+      {
+        "name": "scipy",
+        "version": "1.17.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.17.1",
+        "matches_lock": true
+      },
+      {
+        "name": "shiboken6",
+        "version": "6.11.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "6.11.1",
+        "matches_lock": true
+      },
+      {
+        "name": "simsimd",
+        "version": "6.5.16",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "6.5.16",
+        "matches_lock": true
+      },
+      {
+        "name": "six",
+        "version": "1.17.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.17.0",
+        "matches_lock": true
+      },
+      {
+        "name": "soupsieve",
+        "version": "2.9.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.9.1",
+        "matches_lock": true
+      },
+      {
+        "name": "stringzilla",
+        "version": "5.0.7",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "5.0.7",
+        "matches_lock": true
+      },
+      {
+        "name": "sympy",
+        "version": "1.14.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "1.14.0",
+        "matches_lock": true
+      },
+      {
+        "name": "tensorboard",
+        "version": "2.19.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.19.0",
+        "matches_lock": true
+      },
+      {
+        "name": "tensorboard-data-server",
+        "version": "0.7.2",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.7.2",
+        "matches_lock": true
+      },
+      {
+        "name": "tensorflow",
+        "version": "2.19.1",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.19.1",
+        "matches_lock": true
+      },
+      {
+        "name": "tensorflow-io-gcs-filesystem",
+        "version": "0.31.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.31.0",
+        "matches_lock": true
+      },
+      {
+        "name": "termcolor",
+        "version": "3.3.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.3.0",
+        "matches_lock": true
+      },
+      {
+        "name": "threadpoolctl",
+        "version": "3.6.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.6.0",
+        "matches_lock": true
+      },
+      {
+        "name": "tifffile",
+        "version": "2026.3.3",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2026.3.3",
+        "matches_lock": true
+      },
+      {
+        "name": "tqdm",
+        "version": "4.70.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "4.70.0",
+        "matches_lock": true
+      },
+      {
+        "name": "typing-inspection",
+        "version": "0.4.2",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.4.2",
+        "matches_lock": true
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "4.16.0",
+        "matches_lock": true
+      },
+      {
+        "name": "urllib3",
+        "version": "2.7.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.7.0",
+        "matches_lock": true
+      },
+      {
+        "name": "wcwidth",
+        "version": "0.8.2",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "0.8.2",
+        "matches_lock": true
+      },
+      {
+        "name": "Werkzeug",
+        "version": "3.1.8",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "3.1.8",
+        "matches_lock": true
+      },
+      {
+        "name": "wrapt",
+        "version": "2.3.0",
+        "section": "runtime_environment",
+        "lock_scope": "application_environment",
+        "expected_version": "2.3.0",
+        "matches_lock": true
+      },
+      {
+        "name": "altgraph",
+        "version": "0.17.5",
+        "section": "build_and_support",
+        "lock_scope": "application_environment",
+        "expected_version": "0.17.5",
+        "matches_lock": true
+      },
+      {
+        "name": "pefile",
+        "version": "2024.8.26",
+        "section": "build_and_support",
+        "lock_scope": "application_environment",
+        "expected_version": "2024.8.26",
+        "matches_lock": true
+      },
+      {
+        "name": "pip",
+        "version": "26.2.1",
+        "section": "build_and_support",
+        "lock_scope": "application_environment",
+        "expected_version": "26.2.1",
+        "matches_lock": true
+      },
+      {
+        "name": "pyinstaller",
+        "version": "6.22.2",
+        "section": "build_and_support",
+        "lock_scope": "application_environment",
+        "expected_version": "6.22.2",
+        "matches_lock": true
+      },
+      {
+        "name": "pyinstaller-hooks-contrib",
+        "version": "2026.7",
+        "section": "build_and_support",
+        "lock_scope": "application_environment",
+        "expected_version": "2026.7",
+        "matches_lock": true
+      },
+      {
+        "name": "pywin32-ctypes",
+        "version": "0.2.3",
+        "section": "build_and_support",
+        "lock_scope": "application_environment",
+        "expected_version": "0.2.3",
+        "matches_lock": true
+      },
+      {
+        "name": "setuptools",
+        "version": "83.0.0",
+        "section": "build_and_support",
+        "lock_scope": "application_environment",
+        "expected_version": "83.0.0",
+        "matches_lock": true
+      },
+      {
+        "name": "torch",
+        "version": "2.11.0+cu128",
+        "section": "build_and_support",
+        "lock_scope": "isolated_cuda_source",
+        "expected_version": "2.11.0+cu128",
+        "matches_lock": true
+      },
+      {
+        "name": "wheel",
+        "version": "0.48.0",
+        "section": "build_and_support",
+        "lock_scope": "application_environment",
+        "expected_version": "0.48.0",
+        "matches_lock": true
+      }
+    ],
+    "runtime_rows": 91,
+    "missing_rows": [],
+    "duplicate_rows": [],
+    "shared_notice_boundary": "Only this profile's snapshot, native payload and executable archives establish runtime content. Shared alternate-profile notice files are attribution, not runtime evidence."
+  },
+  "embedded_archives": {
+    "DeepLiveCamStudioCLI.exe": {
+      "sha256": "a047d8e7060dd8704d838eebd1ee51650dee4cde19478fa020478a22c54f32eb",
+      "application_metadata": {
+        "name": "Deep-Live-Cam",
+        "version": "2.2.4",
+        "edition": "GitHub Edition"
+      },
+      "module_count": 6568,
+      "forbidden_torch_jit_modules": [],
+      "support_module_counts": {
+        "pip": 353,
+        "setuptools": 143,
+        "pkg_resources": 0,
+        "PyInstaller": 0,
+        "_pyinstaller_hooks_contrib": 0
+      },
+      "pip_constant_version": "26.2.1",
+      "setuptools_version_note": "Frozen module presence is measured; its package version is attested by locked build metadata, not a guessed embedded constant.",
+      "runtime_hooks": [
+        "pyi_rth_inspect",
+        "pyi_rth_pyside6",
+        "pyi_rth_pkgutil",
+        "pyi_rth_multiprocessing",
+        "pyi_rth_setuptools",
+        "pyi_rth_mplconfig",
+        "pyi_rth__tkinter",
+        "pyi_rth_tensorflow"
+      ]
+    },
+    "DeepLiveCamStudio.exe": {
+      "sha256": "b7e5d120d4a00b51db8a87805f7f011fbbd74ccc3e45e39b24e9aab221951fad",
+      "application_metadata": {
+        "name": "Deep-Live-Cam",
+        "version": "2.2.4",
+        "edition": "GitHub Edition"
+      },
+      "module_count": 6568,
+      "forbidden_torch_jit_modules": [],
+      "support_module_counts": {
+        "pip": 353,
+        "setuptools": 143,
+        "pkg_resources": 0,
+        "PyInstaller": 0,
+        "_pyinstaller_hooks_contrib": 0
+      },
+      "pip_constant_version": "26.2.1",
+      "setuptools_version_note": "Frozen module presence is measured; its package version is attested by locked build metadata, not a guessed embedded constant.",
+      "runtime_hooks": [
+        "pyi_rth_inspect",
+        "pyi_rth_pyside6",
+        "pyi_rth_pkgutil",
+        "pyi_rth_multiprocessing",
+        "pyi_rth_setuptools",
+        "pyi_rth_mplconfig",
+        "pyi_rth__tkinter",
+        "pyi_rth_tensorflow"
+      ]
+    }
+  },
+  "file_count": 2420,
+  "expanded_bytes": 5160219624,
+  "forbidden_files": {
+    "model_weights": [],
+    "ffmpeg_ffprobe": [],
+    "torch_python": [],
+    "torch_native": [],
+    "wrong_profile_native": []
+  },
+  "loose_support_code": {
+    "pip": [],
+    "setuptools": [],
+    "pkg_resources": [],
+    "PyInstaller": [],
+    "_pyinstaller_hooks_contrib": []
+  },
+  "native_files": [
+    {
+      "path": "_internal/cublas64_12.dll",
+      "bytes": 113716224,
+      "sha256": "9513540e4ec4c51ee9e7304138c2cc255c29a8c181f9e80c38efa25738becd99",
+      "fixed_file_version": "6.14.11.1284",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6,14,11,1284",
+        "ProductName": "NVIDIA CUDA BLAS Library",
+        "ProductVersion": "6,14,11,1284"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "cublasLt64_12.dll"
+      ]
+    },
+    {
+      "path": "_internal/cublasLt64_12.dll",
+      "bytes": 674667520,
+      "sha256": "b199d1ff892a81b7fd3d57ba1781549609b41500b36008fef326038393ad46c7",
+      "fixed_file_version": "6.14.11.1284",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6,14,11,1284",
+        "ProductName": "NVIDIA CUDA BLAS Library",
+        "ProductVersion": "6,14,11,1284"
+      },
+      "imports": [
+        "KERNEL32.dll"
+      ]
+    },
+    {
+      "path": "_internal/cudart64_12.dll",
+      "bytes": 573952,
+      "sha256": "c2c9a9c22a9bcba90e261825968836787b331038047a26770cffb7a583c28344",
+      "fixed_file_version": "6.14.11.12080",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6,14,11,12080",
+        "ProductName": "NVIDIA CUDA 12.8.90 Runtime",
+        "ProductVersion": "6,14,11,12080"
+      },
+      "imports": [
+        "api-ms-win-core-console-l1-1-0.dll",
+        "api-ms-win-core-debug-l1-1-0.dll",
+        "api-ms-win-core-errorhandling-l1-1-0.dll",
+        "api-ms-win-core-file-l1-1-0.dll",
+        "api-ms-win-core-handle-l1-1-0.dll",
+        "api-ms-win-core-heap-l1-1-0.dll",
+        "api-ms-win-core-interlocked-l1-1-0.dll",
+        "api-ms-win-core-libraryloader-l1-2-0.dll",
+        "api-ms-win-core-localization-l1-2-0.dll",
+        "api-ms-win-core-processenvironment-l1-1-0.dll",
+        "api-ms-win-core-processthreads-l1-1-0.dll",
+        "api-ms-win-core-processthreads-l1-1-1.dll",
+        "api-ms-win-core-profile-l1-1-0.dll",
+        "api-ms-win-core-rtlsupport-l1-1-0.dll",
+        "api-ms-win-core-string-l1-1-0.dll",
+        "api-ms-win-core-synch-l1-1-0.dll",
+        "api-ms-win-core-sysinfo-l1-1-0.dll",
+        "api-ms-win-security-systemfunctions-l1-1-0.dll"
+      ]
+    },
+    {
+      "path": "_internal/cudnn64_9.dll",
+      "bytes": 264304,
+      "sha256": "c6de55089c4759a545ff63459c00a6223dacffa5e797109a6be2be0477fb6c5c",
+      "fixed_file_version": "9.19.0.56",
+      "string_versions": {
+        "CompanyName": "Windows (R) Win 7 DDK provider",
+        "FileVersion": "9.19.0.56",
+        "ProductName": "NVIDIA cuDNN Library",
+        "ProductVersion": "9.19.0.56"
+      },
+      "imports": [
+        "KERNEL32.dll"
+      ]
+    },
+    {
+      "path": "_internal/cudnn_adv64_9.dll",
+      "bytes": 269016688,
+      "sha256": "a8aed3390144ea20d96c0d618462a12cbc7897620380e60438489329b9722531",
+      "fixed_file_version": "9.19.0.56",
+      "string_versions": {
+        "CompanyName": "Windows (R) Win 7 DDK provider",
+        "FileVersion": "9.19.0.56",
+        "ProductName": "NVIDIA cuDNN Adv Library",
+        "ProductVersion": "9.19.0.56"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "cudnn_graph64_9.dll",
+        "cudnn_ops64_9.dll"
+      ]
+    },
+    {
+      "path": "_internal/cudnn_cnn64_9.dll",
+      "bytes": 2984560,
+      "sha256": "acac8bf8f924ecd60928877310ba360d2ee5eb1e4ec80ff6475bf9d819d3a5c8",
+      "fixed_file_version": "9.19.0.56",
+      "string_versions": {
+        "CompanyName": "Windows (R) Win 7 DDK provider",
+        "FileVersion": "9.19.0.56",
+        "ProductName": "NVIDIA cuDNN CNN Library",
+        "ProductVersion": "9.19.0.56"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "cudnn_graph64_9.dll",
+        "cudnn_ops64_9.dll"
+      ]
+    },
+    {
+      "path": "_internal/cudnn_engines_precompiled64_9.dll",
+      "bytes": 481015408,
+      "sha256": "3a97df241beb2b75eb5d6152996a9a90d2155c2d4da1aeac5bd66850ed2446c1",
+      "fixed_file_version": "9.19.0.56",
+      "string_versions": {
+        "CompanyName": "Windows (R) Win 7 DDK provider",
+        "FileVersion": "9.19.0.56",
+        "ProductName": "NVIDIA cuDNN Precompiled Engines Library",
+        "ProductVersion": "9.19.0.56"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "cudnn_graph64_9.dll"
+      ]
+    },
+    {
+      "path": "_internal/cudnn_engines_runtime_compiled64_9.dll",
+      "bytes": 27759216,
+      "sha256": "81c5e5475e386269825ae6da0652f4554fa1c58af6c90908a180314689e12350",
+      "fixed_file_version": "9.19.0.56",
+      "string_versions": {
+        "CompanyName": "Windows (R) Win 7 DDK provider",
+        "FileVersion": "9.19.0.56",
+        "ProductName": "NVIDIA cuDNN ENGINES_RUNTIME_COMPILED Library",
+        "ProductVersion": "9.19.0.56"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "cudnn_graph64_9.dll"
+      ]
+    },
+    {
+      "path": "_internal/cudnn_graph64_9.dll",
+      "bytes": 2493040,
+      "sha256": "f5453cb541402218cb5459e669db1d578656ebef394c755ab5acc2bec1165657",
+      "fixed_file_version": null,
+      "string_versions": {},
+      "imports": [
+        "KERNEL32.dll"
+      ]
+    },
+    {
+      "path": "_internal/cudnn_heuristic64_9.dll",
+      "bytes": 58874992,
+      "sha256": "3b1cb10835204fb7a45bf03aeb353842185cb2ebb34f59db20d9cb6fe5c1c556",
+      "fixed_file_version": null,
+      "string_versions": {},
+      "imports": [
+        "KERNEL32.dll",
+        "cudnn_graph64_9.dll"
+      ]
+    },
+    {
+      "path": "_internal/cudnn_ops64_9.dll",
+      "bytes": 105604208,
+      "sha256": "922897bd15a66acecde7c026ecc835b0fc5662c9ae08c120fd89f0f73affa7da",
+      "fixed_file_version": "9.19.0.56",
+      "string_versions": {
+        "CompanyName": "Windows (R) Win 7 DDK provider",
+        "FileVersion": "9.19.0.56",
+        "ProductName": "NVIDIA cuDNN Ops Library",
+        "ProductVersion": "9.19.0.56"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "cudnn_graph64_9.dll"
+      ]
+    },
+    {
+      "path": "_internal/cufft64_11.dll",
+      "bytes": 276121600,
+      "sha256": "f4fea9227b14843894ad5436725f9638b172171142c95291fc6ae7a493248221",
+      "fixed_file_version": "6.14.11.1133",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6,14,11,1133",
+        "ProductName": "NVIDIA CUDA FFT Library",
+        "ProductVersion": "6,14,11,1133"
+      },
+      "imports": [
+        "KERNEL32.dll"
+      ]
+    },
+    {
+      "path": "_internal/cufftw64_11.dll",
+      "bytes": 163328,
+      "sha256": "84c86dcc4d4b770e75766964149ef688c901dc89e380278fe399dd3c03608541",
+      "fixed_file_version": "6.14.11.1133",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6,14,11,1133",
+        "ProductName": "NVIDIA CUDA FFTW Library",
+        "ProductVersion": "6,14,11,1133"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "cufft64_11.dll"
+      ]
+    },
+    {
+      "path": "_internal/curand64_10.dll",
+      "bytes": 71955968,
+      "sha256": "3465fd1b46e551339b8f44c455756a0f2cba8bd846562eb659040d48edb7aaac",
+      "fixed_file_version": "6.14.11.1039",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6,14,11,1039",
+        "ProductName": "NVIDIA CUDA RAND Library",
+        "ProductVersion": "6,14,11,1039"
+      },
+      "imports": [
+        "KERNEL32.dll"
+      ]
+    },
+    {
+      "path": "_internal/cusolver64_11.dll",
+      "bytes": 225683456,
+      "sha256": "3d4f7a66b5f352db56d4bb5962bb453a42d5feb2d831779f4a0bebc9971c36fb",
+      "fixed_file_version": "6.14.11.1173",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6,14,11,1173",
+        "ProductName": "NVIDIA CUDA CUSOLVER Library",
+        "ProductVersion": "6,14,11,1173"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "cublas64_12.dll",
+        "cublasLt64_12.dll",
+        "cusparse64_12.dll"
+      ]
+    },
+    {
+      "path": "_internal/cusolverMg64_11.dll",
+      "bytes": 157071360,
+      "sha256": "c3377f10606ff0606be2f08401d54aff6c37f137b78d6b6e21be356a5b4d6cc2",
+      "fixed_file_version": "6.14.11.1173",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6,14,11,1173",
+        "ProductName": "NVIDIA CUDA CUSOLVERMG Library",
+        "ProductVersion": "6,14,11,1173"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "cublas64_12.dll"
+      ]
+    },
+    {
+      "path": "_internal/cusparse64_12.dll",
+      "bytes": 379535872,
+      "sha256": "f4688daa6163c47a0b5293926ec7ae367de6b4af54ea201638b308831b322a0e",
+      "fixed_file_version": "6.14.11.1258",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6,14,11,1258",
+        "ProductName": "NVIDIA CUDA SPARSE BLAS Library",
+        "ProductVersion": "6,14,11,1258"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "nvJitLink_120_0.dll"
+      ]
+    },
+    {
+      "path": "_internal/nvJitLink_120_0.dll",
+      "bytes": 77860352,
+      "sha256": "959d3cb44527ec884db8dc20772520b584dbe7d622d11b0530e6326417078b3e",
+      "fixed_file_version": "6.14.11.9000",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6.14.11.9000",
+        "ProductName": "NVIDIA CUDA 12.8.93 NVJITLINK Library",
+        "ProductVersion": "6.14.11.9000"
+      },
+      "imports": [
+        "ADVAPI32.dll",
+        "KERNEL32.dll",
+        "SHELL32.dll",
+        "ole32.dll"
+      ]
+    },
+    {
+      "path": "_internal/nvrtc-builtins64_128.dll",
+      "bytes": 6356480,
+      "sha256": "a7afa2a40cbd3f922a33d8bf71c13cb26ca707c7016a9bc5fcde36759ba668f5",
+      "fixed_file_version": null,
+      "string_versions": {},
+      "imports": [
+        "KERNEL32.dll"
+      ]
+    },
+    {
+      "path": "_internal/nvrtc64_120_0.dll",
+      "bytes": 86728192,
+      "sha256": "02d2d7ef4690bf1a55dda1d3ac94c86ce8d16920071c87bcd3e70e94ef346e93",
+      "fixed_file_version": "6.14.11.9000",
+      "string_versions": {
+        "CompanyName": "NVIDIA Corporation",
+        "FileVersion": "6.14.11.9000",
+        "ProductName": "NVIDIA CUDA 12.8.93 NVRTC Library",
+        "ProductVersion": "6.14.11.9000"
+      },
+      "imports": [
+        "ADVAPI32.dll",
+        "KERNEL32.dll",
+        "SHELL32.dll",
+        "USER32.dll",
+        "ole32.dll"
+      ]
+    },
+    {
+      "path": "_internal/nvToolsExt64_1.dll",
+      "bytes": 48128,
+      "sha256": "0fe54f1b80ad3e44da2a3d9f0956e7c3903029d6319689ce1c4068f7a20932f3",
+      "fixed_file_version": null,
+      "string_versions": {},
+      "imports": [
+        "KERNEL32.dll"
+      ]
+    },
+    {
+      "path": "_internal/onnxruntime/capi/onnxruntime_providers_cuda.dll",
+      "bytes": 312608800,
+      "sha256": "6a02338c8fcf9e913767c1eb57033959f69076567d5290cee59c541793d16354",
+      "fixed_file_version": "1.24.26.316",
+      "string_versions": {
+        "CompanyName": "Microsoft Corporation",
+        "FileVersion": "1.24.20260316.2.2d92497",
+        "ProductName": "Microsoft\u00ae Windows\u00ae Operating System",
+        "ProductVersion": "1.24.20260316.2.2d92497"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "MSVCP140.dll",
+        "VCRUNTIME140.dll",
+        "VCRUNTIME140_1.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "cublas64_12.dll",
+        "cublasLt64_12.dll",
+        "cudart64_12.dll",
+        "cudnn64_9.dll",
+        "cufft64_11.dll",
+        "onnxruntime_providers_shared.dll"
+      ]
+    },
+    {
+      "path": "_internal/onnxruntime/capi/onnxruntime_providers_shared.dll",
+      "bytes": 22040,
+      "sha256": "93f33380e5819cb9befbfe0e5212394dcb0c9983970c73a01bf51100bb1f13ee",
+      "fixed_file_version": "1.24.26.316",
+      "string_versions": {
+        "CompanyName": "Microsoft Corporation",
+        "FileVersion": "1.24.20260316.2.2d92497",
+        "ProductName": "Microsoft\u00ae Windows\u00ae Operating System",
+        "ProductVersion": "1.24.20260316.2.2d92497"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "VCRUNTIME140.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll"
+      ]
+    },
+    {
+      "path": "_internal/onnxruntime/capi/onnxruntime_pybind11_state.pyd",
+      "bytes": 16548936,
+      "sha256": "98a1398a33f10174929f512e6c17238693a99ad92a676e97500ce752a2cad10b",
+      "fixed_file_version": null,
+      "string_versions": {},
+      "imports": [
+        "ADVAPI32.dll",
+        "KERNEL32.dll",
+        "MSVCP140.dll",
+        "MSVCP140_1.dll",
+        "SETUPAPI.dll",
+        "VCRUNTIME140.dll",
+        "VCRUNTIME140_1.dll",
+        "api-ms-win-core-path-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "dbghelp.dll",
+        "dxgi.dll",
+        "python311.dll"
+      ]
+    },
+    {
+      "path": "_internal/PySide6/Qt6Core.dll",
+      "bytes": 10480440,
+      "sha256": "65fe6224b6c47a15b058738031d31dce9928c4d7a58e1b8db6434f6f5cddd702",
+      "fixed_file_version": "6.11.1.0",
+      "string_versions": {
+        "CompanyName": "The Qt Company Ltd.",
+        "FileVersion": "6.11.1.0",
+        "ProductName": "Qt6",
+        "ProductVersion": "6.11.1.0"
+      },
+      "imports": [
+        "ADVAPI32.dll",
+        "AUTHZ.dll",
+        "KERNEL32.dll",
+        "MPR.dll",
+        "MSVCP140.dll",
+        "MSVCP140_1.dll",
+        "NETAPI32.dll",
+        "OLEAUT32.dll",
+        "SHELL32.dll",
+        "USER32.dll",
+        "USERENV.dll",
+        "VCRUNTIME140.dll",
+        "VCRUNTIME140_1.dll",
+        "VERSION.dll",
+        "WINMM.dll",
+        "WS2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "icuuc.dll",
+        "ntdll.dll",
+        "ole32.dll"
+      ]
+    },
+    {
+      "path": "_internal/PySide6/QtCore.pyd",
+      "bytes": 3330360,
+      "sha256": "be52341a5df1f76ecca2fb1e94eb429dfa46f0b659ed6536f25119b565b21ea8",
+      "fixed_file_version": null,
+      "string_versions": {},
+      "imports": [
+        "Qt6Core.dll",
+        "pyside6.abi3.dll",
+        "python3.dll",
+        "shiboken6.abi3.dll"
+      ]
+    },
+    {
+      "path": "_internal/PySide6/QtGui.pyd",
+      "bytes": 3896632,
+      "sha256": "f0549716b10a8b4fbd5c6c041f36af215223809f919f4c4722d44cc199d5c593",
+      "fixed_file_version": null,
+      "string_versions": {},
+      "imports": [
+        "Qt6Gui.dll",
+        "pyside6.abi3.dll"
+      ]
+    },
+    {
+      "path": "_internal/PySide6/QtWidgets.pyd",
+      "bytes": 4856120,
+      "sha256": "85cb6c2181b4b09887a7d8507dd950844d1b8f74a9c4002c7b71169f75bf6fda",
+      "fixed_file_version": null,
+      "string_versions": {},
+      "imports": [
+        "Qt6Widgets.dll",
+        "pyside6.abi3.dll"
+      ]
+    },
+    {
+      "path": "_internal/python311.dll",
+      "bytes": 5800216,
+      "sha256": "0817a2a657a24c0d5fbb60df56960f42fc66b3039d522ec952dab83e2d869364",
+      "fixed_file_version": "3.11.9150.1013",
+      "string_versions": {
+        "CompanyName": "Python Software Foundation",
+        "FileVersion": "3.11.9",
+        "ProductName": "Python",
+        "ProductVersion": "3.11.9"
+      },
+      "imports": [
+        "ADVAPI32.dll",
+        "KERNEL32.dll",
+        "VCRUNTIME140.dll",
+        "VERSION.dll",
+        "WS2_32.dll",
+        "api-ms-win-core-path-l1-1-0.dll",
+        "api-ms-win-crt-conio-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-process-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "bcrypt.dll"
+      ]
+    },
+    {
+      "path": "_internal/shiboken6/Shiboken.pyd",
+      "bytes": 33080,
+      "sha256": "0e2c5318c5ac60a016a12230bbb1f6a9d990c45cbf4a7c4af24aefb5ab7dc40a",
+      "fixed_file_version": null,
+      "string_versions": {},
+      "imports": [
+        "KERNEL32.dll",
+        "VCRUNTIME140.dll",
+        "VCRUNTIME140_1.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "python3.dll",
+        "shiboken6.abi3.dll"
+      ]
+    },
+    {
+      "path": "_internal/zlibwapi.dll",
+      "bytes": 89088,
+      "sha256": "1f047faec08d9a35c304fb4a7cf13853589359a8f7cbfdd48c5d5807712dcf05",
+      "fixed_file_version": "1.2.3.0",
+      "string_versions": {
+        "FileVersion": "1.2.3.0",
+        "ProductName": "ZLib.DLL"
+      },
+      "imports": [
+        "KERNEL32.dll",
+        "msvcrt.dll"
+      ]
+    }
+  ],
+  "missing_native_files": [],
+  "cuda_binaries": {
+    "seed_count": 21,
+    "seed_names": [
+      "cublas64_12.dll",
+      "cublasLt64_12.dll",
+      "cudart64_12.dll",
+      "cudnn64_9.dll",
+      "cudnn_adv64_9.dll",
+      "cudnn_cnn64_9.dll",
+      "cudnn_engines_precompiled64_9.dll",
+      "cudnn_engines_runtime_compiled64_9.dll",
+      "cudnn_graph64_9.dll",
+      "cudnn_heuristic64_9.dll",
+      "cudnn_ops64_9.dll",
+      "cufft64_11.dll",
+      "cufftw64_11.dll",
+      "curand64_10.dll",
+      "cusolver64_11.dll",
+      "cusolverMg64_11.dll",
+      "cusparse64_12.dll",
+      "nvrtc-builtins64_128.dll",
+      "nvrtc64_120_0.dll",
+      "nvToolsExt64_1.dll",
+      "zlibwapi.dll"
+    ],
+    "extra_dependencies": [
+      {
+        "path": "_internal/nvJitLink_120_0.dll",
+        "sha256": "959d3cb44527ec884db8dc20772520b584dbe7d622d11b0530e6326417078b3e",
+        "imported_by": [
+          "_internal/cusparse64_12.dll"
+        ],
+        "explained_transitive_dependency": true
+      }
+    ],
+    "interpretation": "The spec lists seed binaries. PyInstaller recursively collects imported DLL dependencies; the static cusparse import establishes nvJitLink's transitive relationship. This observation is not a new redistribution approval."
+  },
+  "retained_torch_exception": {
+    "version": "2.11.0+cu128",
+    "source_lock_sha256": "4852094a97b7bf0174be1a6c4750538909c2f6c2e9d58a6306a5d5c60ae90a01",
+    "policy": "docs/DEPENDENCY_LOCKS.md",
+    "advisory": "PYSEC-2025-194 / GHSA-rrmf-rvhw-rf47 / CVE-2025-3000",
+    "patched_claim": false,
+    "new_approval": false,
+    "scope": "Existing isolated CUDA DLL-source wheel exception. Final Torch/JIT Python absence is checked independently."
+  },
+  "notice_reference_sha256": "99ecde19efb27d7ddc586a1017b309132171d94db20e5a9e632bf1a33ee4976d",
+  "tool_notices": {
+    "expected_total": 77,
+    "packages": [
+      {
+        "name": "pip",
+        "version": "26.2.1",
+        "expected_files": 43,
+        "extra_files": [],
+        "files": [
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/AUTHORS.txt",
+            "bytes": 12139,
+            "sha256": "4eb1fb1705e2def898e81bcba19c3aac80620d27ba3569d6a6df7b4629d1b5c2",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/LICENSE.txt",
+            "bytes": 1093,
+            "sha256": "634300a669d49aeae65b12c6c48c924c51a4cdf3d1ff086dc3456dc8bcaa2104",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/cachecontrol/LICENSE.txt",
+            "bytes": 558,
+            "sha256": "86eeee87be2a43f3ff1f56496f451f69243926f025fedbb033666c304c4c161b",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/certifi/LICENSE",
+            "bytes": 989,
+            "sha256": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/distlib/LICENSE.txt",
+            "bytes": 14531,
+            "sha256": "808e10c8a6ab8deb149ff9b3fb19f447a808094606d712a9ca57fead3552599d",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/distro/LICENSE",
+            "bytes": 11325,
+            "sha256": "cb5e8e7e5f4a3988e1063c142c60dc2df75605f4c46515e776e3aca6df976e14",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/idna/LICENSE.md",
+            "bytes": 1541,
+            "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/msgpack/COPYING",
+            "bytes": 614,
+            "sha256": "492dedba85da5872f78e6091bcd1fea474d660d35acb4dee964b8aab3f007427",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/packaging/LICENSE",
+            "bytes": 197,
+            "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/packaging/LICENSE.APACHE",
+            "bytes": 10174,
+            "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/packaging/LICENSE.BSD",
+            "bytes": 1344,
+            "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/pkg_resources/LICENSE",
+            "bytes": 1023,
+            "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/platformdirs/LICENSE",
+            "bytes": 1089,
+            "sha256": "29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/pygments/LICENSE",
+            "bytes": 1331,
+            "sha256": "a9d66f1d526df02e29dce73436d34e56e8632f46c275bbdffc70569e882f9f17",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/pyproject_hooks/LICENSE",
+            "bytes": 1081,
+            "sha256": "1b22b049b5267d6dfc23a67bf4a84d8ec04b9fdfb1a51d360e42b4342c8b4154",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/requests/LICENSE",
+            "bytes": 10142,
+            "sha256": "09e8a9bcec8067104652c168685ab0931e7868f9c8284b66f5ae6edae5f1130b",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/resolvelib/LICENSE",
+            "bytes": 751,
+            "sha256": "f388fd38cad13112c1dc0f669bbe80e7f84541edbafb72f3030d2ca7642c3c9d",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/rich/LICENSE",
+            "bytes": 1056,
+            "sha256": "deed7c17a4318158190a3ea239cc879a5a50271cebb98ae7025f48fbe58dca15",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/tomli/LICENSE",
+            "bytes": 1072,
+            "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/tomli_w/LICENSE",
+            "bytes": 1072,
+            "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/truststore/LICENSE",
+            "bytes": 1086,
+            "sha256": "33be7b7e8fa4fd19b1760e1a8ed8a668bdab852c91b692dd41424bcb725a9fca",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/licenses/src/pip/_vendor/urllib3/LICENSE.txt",
+            "bytes": 1093,
+            "sha256": "130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/METADATA",
+            "bytes": 4617,
+            "sha256": "3a561005822841f2c45f442f6c7a7505172c8c376c9fe274d876c8ac912968cb",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/cachecontrol/LICENSE.txt",
+            "bytes": 558,
+            "sha256": "86eeee87be2a43f3ff1f56496f451f69243926f025fedbb033666c304c4c161b",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/certifi/LICENSE",
+            "bytes": 989,
+            "sha256": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/distlib/LICENSE.txt",
+            "bytes": 14531,
+            "sha256": "808e10c8a6ab8deb149ff9b3fb19f447a808094606d712a9ca57fead3552599d",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/distro/LICENSE",
+            "bytes": 11325,
+            "sha256": "cb5e8e7e5f4a3988e1063c142c60dc2df75605f4c46515e776e3aca6df976e14",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/idna/LICENSE.md",
+            "bytes": 1541,
+            "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/msgpack/COPYING",
+            "bytes": 614,
+            "sha256": "492dedba85da5872f78e6091bcd1fea474d660d35acb4dee964b8aab3f007427",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/packaging/LICENSE",
+            "bytes": 197,
+            "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/packaging/LICENSE.APACHE",
+            "bytes": 10174,
+            "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/packaging/LICENSE.BSD",
+            "bytes": 1344,
+            "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/pkg_resources/LICENSE",
+            "bytes": 1023,
+            "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/platformdirs/LICENSE",
+            "bytes": 1089,
+            "sha256": "29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/pygments/LICENSE",
+            "bytes": 1331,
+            "sha256": "a9d66f1d526df02e29dce73436d34e56e8632f46c275bbdffc70569e882f9f17",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/pyproject_hooks/LICENSE",
+            "bytes": 1081,
+            "sha256": "1b22b049b5267d6dfc23a67bf4a84d8ec04b9fdfb1a51d360e42b4342c8b4154",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/requests/LICENSE",
+            "bytes": 10142,
+            "sha256": "09e8a9bcec8067104652c168685ab0931e7868f9c8284b66f5ae6edae5f1130b",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/resolvelib/LICENSE",
+            "bytes": 751,
+            "sha256": "f388fd38cad13112c1dc0f669bbe80e7f84541edbafb72f3030d2ca7642c3c9d",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/rich/LICENSE",
+            "bytes": 1056,
+            "sha256": "deed7c17a4318158190a3ea239cc879a5a50271cebb98ae7025f48fbe58dca15",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/tomli/LICENSE",
+            "bytes": 1072,
+            "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/tomli_w/LICENSE",
+            "bytes": 1072,
+            "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/truststore/LICENSE",
+            "bytes": 1086,
+            "sha256": "33be7b7e8fa4fd19b1760e1a8ed8a668bdab852c91b692dd41424bcb725a9fca",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pip-26.2.1/package/pip/_vendor/urllib3/LICENSE.txt",
+            "bytes": 1093,
+            "sha256": "130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686",
+            "matches_upstream_reference": true
+          }
+        ]
+      },
+      {
+        "name": "setuptools",
+        "version": "83.0.0",
+        "expected_files": 30,
+        "extra_files": [],
+        "files": [
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/licenses/LICENSE",
+            "bytes": 1023,
+            "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/METADATA",
+            "bytes": 6581,
+            "sha256": "26e45e90de763c6938d93d1df2ecd6782a0f1514d41cbd22ebef4e0ab6475771",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/autocommand-2.2.2.dist-info/LICENSE",
+            "bytes": 7634,
+            "sha256": "ade78d04982d69972d444a8e14a94f87a2334dd3855cc80348ea8e240aa0df2d",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/autocommand-2.2.2.dist-info/METADATA",
+            "bytes": 15006,
+            "sha256": "3800d9b91dceea2065a6ed6279383362e97ac38b8e56b9343f404ee531860099",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/backports.tarfile-1.2.0.dist-info/LICENSE",
+            "bytes": 1023,
+            "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/backports.tarfile-1.2.0.dist-info/METADATA",
+            "bytes": 2020,
+            "sha256": "8215c54ead77d9dc5a108a25c6bdc72b5999aa6f62c9499a440359412afa5a51",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/licenses/LICENSE",
+            "bytes": 10278,
+            "sha256": "458502e12d97bbf64438606a20044aa85eb05fb0a8a807bb35dbec253fd1fc04",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/METADATA",
+            "bytes": 4670,
+            "sha256": "a3e38b9ee4326289d4864704f30e299ee769e2309ce9f4a75f0de1a50ad0a356",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/jaraco.text-4.0.0.dist-info/LICENSE",
+            "bytes": 1023,
+            "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/jaraco.text-4.0.0.dist-info/METADATA",
+            "bytes": 3731,
+            "sha256": "5c2fd09012c954f139b10624978d5335a654c34014cd06f6f466ca683dbc9c56",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/jaraco_context-6.1.0.dist-info/licenses/LICENSE",
+            "bytes": 1076,
+            "sha256": "9755a18519666e5f0f4cae3daad3d7012bcae48a600b31237d75e9fe134e6683",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/jaraco_context-6.1.0.dist-info/METADATA",
+            "bytes": 4270,
+            "sha256": "0435ebfc52055c5a9974ed20c171b6454383eaf9dbb1508814ba7ad97c59d712",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/jaraco_functools-4.4.0.dist-info/licenses/LICENSE",
+            "bytes": 1076,
+            "sha256": "5a57cb4db85e2a2dd88c290628908add57e3451449e0a9a71fdfb38776fd759d",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/jaraco_functools-4.4.0.dist-info/METADATA",
+            "bytes": 2960,
+            "sha256": "2e79da8dc3469924abe3ac8b22a3feb5692a79bf9f47bbc86b6535d618641849",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/more_itertools-10.8.0.dist-info/licenses/LICENSE",
+            "bytes": 1053,
+            "sha256": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/more_itertools-10.8.0.dist-info/METADATA",
+            "bytes": 39413,
+            "sha256": "6ab3515145abe58b067f087c867631cf4cf5d653fed81b9642ee12086c3904b8",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE",
+            "bytes": 197,
+            "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE.APACHE",
+            "bytes": 10174,
+            "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE.BSD",
+            "bytes": 1344,
+            "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/packaging-26.0.dist-info/METADATA",
+            "bytes": 3309,
+            "sha256": "3362bb7d6a26da2962ba8daaa4785cd0bacac21aba908a1195cc8f59580a265a",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/platformdirs-4.4.0.dist-info/licenses/LICENSE",
+            "bytes": 1089,
+            "sha256": "29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/platformdirs-4.4.0.dist-info/METADATA",
+            "bytes": 12831,
+            "sha256": "bbc5216d5f4c77bfbc57227264d52e66bccde71ccf79e75e1a6046d029d30223",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/tomli-2.4.0.dist-info/licenses/LICENSE",
+            "bytes": 1072,
+            "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/tomli-2.4.0.dist-info/METADATA",
+            "bytes": 10567,
+            "sha256": "f5ac0a1f8fba908b4646cd655309e91aad969b6787616ac571ca462a3832ffce",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/wheel-0.46.3.dist-info/licenses/LICENSE.txt",
+            "bytes": 1107,
+            "sha256": "30c23618679108f3e8ea1d2a658c7ca417bdfc891c98ef1a89fa4ff0c9828654",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/wheel-0.46.3.dist-info/METADATA",
+            "bytes": 2410,
+            "sha256": "22910aa97ca89cbcc20a019e27fe31360b7929a4bd66ca0d310f99a44f6ccd35",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/zipp-3.23.0.dist-info/licenses/LICENSE",
+            "bytes": 1076,
+            "sha256": "5a57cb4db85e2a2dd88c290628908add57e3451449e0a9a71fdfb38776fd759d",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/_vendor/zipp-3.23.0.dist-info/METADATA",
+            "bytes": 3563,
+            "sha256": "bdd67d4d16cf0bf3b893e7d18cd3d2d774adb82f37ed985bc7770c607226b35b",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/config/_validate_pyproject/NOTICE",
+            "bytes": 18737,
+            "sha256": "09c9bcea95ca086f8bc5bed174e40bc835b297d40fb5f86bbbb570fe0a5581a7",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/setuptools-83.0.0/package/setuptools/config/NOTICE",
+            "bytes": 493,
+            "sha256": "2dddf08818297a3b89d43d95ff659d8da85741108c9136dfa3a4d856c0623bd8",
+            "matches_upstream_reference": true
+          }
+        ]
+      },
+      {
+        "name": "pyinstaller",
+        "version": "6.22.2",
+        "expected_files": 2,
+        "extra_files": [],
+        "files": [
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pyinstaller-6.22.2/licenses/COPYING.txt",
+            "bytes": 32138,
+            "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pyinstaller-6.22.2/METADATA",
+            "bytes": 8517,
+            "sha256": "e5c6c30c203497ef05953191e727172817e9337a446d236540928d533781b121",
+            "matches_upstream_reference": true
+          }
+        ]
+      },
+      {
+        "name": "pyinstaller-hooks-contrib",
+        "version": "2026.7",
+        "expected_files": 2,
+        "extra_files": [],
+        "files": [
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pyinstaller-hooks-contrib-2026.7/licenses/LICENSE",
+            "bytes": 27666,
+            "sha256": "91d0baaff00773038e72c0a1fc9d5d2d38706b7a2b9c04f34296608f931b9cd0",
+            "matches_upstream_reference": true
+          },
+          {
+            "path": "LICENSES/THIRD_PARTY_LICENSES/pyinstaller-hooks-contrib-2026.7/METADATA",
+            "bytes": 16042,
+            "sha256": "66f4b89882a0f846cb3f3cd6379d74b85cbf096a88b73689a557438a7ccf431e",
+            "matches_upstream_reference": true
+          }
+        ]
+      }
+    ],
+    "program_code_files": []
+  },
+  "licenses": {
+    "package_files": [
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/METADATA",
+        "bytes": 5528,
+        "sha256": "16e8ef06955bbd087aded43dd0001d3787c050da3dc88ee5b2cd02b275a53dc1",
+        "metadata": {
+          "Name": [
+            "PySide6"
+          ],
+          "Version": [
+            "6.11.1"
+          ],
+          "License": [
+            "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"
+          ],
+          "License-File": [
+            "LicenseRef-Qt-Commercial.txt"
+          ]
+        }
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/PySide6-6.11.1/licenses/LicenseRef-Qt-Commercial.txt",
+        "bytes": 470,
+        "sha256": "4f54763ac0fe2abd8f7f8d8fe370a94a08ebf84786aa0b91045bd6628deb08a3"
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/PySide6_Addons-6.11.1/METADATA",
+        "bytes": 4168,
+        "sha256": "fa494a48aed3df1d057a0a4ba1c13c4f1c272923683b0410790aa4773c0a9613",
+        "metadata": {
+          "Name": [
+            "PySide6_Addons"
+          ],
+          "Version": [
+            "6.11.1"
+          ],
+          "License": [
+            "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"
+          ],
+          "License-File": [
+            "LicenseRef-Qt-Commercial.txt"
+          ]
+        }
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/PySide6_Addons-6.11.1/licenses/LicenseRef-Qt-Commercial.txt",
+        "bytes": 470,
+        "sha256": "4f54763ac0fe2abd8f7f8d8fe370a94a08ebf84786aa0b91045bd6628deb08a3"
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/PySide6_Essentials-6.11.1/METADATA",
+        "bytes": 3802,
+        "sha256": "947febf34850532ea5c13d1c9f65303da0320ecdd71b6d6e9fd39ca2107a09bb",
+        "metadata": {
+          "Name": [
+            "PySide6_Essentials"
+          ],
+          "Version": [
+            "6.11.1"
+          ],
+          "License": [
+            "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"
+          ],
+          "License-File": [
+            "LicenseRef-Qt-Commercial.txt"
+          ]
+        }
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/PySide6_Essentials-6.11.1/licenses/LicenseRef-Qt-Commercial.txt",
+        "bytes": 470,
+        "sha256": "4f54763ac0fe2abd8f7f8d8fe370a94a08ebf84786aa0b91045bd6628deb08a3"
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/shiboken6-6.11.1/METADATA",
+        "bytes": 2542,
+        "sha256": "a3d7449aeab6f17bafe2f33fb26d6375eee1aac72194679c502859c070ad9f31",
+        "metadata": {
+          "Name": [
+            "shiboken6"
+          ],
+          "Version": [
+            "6.11.1"
+          ],
+          "License": [
+            "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"
+          ],
+          "License-File": [
+            "LicenseRef-Qt-Commercial.txt"
+          ]
+        }
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/shiboken6-6.11.1/licenses/LicenseRef-Qt-Commercial.txt",
+        "bytes": 470,
+        "sha256": "4f54763ac0fe2abd8f7f8d8fe370a94a08ebf84786aa0b91045bd6628deb08a3"
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/onnxruntime-gpu-1.24.4/METADATA",
+        "bytes": 5559,
+        "sha256": "97ff9bac970c8244175143a2449af411a1dd88131804ae59b9c46ae1a4673067",
+        "metadata": {
+          "Name": [
+            "onnxruntime-gpu"
+          ],
+          "Version": [
+            "1.24.4"
+          ],
+          "License": [
+            "MIT License"
+          ]
+        }
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/onnxruntime-gpu-1.24.4/package/LICENSE",
+        "bytes": 1094,
+        "sha256": "c250d6278f0b47a6439fb7592b08b58a55eb9f535aa49a1db63211c3f982b674"
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/torch-2.11.0_cu128/METADATA",
+        "bytes": 29875,
+        "sha256": "bb53a1e8e258707e738e108afaf1041304fa085a3775206876232345257e00b7",
+        "metadata": {
+          "Name": [
+            "torch"
+          ],
+          "Version": [
+            "2.11.0+cu128"
+          ],
+          "License": [
+            "BSD-3-Clause"
+          ],
+          "License-File": [
+            "LICENSE",
+            "NOTICE"
+          ]
+        }
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/torch-2.11.0_cu128/LICENSE",
+        "bytes": 385089,
+        "sha256": "3e289336d947fdf82f085f2a5ca757088084dd67d6530d46b4f02eb07461bb13"
+      },
+      {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/torch-2.11.0_cu128/NOTICE",
+        "bytes": 24088,
+        "sha256": "1c3dec6c0342c7ed9e12af59b296c7bb1d394af5cf881db74191cc8299efce5c"
+      }
+    ],
+    "qt_shared_full_texts": {
+      "LGPL-3.0-only": {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/easydict-1.13/LICENSE",
+        "bytes": 7651,
+        "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+        "markers": {
+          "GNU LESSER GENERAL PUBLIC LICENSE": [
+            1
+          ],
+          "Version 3, 29 June 2007": [
+            2
+          ],
+          "6. Revised Versions of the GNU Lesser General Public License": [
+            144
+          ]
+        }
+      },
+      "GPL-3.0-only": {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/cv2_enumerate_cameras-1.1.15/LICENSE",
+        "bytes": 35823,
+        "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+        "markers": {
+          "GNU GENERAL PUBLIC LICENSE": [
+            1
+          ],
+          "Version 3, 29 June 2007": [
+            2
+          ],
+          "END OF TERMS AND CONDITIONS": [
+            621
+          ]
+        }
+      },
+      "GPL-2.0-only": {
+        "path": "LICENSES/THIRD_PARTY_LICENSES/pyvirtualcam-0.15.0/licenses/LICENSE",
+        "bytes": 18431,
+        "sha256": "189b1af95d661151e054cea10c91b3d754e4de4d3fecfb074c1fb29476f7167b",
+        "markers": {
+          "GNU GENERAL PUBLIC LICENSE": [
+            1,
+            59
+          ],
+          "Version 2, June 1991": [
+            2
+          ],
+          "END OF TERMS AND CONDITIONS": [
+            280
+          ]
+        }
+      }
+    },
+    "qt_note": "The upstream commercial pointer does not override the LGPL/GPL expression in distribution metadata. Existing full texts are cross-referenced here without a new legal approval."
+  },
+  "executables_unchanged": true
+}

@@ -9,7 +9,7 @@ date: 2026-09-06
 
 Release: `2.2.4`
 
-Status: DRAFT — FINAL ARTIFACT AND MANUAL VERIFICATION PENDING
+Status: DRAFT — AUTOMATED ARTIFACT CHECKS PASS; MANUAL GATES PENDING
 
 Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
@@ -24,9 +24,8 @@ Use [RELEASE_PUBLISH_HANDOFF.md](RELEASE_PUBLISH_HANDOFF.md),
 The [original 2.2.3 report](docs/release-evidence/v2.2.3/preparation/RELEASE_REPORT.md)
 is retained unchanged; its old build commands and validation claims are historical.
 
-Final artifact hashes, licence inventories, processing/installer evidence and
-publication status belong in the reviewed asset attestations. This draft report
-does not mark any pending check as passed. Keep `v2.2.3` available as rollback.
+[Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
+The exact artifacts passed their automated checks. Keep `v2.2.3` available as rollback while the current manual gates remain pending.
 
 
 The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
@@ -68,12 +67,7 @@ and is not a smoke test of already downloaded official bytes.
 
 ## Installer Output
 
-Expected output is `DeepLiveCamStudio-2.2.4-x64-setup.exe`, with a SHA-256 sidecar.
-The matching DirectML ZIP, corresponding-source archive and complete checksum
-manifest belong in the existing draft. The first installer passed the actual
-2.2.3 upgrade and CLI processing subsets, as archived. The corrected installer
-requires fresh same-version replacement and runtime checks; GUI and clean-Windows
-checks remain pending.
+The verified `DeepLiveCamStudio-2.2.4-x64-setup.exe` and its sidecar are in the existing draft with DirectML and exact corresponding source. The corrected installer passed actual same-version replacement, preserving seven user-data files and both backups. CUDA/DirectML real processing and CPU image fallback passed. GUI and clean-Windows checks remain pending.
 
 ## Dependencies Bundled
 
@@ -98,13 +92,7 @@ and optional OpenNSFW2 downloads remain outside that explicit catalogue.
 ## License Obligations Found
 
 Deep-Live-Cam is AGPL-3.0; the exact corresponding source, original attribution,
-dependency notices and model licence limitations accompany the release. The
-[DirectML technical inspection](docs/release-evidence/v2.2.4/candidate-753aab70/DIRECTML_COMPLIANCE_TECHNICAL.md)
-records actual Qt metadata and the existing shared LGPL/GPL text locations.
-That inspection is historical: a later executable-archive inspection found
-embedded pip/setuptools code without its dedicated notices. The corrected
-candidate must include those package/vendor notices and pass a fresh payload
-inspection before this finding can be closed.
+dependency notices and model licence limitations accompany the release. Both [CUDA](docs/release-evidence/v2.2.4/candidate-617c733d/CUDA_COMPLIANCE_TECHNICAL.md) and [DirectML](docs/release-evidence/v2.2.4/candidate-617c733d/DIRECTML_COMPLIANCE_TECHNICAL.md) final payload inspections passed. All 77 tool notices match pinned upstream bytes, runtime inventories match their locks, and the earlier embedded-package notice gap is closed. Original historical verdicts are preserved.
 
 ## Remaining Legal Risks
 
@@ -120,3 +108,15 @@ checks are complete and supported by evidence. Clean-Windows installation,
 interactive controls, packaged Preview, physical-camera and receiving-application
 Live Output checks remain pending. Keep the release draft until the strict manual
 summary and final artifact checks pass.
+
+## Completed automated candidate checks
+
+The official workflow 34063403042 passed for both runtime profiles and exact corresponding source. All 36 original assets passed their checksum and structure checks; fresh draft-hosted downloads matched the verified runtime/source files.
+
+The corrected installer ran successfully over the superseded 2.2.4 candidate. Seven user-data files totaling 1,558,270,376 bytes remained identical, with a verified backup and the earlier 2.2.3 upgrade evidence preserved. One stable registration and 30 required installed files were verified. Installed executable hashes are post-install measurements; no independent full-payload manifest was supplied.
+
+Real CUDA and AMD device-1 DirectML image and silent/audio video processing passed, including Unicode output and failed-export preservation. CPU fallback passed its image-only checks. Existing model and executable hashes remained unchanged. The fresh five-model catalogue download and cancellation checks passed.
+
+Both payload audits matched all 77 upstream tool notice files and every locked inventory row. The affected build-only Torch exception remains documented; runtime audits, critical lint, security checks and CodeQL passed. Local integration passed 744 tests; exact-source CI passed 742 with two platform skips.
+
+[Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.

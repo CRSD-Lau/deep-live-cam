@@ -145,3 +145,13 @@ fixture's compression. The public installer retains its compression settings and
 all migration/uninstall assertions remain required. Replacement bytes require
 fresh source, hash, payload and runtime validation; the shared 2.2.4 version does
 not transfer earlier PASS claims.
+
+## Corrected candidate verification
+
+The packaging corrections merged at `617c733d42a10a2fcba036385e19d66fabcc2cc1`. Local integration passed 744 tests; exact-source CI passed 742 with two platform skips and clean runtime audits/CodeQL. Official workflow 34063403042 succeeded. All 287 corresponding-source files match Git, and all 36 original combined assets passed hash/structure checks.
+
+Fresh draft-hosted CUDA and DirectML downloads match the official files. The corrected EXE passed an actual same-version replacement of the first 2.2.4 candidate, preserving seven user-data files / 1,558,270,376 bytes, a new verified backup, and the original 2.2.3 upgrade proof/backup. Installed CUDA processing, CPU image fallback and AMD device-1 DirectML image/video processing passed with unchanged models and failure preservation.
+
+Both final payload inspections match all 77 required upstream tool notices and all locked inventory rows. The missing pip/setuptools/PyInstaller/hook notices are resolved in corrected bytes; the build-only affected Torch exception is retained accurately. Isolated installer fixture compilation took 336.468 seconds, versus 1,542.828 seconds in the prior run, while public compression remains ultra64. This is observed run timing, not a controlled benchmark.
+
+The [corrected evidence](release-evidence/v2.2.4/candidate-617c733d/README.md) records exact hashes and scope. GUI Preview/Live Output, physical-camera/receiver and clean-Windows manual checks remain pending. Version 2.2.4 remains draft; 2.2.3 remains public stable.

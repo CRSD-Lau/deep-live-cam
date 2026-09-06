@@ -7,29 +7,19 @@ date: 2026-09-06
 
 # Windows Release Cutover Status
 
-The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
-notices. Archive its tests and hashes; require new evidence for replacement bytes.
-The corrected candidate is frozen at `617c733d42a10a2fcba036385e19d66fabcc2cc1`, with official
-workflow [34063403042](https://github.com/CRSD-Lau/deep-live-cam/actions/runs/34063403042).
-The clean build checkout and both runtime/source jobs use that SHA. Later
-documentation attestations do not change the frozen binaries or source;
-use the recorded SHA rather than a later documentation checkout's HEAD.
-
-
 Release: `2.2.4`
-
-Status: PENDING CURRENT-RELEASE CUTOVER EVIDENCE
 
 Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
-- BLOCKED: Final artifact and current-release manual verification remain pending.
+Status: BLOCKED ON CURRENT-RELEASE MANUAL GATES
 
-The [previous generated snapshot](docs/release-evidence/v2.2.3/preparation/RELEASE_CUTOVER_STATUS.md)
-is retained unchanged with the earlier preparation records. It had no explicit
-release/source metadata; its old zero-dirty-path and PASS/READY verdicts must not
-be treated as current measurements.
+- PASS: immutable source, build, artifact hashes, hosted readback, real configured-host installer replacement, CLI processing and notice completeness.
+- PASS: model catalogue and technical compliance delta checks.
+- BLOCKED: `CLEAN_VM_VERIFICATION.md`, `OBS_VIRTUAL_CAMERA_VERIFICATION.md` and `PROCESSING_VERIFICATION.md` retain required manual items.
+- Publication: NO. The strict manual summary must continue returning nonzero while those items remain open.
 
-This is a pending placeholder, not freshly generated cutover evidence. Regenerate
-the current report only after the documentation/evidence update is committed and
-the applicable checks are complete. A clean worktree alone does not close the
-five current-release gates or change the fixed binary/source commit.
+[Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
+
+This is an attestation of those decisions, not a claim that a changing documentation worktree has zero dirty paths. The frozen source checkout was verified separately. Post-build evidence can be merged without retargeting the binaries/source or publishing the draft.
+
+Packaged GUI Preview/Live Output, physical-camera/receiving-application behavior, and clean-Windows/interactive installation checks remain pending. Keep `v2.2.4` as a draft; `v2.2.3` remains public stable and rollback.
