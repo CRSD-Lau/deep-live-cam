@@ -16,7 +16,8 @@ Candidate source: PENDING — record the corrected immutable build SHA and asset
 The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded. Its evidence is retained
 with original hashes and does not approve this rebuild.
 
-- [ ] Verify final CUDA and DirectML runtime identities and strict provider probes.
+- [ ] Verify final CUDA and DirectML runtime identities and strict
+  `--check-execution-provider` probes.
 - [ ] Run CUDA checks without an external CUDA Toolkit or development PyTorch
   DLL paths; retain the required compatible NVIDIA graphics driver.
 - [ ] Render real Unicode image exports on NVIDIA CUDA and identified AMD DirectML hardware.
