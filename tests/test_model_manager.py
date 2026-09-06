@@ -1,5 +1,8 @@
 import hashlib
+from http.client import IncompleteRead
 import sys
+from types import SimpleNamespace
+import urllib.request
 
 import pytest
 
@@ -94,9 +97,9 @@ def test_missing_models_accepts_existing_file_only_when_checksum_matches(
 
 def test_download_file_rejects_non_https_url_before_network_access(monkeypatch, tmp_path):
     def fail_if_called(*args, **kwargs):
-        raise AssertionError("urlopen should not be called for an insecure URL")
+        raise AssertionError("No opener should be built for an insecure URL")
 
-    monkeypatch.setattr(model_manager.urllib.request, "urlopen", fail_if_called)
+    monkeypatch.setattr(model_manager.urllib.request, "build_opener", fail_if_called)
 
     with pytest.raises(ValueError, match="non-HTTPS model download URL"):
         model_manager._download_file("http://example.test/model.onnx", tmp_path / "model.onnx")
@@ -115,7 +118,87 @@ def test_download_file_rejects_redirect_to_non_https_url(monkeypatch, tmp_path):
         def geturl(self):
             return "http://example.test/model.onnx"
 
-    monkeypatch.setattr(model_manager.urllib.request, "urlopen", lambda *args, **kwargs: FakeResponse())
+    monkeypatch.setattr(
+        model_manager.urllib.request, "build_opener",
+        lambda *_args: SimpleNamespace(open=lambda *_a, **_kw: FakeResponse()),
+    )
 
     with pytest.raises(ValueError, match="non-HTTPS model download URL"):
         model_manager._download_file("https://example.test/model.onnx", tmp_path / "model.onnx")
+
+
+@pytest.mark.parametrize("failure", [
+    OSError("connection lost"), ValueError("insecure redirect"), IncompleteRead(b"partial"),
+])
+def test_interrupted_download_cleans_only_owned_file(monkeypatch, tmp_path, failure):
+    spec = make_spec("required.onnx", b"expected")
+    monkeypatch.setattr(model_manager, "MODEL_SPECS", (spec,))
+    monkeypatch.setattr(model_manager, "MODELS_DIR", str(tmp_path))
+    destination = tmp_path / spec.file_name
+    destination.write_bytes(b"previous model")
+    unrelated = tmp_path / "required.onnx.download"
+    unrelated.write_bytes(b"another download")
+    owned = []
+
+    def fail_download(_url, temporary):
+        owned.append(temporary)
+        temporary.write_bytes(b"partial")
+        raise failure
+
+    monkeypatch.setattr(model_manager, "_download_file", fail_download)
+    assert model_manager.download_models(assume_yes=True) == 1
+    assert destination.read_bytes() == b"previous model"
+    assert unrelated.read_bytes() == b"another download"
+    assert all(not path.exists() for path in owned)
+
+
+def test_download_publish_failure_preserves_destination(monkeypatch, tmp_path):
+    spec = make_spec("required.onnx", b"expected")
+    monkeypatch.setattr(model_manager, "MODEL_SPECS", (spec,))
+    monkeypatch.setattr(model_manager, "MODELS_DIR", str(tmp_path))
+    destination = tmp_path / spec.file_name
+    destination.write_bytes(b"previous model")
+    monkeypatch.setattr(model_manager, "_download_file", lambda _u, p: p.write_bytes(b"expected"))
+
+    def fail_replace(*_args):
+        raise PermissionError("destination busy")
+
+    monkeypatch.setattr(model_manager.os, "replace", fail_replace)
+    assert model_manager.download_models(assume_yes=True) == 1
+    assert destination.read_bytes() == b"previous model"
+    assert list(tmp_path.iterdir()) == [destination]
+
+
+def test_https_redirect_handler_rejects_insecure_intermediate_hop():
+    handler = model_manager._HTTPSRedirectHandler()
+    request = urllib.request.Request("https://example.test/model.onnx")
+    with pytest.raises(ValueError, match="non-HTTPS"):
+        handler.redirect_request(request, None, 302, "Found", {}, "http://cdn.test/model.onnx")
+    redirected = handler.redirect_request(
+        request, None, 302, "Found", {}, "https://cdn.test/model.onnx"
+    )
+    assert redirected.full_url == "https://cdn.test/model.onnx"
+
+
+def test_directory_is_not_a_verified_model(tmp_path):
+    assert not model_manager.verify_model(tmp_path, make_spec("model.onnx", b""))
+
+
+def test_locked_temporary_file_does_not_mask_download_failure(monkeypatch, tmp_path, capsys):
+    spec = make_spec("required.onnx", b"expected")
+    monkeypatch.setattr(model_manager, "MODEL_SPECS", (spec,))
+    monkeypatch.setattr(model_manager, "MODELS_DIR", str(tmp_path))
+
+    def failed_download(_url, _temporary):
+        raise OSError("connection lost")
+
+    def failed_unlink(*_args, **_kwargs):
+        raise PermissionError("temporary file locked")
+
+    monkeypatch.setattr(model_manager, "_download_file", failed_download)
+    monkeypatch.setattr(model_manager.Path, "unlink", failed_unlink)
+    assert model_manager.download_models(assume_yes=True) == 1
+    output = capsys.readouterr().out
+    assert "connection lost" in output
+    assert "Could not remove temporary download" in output
+    assert not (tmp_path / spec.file_name).exists()
