@@ -20,6 +20,9 @@
 #ifndef OutputBaseFilename
 #define OutputBaseFilename "DeepLiveCamStudio-" + AppVersion + "-x64-setup"
 #endif
+#ifndef InstallerCompression
+#define InstallerCompression "lzma2/ultra64"
+#endif
 
 [Setup]
 AppId={#AppId}
@@ -37,7 +40,7 @@ DisableProgramGroupPage=yes
 OutputDir={#OutputDir}
 OutputBaseFilename={#OutputBaseFilename}
 SetupIconFile={#RepoRoot}\build\windows\assets\Logo.ico
-Compression=lzma2/ultra64
+Compression={#InstallerCompression}
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
