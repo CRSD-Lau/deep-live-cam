@@ -27,6 +27,8 @@ old extracted folder after verifying the new copy.
 
 ## What Changed
 
+- Image exports, extracted frames and QA images use Unicode-safe file paths on
+  Windows, preventing garbled filenames and unchanged exports reported as success.
 - Image processors report write failures, and image/video publication replaces
   the destination only after staging succeeds. Failed processing or audio
   restoration preserves the previous export. Silent source videos remain valid.

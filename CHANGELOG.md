@@ -15,6 +15,9 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Write images through Unicode-safe paths on Windows so non-ASCII exports,
+  extracted frames and QA images cannot silently keep the original image or
+  create a garbled filename.
 - Preserve existing image and video exports when processing, audio restoration,
   or final file replacement fails; report image processor failures accurately.
 - Reject failed FFmpeg decoding and incomplete frames, handle short pipe reads,

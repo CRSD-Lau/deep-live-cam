@@ -6,13 +6,12 @@ import argparse
 import sys
 from pathlib import Path
 
-import cv2
-
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from modules.visual_qa import export_temporal_qa
+from modules.utilities import read_image
 
 
 def parse_args() -> argparse.Namespace:
@@ -49,7 +48,7 @@ def main() -> int:
     args = parse_args()
     frames = []
     for frame_path in args.frames:
-        frame = cv2.imread(frame_path)
+        frame = read_image(frame_path)
         if frame is None:
             print(f"Could not read frame image: {frame_path}", file=sys.stderr)
             return 2

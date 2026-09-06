@@ -357,6 +357,28 @@ def read_image(image_path: str, flags: int = cv2.IMREAD_COLOR) -> Any:
         return None
 
 
+def write_image(image_path: str, frame: Any, params: List[int] | None = None) -> bool:
+    """Encode in memory and atomically publish through Unicode-safe file I/O."""
+    if not image_path or frame is None:
+        return False
+    try:
+        extension = Path(image_path).suffix
+        encoded_ok, encoded = cv2.imencode(
+            extension, frame, params if params is not None else [],
+        )
+        if not encoded_ok or encoded is None or encoded.size == 0:
+            return False
+        payload = encoded.tobytes()
+        with staged_output_path(image_path) as staging_path:
+            if Path(staging_path).write_bytes(payload) != len(payload):
+                raise OSError("Incomplete image write")
+            os.replace(staging_path, image_path)
+        return True
+    except (cv2.error, OSError, TypeError, ValueError) as error:
+        print(f"Failed to write image {image_path}: {error}")
+        return False
+
+
 def has_image_extension(image_path: str) -> bool:
     return bool(image_path) and image_path.lower().endswith(IMAGE_EXTENSIONS)
 

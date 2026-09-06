@@ -17,6 +17,7 @@ from modules.utilities import (
     is_image,
     is_video,
     read_image,
+    write_image,
 )
 from modules.paths import MODELS_DIR
 
@@ -449,7 +450,7 @@ def process_frames(
                 progress.update(1)
             continue
 
-        temp_frame = cv2.imread(temp_frame_path)
+        temp_frame = read_image(temp_frame_path)
         if temp_frame is None:
             print(
                 f"{NAME}: Warning: Failed to read frame {temp_frame_path}, skipping."
@@ -459,7 +460,7 @@ def process_frames(
             continue
 
         result_frame = process_frame(None, temp_frame)
-        cv2.imwrite(temp_frame_path, result_frame)
+        write_image(temp_frame_path, result_frame)
         if progress:
             progress.update(1)
 
@@ -473,7 +474,7 @@ def process_image(
         print(f"{NAME}: Error: Failed to read target image {target_path}")
         return False
     result_frame = process_frame(None, target_frame)
-    if result_frame is None or not cv2.imwrite(output_path, result_frame):
+    if result_frame is None or not write_image(output_path, result_frame):
         print(f"{NAME}: Error: Failed to write output image {output_path}")
         return False
     print(f"{NAME}: Enhanced image saved to {output_path}")

@@ -10,6 +10,8 @@ from typing import Any, Iterable
 import cv2
 import numpy as np
 
+from modules.utilities import write_image
+
 
 @dataclass(frozen=True)
 class VisualQAExport:
@@ -503,5 +505,5 @@ def _draw_label(image: np.ndarray, label: str, x: int, y: int) -> None:
 
 
 def _write_image(path: Path, image: np.ndarray) -> None:
-    if not cv2.imwrite(str(path), image):
+    if not write_image(str(path), image):
         raise OSError(f"failed to write image: {path}")

@@ -56,6 +56,7 @@ from modules.utilities import (
     is_image,
     is_video,
     read_image,
+    write_image,
 )
 from modules.paths import MODELS_DIR
 from modules.cluster_analysis import find_closest_centroid
@@ -2199,7 +2200,7 @@ def process_frames(
         # Read the target frame
         temp_frame = None
         try:
-            temp_frame = cv2.imread(temp_frame_path)
+            temp_frame = read_image(temp_frame_path)
             if temp_frame is None:
                 print(f"{NAME}: Error: Could not read frame: {temp_frame_path}, skipping.")
                 if progress: progress.update(1)
@@ -2235,7 +2236,7 @@ def process_frames(
         # Write the result back to the same frame path with optimized compression
         try:
             # Use PNG compression level 3 (faster) instead of default 9
-            write_success = cv2.imwrite(temp_frame_path, result_frame, [cv2.IMWRITE_PNG_COMPRESSION, 3])
+            write_success = write_image(temp_frame_path, result_frame, [cv2.IMWRITE_PNG_COMPRESSION, 3])
             if not write_success:
                 print(f"{NAME}: Error: Failed to write processed frame to {temp_frame_path}")
         except Exception as write_e:
@@ -2300,7 +2301,7 @@ def process_image(source_path: str, target_path: str, output_path: str) -> bool:
 
         # Write the result if processing was successful
         if result is not None:
-            write_success = cv2.imwrite(output_path, result)
+            write_success = write_image(output_path, result)
             if write_success:
                 update_status(f"Output image saved to: {output_path}", NAME)
                 return True
