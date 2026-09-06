@@ -17,6 +17,8 @@ The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md)
 with original hashes and does not approve this rebuild.
 
 - [ ] Verify final CUDA and DirectML runtime identities and strict provider probes.
+- [ ] Run CUDA checks without an external CUDA Toolkit or development PyTorch
+  DLL paths; retain the required compatible NVIDIA graphics driver.
 - [ ] Render real Unicode image exports on NVIDIA CUDA and identified AMD DirectML hardware.
 - [ ] Render and fully decode silent/audio videos with expected frame, dimension and audio metadata.
 - [ ] Verify failed export preserves the prior destination and cleans owned staging files.
