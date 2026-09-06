@@ -45,8 +45,8 @@ foreach ($Doc in $RequiredDocs) {
 Copy-Item -LiteralPath (Join-Path $RepoRoot "Logo.png") -Destination (Join-Path $DistDir "Logo.png") -Force
 
 $LicensePythonCandidates = @(
-    (Join-Path $RepoRoot "venv\Scripts\python.exe"),
     (Join-Path $RepoRoot ".venv-build-windows\Scripts\python.exe"),
+    (Join-Path $RepoRoot "venv\Scripts\python.exe"),
     "python"
 )
 $LicensePython = ($LicensePythonCandidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1)

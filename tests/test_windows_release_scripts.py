@@ -146,9 +146,10 @@ def test_obs_evidence_gate_forwards_selected_python_to_preflight():
     assert "-Python $CheckPython -RequireObsVirtualCam" in script
 
 
-def test_release_licenses_prefer_the_packaged_environment():
-    script = Path("build/windows/run_release_checks.ps1").read_text(encoding="utf-8")
-    candidates = script.split("$LicensePythonCandidates = @(", 1)[1].split("\n    )", 1)[0]
+@pytest.mark.parametrize("script_name", ["run_release_checks.ps1", "package_installer.ps1"])
+def test_release_licenses_prefer_the_packaged_environment(script_name):
+    script = (Path("build/windows") / script_name).read_text(encoding="utf-8")
+    candidates = script.split("$LicensePythonCandidates = @(", 1)[1].split("$LicensePython =", 1)[0]
 
     assert candidates.index('".venv-build-windows\\Scripts\\python.exe"') < candidates.index(
         '"venv\\Scripts\\python.exe"'
