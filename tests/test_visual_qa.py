@@ -2,6 +2,9 @@ import json
 
 import cv2
 import numpy as np
+import pytest
+
+from modules.utilities import read_image
 
 from modules.visual_qa import (
     TemporalQACaptureSession,
@@ -152,14 +155,15 @@ def test_temporal_heatmaps_track_flicker_and_edge_jitter():
     assert edge_gray[:, 6:9].mean() > edge_gray[:, :3].mean()
 
 
-def test_export_visual_qa_writes_snapshots_panel_heatmap_and_metadata(tmp_path):
+@pytest.mark.parametrize("directory", ["ascii", "résultats_日本"])
+def test_export_visual_qa_writes_snapshots_panel_heatmap_and_metadata(tmp_path, directory):
     before = np.full((8, 8, 3), [10, 20, 30], dtype=np.uint8)
     after = np.full((8, 8, 3), [30, 40, 50], dtype=np.uint8)
 
     result = export_visual_qa(
         before,
         after,
-        tmp_path,
+        tmp_path / directory,
         stem="sample",
         notes={"quality_mode": "cinematic"},
     )
@@ -167,7 +171,10 @@ def test_export_visual_qa_writes_snapshots_panel_heatmap_and_metadata(tmp_path):
     for path in result.paths.values():
         assert path.exists()
         if path.suffix == ".png":
-            assert cv2.imread(str(path)) is not None
+            assert read_image(str(path)) is not None
+
+    np.testing.assert_array_equal(read_image(str(result.paths["before"])), before)
+    np.testing.assert_array_equal(read_image(str(result.paths["after"])), after)
 
     metadata = json.loads(result.paths["metadata"].read_text(encoding="utf-8"))
     assert metadata["stem"] == "sample"
@@ -180,7 +187,8 @@ def test_export_visual_qa_writes_snapshots_panel_heatmap_and_metadata(tmp_path):
     assert metadata["metrics"]["edge_mae"] == result.metrics["edge_mae"]
 
 
-def test_export_temporal_qa_writes_heatmaps_and_metadata(tmp_path):
+@pytest.mark.parametrize("directory", ["ascii", "résultats_日本"])
+def test_export_temporal_qa_writes_heatmaps_and_metadata(tmp_path, directory):
     frame_0 = np.zeros((8, 8, 3), dtype=np.uint8)
     frame_1 = frame_0.copy()
     frame_1[:, 4:] = 80
@@ -188,7 +196,7 @@ def test_export_temporal_qa_writes_heatmaps_and_metadata(tmp_path):
 
     result = export_temporal_qa(
         [frame_0, frame_1, frame_2],
-        tmp_path,
+        tmp_path / directory,
         stem="clip",
         notes={"quality_mode": "experimental"},
     )
@@ -196,7 +204,7 @@ def test_export_temporal_qa_writes_heatmaps_and_metadata(tmp_path):
     for path in result.paths.values():
         assert path.exists()
         if path.suffix == ".png":
-            assert cv2.imread(str(path)) is not None
+            assert read_image(str(path)) is not None
 
     metadata = json.loads(result.paths["metadata"].read_text(encoding="utf-8"))
     assert metadata["stem"] == "clip"

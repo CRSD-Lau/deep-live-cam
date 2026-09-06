@@ -159,7 +159,7 @@ def test_image_processors_return_write_result(monkeypatch, module, write_succeed
     if module is face_swapper:
         monkeypatch.setattr(module, "get_one_face", lambda _: object())
     monkeypatch.setattr(module, "process_frame", lambda *_: frame)
-    monkeypatch.setattr(module.cv2, "imwrite", lambda *_: write_succeeds)
+    monkeypatch.setattr(module, "write_image", lambda *_: write_succeeds)
     assert module.process_image("source.png", "target.png", "output.png") is write_succeeds
 
 

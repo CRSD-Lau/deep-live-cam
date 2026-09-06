@@ -11,7 +11,7 @@ from tqdm import tqdm
 from modules.enhancement_registry import ENHANCER_KEYS
 from modules.typing import Frame
 from modules.cluster_analysis import find_cluster_centroids, find_closest_centroid
-from modules.utilities import get_temp_directory_path, create_temp, extract_frames, clean_temp, get_temp_frame_paths, read_image
+from modules.utilities import get_temp_directory_path, create_temp, extract_frames, clean_temp, get_temp_frame_paths, read_image, write_image
 from pathlib import Path
 
 FACE_ANALYSER = None
@@ -355,7 +355,7 @@ def get_unique_faces_from_target_video() -> Any:
 
         i = 0
         for temp_frame_path in tqdm(temp_frame_paths, desc="Extracting face embeddings from frames"):
-            temp_frame = cv2.imread(temp_frame_path)
+            temp_frame = read_image(temp_frame_path)
             many_faces = get_many_faces(temp_frame)
 
             for face in many_faces:
@@ -406,7 +406,7 @@ def default_target_face():
 
         x_min, y_min, x_max, y_max = best_face['bbox']
 
-        target_frame = cv2.imread(best_frame['location'])
+        target_frame = read_image(best_frame['location'])
         map['target'] = {
                         'cv2' : target_frame[int(y_min):int(y_max), int(x_min):int(x_max)],
                         'face' : best_face
@@ -422,7 +422,7 @@ def dump_faces(centroids: Any, frame_face_embeddings: list):
         Path(temp_directory_path + f"/{i}").mkdir(parents=True, exist_ok=True)
 
         for frame in tqdm(frame_face_embeddings, desc=f"Copying faces to temp/./{i}"):
-            temp_frame = cv2.imread(frame['location'])
+            temp_frame = read_image(frame['location'])
 
             j = 0
             for face in frame['faces']:
@@ -430,5 +430,7 @@ def dump_faces(centroids: Any, frame_face_embeddings: list):
                     x_min, y_min, x_max, y_max = face['bbox']
 
                     if temp_frame[int(y_min):int(y_max), int(x_min):int(x_max)].size > 0:
-                        cv2.imwrite(temp_directory_path + f"/{i}/{frame['frame']}_{j}.png", temp_frame[int(y_min):int(y_max), int(x_min):int(x_max)])
+                        output_path = temp_directory_path + f"/{i}/{frame['frame']}_{j}.png"
+                        if not write_image(output_path, temp_frame[int(y_min):int(y_max), int(x_min):int(x_max)]):
+                            raise OSError(f"Failed to write mapped face: {output_path}")
                 j += 1

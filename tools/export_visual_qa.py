@@ -6,13 +6,12 @@ import argparse
 import sys
 from pathlib import Path
 
-import cv2
-
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from modules.visual_qa import export_visual_qa
+from modules.utilities import read_image
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,8 +42,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    before = cv2.imread(args.before)
-    after = cv2.imread(args.after)
+    before = read_image(args.before)
+    after = read_image(args.after)
     if before is None:
         print(f"Could not read --before image: {args.before}", file=sys.stderr)
         return 2
