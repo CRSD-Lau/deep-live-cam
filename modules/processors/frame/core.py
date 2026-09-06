@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import importlib
+import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
 from types import ModuleType
@@ -296,13 +297,33 @@ def _ffmpeg_pipe_commands(
 
 
 def _kill_pipe_processes(*processes: Any) -> None:
+    """Stop children before closing their pipes, and reap every started child."""
     for process in processes:
         if process is None:
             continue
         try:
-            process.kill()
+            if process.poll() is None:
+                process.kill()
         except Exception:
             pass
+    for process in processes:
+        if process is None:
+            continue
+        try:
+            process.wait(timeout=5)
+        except Exception as exc:
+            print(f"[DLC.CORE] Could not reap FFmpeg process: {exc}")
+        for stream in (
+            process.stdin,
+            process.stdout,
+            process.stderr,
+            getattr(process, "_ffmpeg_stderr", None),
+        ):
+            if stream is not None:
+                try:
+                    stream.close()
+                except Exception:
+                    pass
 
 
 def _start_ffmpeg_pipes(
@@ -310,17 +331,30 @@ def _start_ffmpeg_pipes(
 ) -> tuple[Any | None, Any | None]:
     reader = None
     writer = None
+    reader_errors = None
+    writer_errors = None
     try:
+        # Owned files cannot fill a subprocess pipe and deadlock frame I/O.
+        # They are removed on close; only a bounded diagnostic tail is read.
+        reader_errors = tempfile.TemporaryFile()
         reader = subprocess.Popen(
-            reader_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            reader_cmd, stdout=subprocess.PIPE, stderr=reader_errors,
         )
+        reader._ffmpeg_stderr = reader_errors
+        writer_errors = tempfile.TemporaryFile()
         writer = subprocess.Popen(
-            writer_cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
+            writer_cmd, stdin=subprocess.PIPE, stderr=writer_errors,
         )
+        writer._ffmpeg_stderr = writer_errors
         return reader, writer
-    except Exception as exc:
-        print(f"[DLC.CORE] Failed to start FFmpeg pipes: {exc}")
+    except BaseException as exc:
         _kill_pipe_processes(reader, writer)
+        for stream in (reader_errors, writer_errors):
+            if stream is not None:
+                stream.close()
+        if not isinstance(exc, Exception):
+            raise
+        print(f"[DLC.CORE] Failed to start FFmpeg pipes: {exc}")
         return None, None
 
 
@@ -447,9 +481,18 @@ def _read_pipe_frame(
 ) -> np.ndarray | None:
     started = time.perf_counter()
     raw = reader.stdout.read(frame_size)
+    # A pipe read may return fewer bytes without reaching EOF.
+    while raw and len(raw) < frame_size:
+        chunk = reader.stdout.read(frame_size - len(raw))
+        if not chunk:
+            raise ValueError(
+                f"FFmpeg decoder returned a truncated frame "
+                f"({len(raw)} of {frame_size} bytes)"
+            )
+        raw += chunk
     if metrics:
         metrics.observe("decode_read", time.perf_counter() - started)
-    if len(raw) != frame_size:
+    if not raw:
         return None
     return np.frombuffer(raw, dtype=np.uint8).reshape((height, width, 3)).copy()
 
@@ -569,12 +612,21 @@ def _write_pipe_frame(
         metrics.mark_reported()
 
 
-def _writer_succeeded(writer: Any) -> bool:
-    if writer.returncode == 0:
+def _ffmpeg_process_succeeded(process: Any, role: str) -> bool:
+    if process.returncode == 0:
         return True
-    stderr_out = writer.stderr.read().decode(errors='ignore').strip()
+    print(f"[DLC.CORE] FFmpeg {role} exited with status {process.returncode}.")
+    stream = getattr(process, "_ffmpeg_stderr", None)
+    stderr_out = ""
+    if stream is not None:
+        try:
+            stream.seek(0, os.SEEK_END)
+            stream.seek(max(0, stream.tell() - 64 * 1024))
+            stderr_out = stream.read(64 * 1024).decode(errors='replace').strip()
+        except OSError:
+            pass
     if stderr_out:
-        print(f"[DLC.CORE] FFmpeg encoder error: {stderr_out}")
+        print(f"[DLC.CORE] FFmpeg {role} error: {stderr_out}")
     return False
 
 
@@ -630,15 +682,15 @@ def _run_pipe_pipeline(
     if reader is None or writer is None:
         return False
 
-    metrics, metrics_writer, metrics_context = _video_metrics(
-        target_path, encoder, fps, width, height, frame_processors
-    )
-    visual_qa_session, temporal_qa_session = _visual_qa_sessions(
-        target_path, encoder, fps, frame_processors
-    )
     detect_executor = None
     processed_count = 0
     try:
+        metrics, metrics_writer, metrics_context = _video_metrics(
+            target_path, encoder, fps, width, height, frame_processors
+        )
+        visual_qa_session, temporal_qa_session = _visual_qa_sessions(
+            target_path, encoder, fps, frame_processors
+        )
         with _pipeline_progress(total_frames) as progress:
             detect_executor = ThreadPoolExecutor(max_workers=1)
             pending_detect = None
@@ -688,7 +740,9 @@ def _run_pipe_pipeline(
         writer.stdin.close()
         writer.wait()
         reader.wait()
-        if not _writer_succeeded(writer):
+        writer_succeeded = _ffmpeg_process_succeeded(writer, "encoder")
+        reader_succeeded = _ffmpeg_process_succeeded(reader, "decoder")
+        if not writer_succeeded or not reader_succeeded:
             return False
         _export_temporal_qa(temporal_qa_session)
         _finalize_pipeline_metrics(metrics, metrics_writer, metrics_context)
@@ -700,6 +754,6 @@ def _run_pipe_pipeline(
         print(f"[DLC.CORE] In-memory processing error: {e}")
         return False
     finally:
+        _kill_pipe_processes(reader, writer)
         if detect_executor is not None:
             detect_executor.shutdown(wait=True)
-        _kill_pipe_processes(reader, writer)
