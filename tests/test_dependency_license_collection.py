@@ -84,6 +84,20 @@ def test_collector_preserves_vendor_layout_and_config_notices_without_copying_co
     assert not (output / "setuptools-83.0.0/package/unrelated").exists()
 
 
+def test_arbitrary_declared_legacy_license_filename_is_preserved(tmp_path, monkeypatch):
+    original = b"Declared upstream terms\r\n"
+    dist = installed_distribution(
+        tmp_path, "pip", "26.2.1", metadata_files={"terms.rst": original}, license_files=("terms.rst",),
+    )
+    monkeypatch.setattr(collector, "high_attention_packages", lambda _: ("pip",))
+    monkeypatch.setattr(collector, "package_distribution", lambda _: dist)
+    output = tmp_path / "collected"
+
+    collector.collect(output)
+
+    assert (output / "pip-26.2.1/terms.rst").read_bytes() == original
+
+
 def test_metadata_alone_does_not_count_as_a_license(tmp_path, monkeypatch):
     dist = installed_distribution(tmp_path, "pip", "26.2.1")
     monkeypatch.setattr(collector, "high_attention_packages", lambda _: ("pip",))

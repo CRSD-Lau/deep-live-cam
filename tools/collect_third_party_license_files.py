@@ -91,14 +91,17 @@ def supplemental_notice_files(dist: metadata.Distribution) -> list[Path]:
 def metadata_notice_files(dist: metadata.Distribution) -> list[Path]:
     """Validate declared/recorded notices before walking the installed files."""
     dist_info = Path(dist._path)
+    notices = set()
     for declaration in dist.metadata.get_all("License-File", []):
         relative = Path(declaration)
         if relative.is_absolute() or ".." in relative.parts:
             raise RuntimeError(f"Declared license path escapes {dist_info.name}: {declaration}")
         # PEP 639 wheels use licenses/; older metadata stores files at the root.
         candidates = (dist_info / "licenses" / relative, dist_info / relative)
-        if not any(path.is_file() and path.resolve().is_relative_to(dist_info.resolve()) for path in candidates):
+        declared_files = [path for path in candidates if path.is_file() and path.resolve().is_relative_to(dist_info.resolve())]
+        if not declared_files:
             raise RuntimeError(f"Declared license file not found for {dist_info.name}: {declaration}")
+        notices.update(declared_files)
 
     for entry in dist.files or []:
         relative = Path(entry)
@@ -113,7 +116,6 @@ def metadata_notice_files(dist: metadata.Distribution) -> list[Path]:
         if not source.is_file():
             raise RuntimeError(f"Recorded metadata notice file not found for {dist_info.name}: {relative}")
 
-    notices = []
     for source in sorted(dist_info.rglob("*")):
         relative = source.relative_to(dist_info)
         in_license_directory = relative.parts[0].lower() == "licenses"
@@ -121,8 +123,8 @@ def metadata_notice_files(dist: metadata.Distribution) -> list[Path]:
             continue
         if not source.resolve().is_relative_to(dist_info.resolve()):
             raise RuntimeError(f"Metadata notice path escapes {dist_info.name}: {relative}")
-        notices.append(source)
-    return notices
+        notices.add(source)
+    return sorted(notices)
 
 
 def high_attention_packages(onnxruntime_package: str) -> tuple[str, ...]:
