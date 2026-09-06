@@ -7,12 +7,13 @@ from tools import collect_third_party_license_files as collector
 from tools import generate_python_dependency_licenses as snapshot
 
 
-def installed_distribution(tmp_path, name, version, package_files=None, metadata_files=None):
+def installed_distribution(tmp_path, name, version, package_files=None, metadata_files=None, license_files=()):
     site = tmp_path / "site-packages"
     info = site / f"{name}-{version}.dist-info"
     info.mkdir(parents=True, exist_ok=True)
+    declarations = "".join(f"License-File: {path}\n" for path in license_files)
     files = {
-        f"{info.name}/METADATA": f"Name: {name}\nVersion: {version}\nLicense: MIT\n".encode(),
+        f"{info.name}/METADATA": f"Name: {name}\nVersion: {version}\nLicense: MIT\n{declarations}".encode(),
         **{f"{info.name}/{path}": value for path, value in (metadata_files or {}).items()},
         **(package_files or {}),
     }
@@ -27,7 +28,7 @@ def installed_distribution(tmp_path, name, version, package_files=None, metadata
 
 @pytest.mark.parametrize("profile", ["onnxruntime-gpu", "onnxruntime-directml"])
 def test_both_profiles_collect_incidentally_frozen_build_tools(profile):
-    assert {"pip", "setuptools"} <= set(collector.high_attention_packages(profile))
+    assert {"pip", "setuptools", "pyinstaller", "pyinstaller-hooks-contrib"} <= set(collector.high_attention_packages(profile))
 
 
 def test_collector_preserves_metadata_authors_and_arbitrary_license_supplements(tmp_path, monkeypatch):
@@ -90,6 +91,47 @@ def test_metadata_alone_does_not_count_as_a_license(tmp_path, monkeypatch):
 
     with pytest.raises(RuntimeError, match="No license/notice"):
         collector.collect(tmp_path / "collected")
+
+
+@pytest.mark.parametrize("declarations", [("LICENSE", "vendor/COPYING"), ()])
+def test_missing_one_metadata_license_among_several_fails_before_copy(tmp_path, monkeypatch, declarations):
+    dist = installed_distribution(
+        tmp_path, "pip", "26.2.1",
+        metadata_files={"licenses/LICENSE": b"main terms", "licenses/vendor/COPYING": b"vendor terms"},
+        license_files=declarations,
+    )
+    (dist._path / "licenses/vendor/COPYING").unlink()
+    monkeypatch.setattr(collector, "high_attention_packages", lambda _: ("pip",))
+    monkeypatch.setattr(collector, "package_distribution", lambda _: dist)
+    output = tmp_path / "collected"
+
+    with pytest.raises(RuntimeError, match="(Declared license|Recorded metadata notice) file not found"):
+        collector.collect(output)
+    assert not list(output.rglob("METADATA"))
+
+
+@pytest.mark.parametrize(
+    ("name", "version", "license_name", "terms"),
+    [
+        ("pyinstaller", "6.22.2", "COPYING.txt", b"Bootloader Exception\r\nRun-time Hooks\r\n"),
+        ("pyinstaller-hooks-contrib", "2026.7", "LICENSE", b"Runtime hooks\nApache License 2.0\n"),
+    ],
+)
+def test_packaging_tool_exception_and_runtime_hook_license_bytes_are_preserved(
+    tmp_path, monkeypatch, name, version, license_name, terms,
+):
+    dist = installed_distribution(
+        tmp_path, name, version,
+        metadata_files={f"licenses/{license_name}": terms}, license_files=(license_name,),
+    )
+    monkeypatch.setattr(collector, "high_attention_packages", lambda _: (name,))
+    monkeypatch.setattr(collector, "package_distribution", lambda _: dist)
+    output = tmp_path / "collected"
+
+    collector.collect(output)
+
+    assert (output / f"{name}-{version}/licenses" / license_name).read_bytes() == terms
+    assert (output / f"{name}-{version}/METADATA").read_bytes() == (dist._path / "METADATA").read_bytes()
 
 
 def test_missing_recorded_vendor_notice_fails_collection(tmp_path, monkeypatch):

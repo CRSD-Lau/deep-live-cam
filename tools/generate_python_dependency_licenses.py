@@ -53,7 +53,7 @@ def row(name: str, version: str, license_text: str, extra: str | None = None) ->
 def generate(output: Path) -> None:
     # PYTHONPATH can expose the isolated Torch helper. Its bootstrap tools must
     # not shadow or duplicate the versions used by the main build interpreter.
-    main_packages = {"pip", "setuptools"}
+    main_packages = {"pip", "setuptools", "pyinstaller", "pyinstaller-hooks-contrib"}
     dists = [dist for dist in metadata.distributions() if package_name(dist).lower() not in main_packages]
     paths = sorted({sysconfig.get_path("purelib"), sysconfig.get_path("platlib")})
     dists.extend(dist for dist in metadata.distributions(path=paths) if package_name(dist).lower() in main_packages)

@@ -24,12 +24,15 @@ BASE_HIGH_ATTENTION_PACKAGES = (
     "easydict",
     "pip",
     "setuptools",
+    "pyinstaller",
+    "pyinstaller-hooks-contrib",
 )
 
 # These build packages can be collected incidentally into the frozen runtime.
 # Their metadata must come from the main interpreter, not the CUDA helper that
 # is exposed through PYTHONPATH only so its torch notices can be collected.
-MAIN_ENVIRONMENT_PACKAGES = {"pip", "setuptools"}
+MAIN_ENVIRONMENT_PACKAGES = {"pip", "setuptools", "pyinstaller", "pyinstaller-hooks-contrib"}
+VENDORED_NOTICE_PACKAGES = {"pip", "setuptools"}
 
 PACKAGE_NOTICE_FILES = {
     "tensorflow": ("tensorflow/THIRD_PARTY_NOTICES.txt",),
@@ -64,7 +67,7 @@ def package_distribution(package: str) -> metadata.Distribution:
 def supplemental_notice_files(dist: metadata.Distribution) -> list[Path]:
     """Find package-owned notices, including vendored licences, from RECORD."""
     package = dist.metadata["Name"].lower().replace("_", "-")
-    if package not in MAIN_ENVIRONMENT_PACKAGES:
+    if package not in VENDORED_NOTICE_PACKAGES:
         return []
     site_packages = Path(dist._path).parent
     package_root = (site_packages / package).resolve()
@@ -83,6 +86,43 @@ def supplemental_notice_files(dist: metadata.Distribution) -> list[Path]:
             raise RuntimeError(f"Expected package notice file not found for {package}: {relative}")
         notices.append(relative)
     return sorted(notices)
+
+
+def metadata_notice_files(dist: metadata.Distribution) -> list[Path]:
+    """Validate declared/recorded notices before walking the installed files."""
+    dist_info = Path(dist._path)
+    for declaration in dist.metadata.get_all("License-File", []):
+        relative = Path(declaration)
+        if relative.is_absolute() or ".." in relative.parts:
+            raise RuntimeError(f"Declared license path escapes {dist_info.name}: {declaration}")
+        # PEP 639 wheels use licenses/; older metadata stores files at the root.
+        candidates = (dist_info / "licenses" / relative, dist_info / relative)
+        if not any(path.is_file() and path.resolve().is_relative_to(dist_info.resolve()) for path in candidates):
+            raise RuntimeError(f"Declared license file not found for {dist_info.name}: {declaration}")
+
+    for entry in dist.files or []:
+        relative = Path(entry)
+        if not relative.parts or relative.parts[0] != dist_info.name or len(relative.parts) < 2:
+            continue
+        in_license_directory = relative.parts[1].lower() == "licenses"
+        if not (is_notice_file(relative) or in_license_directory):
+            continue
+        source = dist_info.parent / relative
+        if not source.resolve().is_relative_to(dist_info.resolve()):
+            raise RuntimeError(f"Metadata notice path escapes {dist_info.name}: {relative}")
+        if not source.is_file():
+            raise RuntimeError(f"Recorded metadata notice file not found for {dist_info.name}: {relative}")
+
+    notices = []
+    for source in sorted(dist_info.rglob("*")):
+        relative = source.relative_to(dist_info)
+        in_license_directory = relative.parts[0].lower() == "licenses"
+        if not source.is_file() or not (is_notice_file(source) or in_license_directory):
+            continue
+        if not source.resolve().is_relative_to(dist_info.resolve()):
+            raise RuntimeError(f"Metadata notice path escapes {dist_info.name}: {relative}")
+        notices.append(source)
+    return notices
 
 
 def high_attention_packages(onnxruntime_package: str) -> tuple[str, ...]:
@@ -112,6 +152,8 @@ def collect(
         dist_info = Path(getattr(dist, "_path", ""))
         if not dist_info.exists():
             raise RuntimeError(f"Could not locate installed metadata for {name} {version}.")
+        metadata_notices = metadata_notice_files(dist)
+        package_notices = supplemental_notice_files(dist)
         destination = output / f"{safe_name(name)}-{safe_name(version)}"
         if not destination.resolve().is_relative_to(output.resolve()):
             raise RuntimeError(f"License destination escapes the output directory: {destination.name}")
@@ -120,22 +162,17 @@ def collect(
         destination.mkdir(parents=True, exist_ok=True)
 
         found = False
-        for source in sorted(dist_info.rglob("*")):
+        for source in metadata_notices:
             # PEP 639 permits arbitrary filenames below dist-info/licenses,
             # including AUTHORS and vendor-specific attribution supplements.
             relative = source.relative_to(dist_info)
-            in_license_directory = relative.parts[0].lower() == "licenses"
-            if not source.is_file() or not (is_notice_file(source) or in_license_directory):
-                continue
-            if not source.resolve().is_relative_to(dist_info.resolve()):
-                raise RuntimeError(f"Metadata notice path escapes {name}: {relative}")
             target = destination / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
             copied.append(target)
             found = found or source.name != "METADATA"
 
-        for relative in supplemental_notice_files(dist):
+        for relative in package_notices:
             source = dist_info.parent / relative
             target = destination / "package" / relative
             target.parent.mkdir(parents=True, exist_ok=True)
