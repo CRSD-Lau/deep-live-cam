@@ -7,7 +7,18 @@ date: 2026-09-06
 
 # OBS Virtual Camera Verification
 
-Status: PENDING
+Status: PASS
+
+Publication status: APPROVED FOR PUBLICATION
+
+Remaining manual gates: None.
+
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](docs/release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
+
+Neil Mitchell reported "All tests pass release" after the explicit seven-item
+manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
+records those manual PASS results and publication authorization. These results
+were reported by Neil Mitchell; the agent did not execute the manual checks.
 
 Release: `2.2.4`
 
@@ -20,10 +31,10 @@ The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md)
 with original hashes and does not approve this rebuild.
 
 - [x] Verify final CUDA and identified AMD DirectML providers and real processing.
-- [ ] Check packaged Preview and physical-camera Live Output start, stop, restart and failed startup.
-- [ ] Confirm file rendering and live processing cannot overlap through the final GUIs.
-- [ ] Confirm actual processed Live Output reaches an independent receiving application.
-- [ ] Confirm the final workflow matches docs/OBS_VIRTUAL_CAMERA.md.
+- [x] Check packaged Preview and physical-camera Live Output start, stop, restart and failed startup. — PASS reported by Neil Mitchell.
+- [x] Confirm file rendering and live processing cannot overlap through the final GUIs. — PASS reported by Neil Mitchell.
+- [x] Confirm actual processed Live Output reaches an independent receiving application. — PASS reported by Neil Mitchell.
+- [x] Confirm the final workflow matches docs/OBS_VIRTUAL_CAMERA.md. — PASS reported by Neil Mitchell.
 
 The archived source-component test delivered 240 changing synthetic frames through
 the actual OBS Virtual Camera driver across two start/stop cycles. No physical

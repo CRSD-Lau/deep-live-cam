@@ -9,6 +9,17 @@ date: 2026-09-06
 
 Status: PASS
 
+Publication status: APPROVED FOR PUBLICATION
+
+Remaining manual gates: None.
+
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](docs/release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
+
+Neil Mitchell reported "All tests pass release" after the explicit seven-item
+manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
+records those manual PASS results and publication authorization. These results
+were reported by Neil Mitchell; the agent did not execute the manual checks.
+
 Release: `2.2.4`
 
 Candidate source: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
@@ -35,7 +46,8 @@ the portable ZIP SHA-256 is
 Models remain in the new owned test cache and are excluded from release assets.
 Existing user data, model/Buffalo caches and installed executables stayed unchanged.
 PASS covers packaged DirectML cancellation/success and source-level failure tests;
-it does not claim a fresh interrupted-network test of the executable, GUI consent
-or CUDA-package setup. Dependency-managed InsightFace/OpenNSFW2 downloads remain
+it does not claim a fresh interrupted-network test of the executable or CUDA-package
+setup. GUI consent is separately PASS as reported by Neil Mitchell in the owner
+confirmation; it was not executed by the agent. Dependency-managed InsightFace/OpenNSFW2 downloads remain
 outside this explicit catalogue. The first candidate's separate download evidence
 stays archived with its original CLI hash.

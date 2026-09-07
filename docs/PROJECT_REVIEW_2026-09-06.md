@@ -1,5 +1,6 @@
 ---
 author: Neil Mitchell
+creator: Neil Mitchell
 last_modified_by: Neil Mitchell
 date: 2026-09-06
 ---
@@ -11,7 +12,7 @@ recovery from failed operations. The fixes were merged in [PR #62](https://githu
 and [PR #63](https://github.com/CRSD-Lau/deep-live-cam/pull/63).
 The initial review used default-branch commit `8ce01f795b0558e77de255b9fa1c839a8a6a738b`;
 release preparation incorporates the subsequent `9bdb9cf` audit documentation fix.
-This is source-review evidence, not a new binary release approval.
+The initial source-review results are distinct from the later artifact evidence and owner publication authorization recorded below.
 
 ## Coverage and approach
 
@@ -82,11 +83,11 @@ exception; this review neither adds nor broadens that exception.
   states this limitation. Integrating them requires reviewed sources/checksums,
   consent UX, and compatibility testing with existing caches; it is not solved
   by the transfer-cleanup patch.
-- **Physical hardware and packaged builds need release validation.** Camera
-  failure tests use mocks; Qt runs offscreen. No claim is made about a new
-  physical-camera/OBS stability run, face-swap visual quality, NVIDIA/AMD/Intel
-  performance, clean-VM installation, or published binary behavior. Existing
-  release evidence remains historical.
+- **Initial source-review scope.** Camera failure tests used mocks and Qt ran
+  offscreen during this pass. Subsequent artifact-based GPU validation and Neil
+  Mitchell's manual-test confirmation are recorded below. The source tests alone
+  do not establish physical-camera behavior, visual quality, cross-vendor
+  performance, clean-VM installation, or published-download availability.
 - **Large UI and processor modules remain.** Splitting them and tuning inference
   or temporal behavior would require broader characterization and representative
   media. Their size alone does not justify combining a redesign with these fixes.
@@ -129,8 +130,9 @@ that physical-camera, clean-Windows, or packaged GUI/manual gates are complete.
 See [the current release report](../RELEASE_REPORT.md),
 [publication handoff](../RELEASE_PUBLISH_HANDOFF.md), and
 [first-candidate DirectML inspection](release-evidence/v2.2.4/candidate-753aab70/DIRECTML_COMPLIANCE_TECHNICAL.md).
-The 2.2.4 candidate remains a draft while mandatory release checks are pending;
-historical 2.2.3 evidence is retained under `docs/release-evidence/v2.2.3/`.
+At that stage the 2.2.4 candidate remained a draft while mandatory release checks
+were pending. Historical 2.2.3 evidence is retained under
+`docs/release-evidence/v2.2.3/`.
 
 The first official CUDA installer subsequently passed an actual 2.2.3-to-2.2.4
 upgrade with seven unchanged user-data files, real NVIDIA CUDA image/audio/silent
@@ -142,9 +144,9 @@ superseded; its byte-exact evidence is archived under
 The corrected candidate collects package/vendor notices, uses the locked main pip
 for the CUDA DLL-source helper, and speeds up only the isolated installer test
 fixture's compression. The public installer retains its compression settings and
-all migration/uninstall assertions remain required. Replacement bytes require
-fresh source, hash, payload and runtime validation; the shared 2.2.4 version does
-not transfer earlier PASS claims.
+all migration/uninstall assertions remain required. Replacement bytes received
+fresh source, hash, payload and runtime validation as recorded below; the shared
+2.2.4 version does not transfer earlier PASS claims.
 
 ## Corrected candidate verification
 
@@ -154,4 +156,17 @@ Fresh draft-hosted CUDA and DirectML downloads match the official files. The cor
 
 Both final payload inspections match all 77 required upstream tool notices and all locked inventory rows. The missing pip/setuptools/PyInstaller/hook notices are resolved in corrected bytes; the build-only affected Torch exception is retained accurately. Isolated installer fixture compilation took 336.468 seconds, versus 1,542.828 seconds in the prior run, while public compression remains ultra64. This is observed run timing, not a controlled benchmark.
 
-The [corrected evidence](release-evidence/v2.2.4/candidate-617c733d/README.md) records exact hashes and scope. GUI Preview/Live Output, physical-camera/receiver and clean-Windows manual checks remain pending. Version 2.2.4 remains draft; 2.2.3 remains public stable.
+The [corrected evidence](release-evidence/v2.2.4/candidate-617c733d/README.md) records exact hashes and scope. Neil Mitchell has now reported all seven outstanding GUI Preview/Live Output, physical-camera/receiver and clean-Windows manual checks PASS and authorized publication. These are owner-reported results; the agent did not execute the manual checks.
+
+Status: PUBLISHED — PUBLIC DOWNLOADS VERIFIED
+
+Remaining manual gates: None.
+
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
+
+Neil Mitchell reported "All tests pass release" after the explicit seven-item
+manual checklist. The [owner confirmation](release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
+records those manual PASS results and publication authorization. These results
+were reported by Neil Mitchell; the agent did not execute the manual checks.
+
+The binary/source commit remains `617c733d42a10a2fcba036385e19d66fabcc2cc1`; publication and public download verification are complete. Preserve `v2.2.3` and the verified backups for rollback.

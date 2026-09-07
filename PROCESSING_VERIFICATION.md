@@ -7,7 +7,18 @@ date: 2026-09-06
 
 # Processing Verification
 
-Status: PENDING
+Status: PASS
+
+Publication status: APPROVED FOR PUBLICATION
+
+Remaining manual gates: None.
+
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](docs/release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
+
+Neil Mitchell reported "All tests pass release" after the explicit seven-item
+manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
+records those manual PASS results and publication authorization. These results
+were reported by Neil Mitchell; the agent did not execute the manual checks.
 
 Release: `2.2.4`
 
@@ -29,7 +40,7 @@ successful renders. Existing models and tested executables remained unchanged.
 
 Portable ZIP SHA-256:
 `f6b077f0364bb523e75ec7950b096d62763a5b4aa2de181d0eaffa47f9bf6f04`.
-The remaining checklist covers combined-profile and GUI completion.
+The checklist combines recorded automated evidence with the owner-reported GUI result.
 
 - [x] Verify final CUDA and DirectML runtime identities and strict
   `--check-execution-provider` probes.
@@ -40,7 +51,7 @@ The remaining checklist covers combined-profile and GUI completion.
 - [x] Verify failed export preserves the prior destination and cleans owned staging files.
 - [x] Verify packaged CPU image fallback explicitly uses CPUExecutionProvider.
 - [x] Confirm existing models and tested executable hashes remain unchanged.
-- [ ] Check packaged processed Preview start, seek and close in both final GUIs.
+- [x] Check packaged processed Preview start, seek and close in both final GUIs. — PASS reported by Neil Mitchell.
 
 Record device identity/index, binary/source SHA, tested models, render outputs and
 scope limits. CPU image evidence does not establish CPU video performance; CUDA
@@ -48,4 +59,4 @@ FP32 inference does not establish FP16 inference. The archived first candidate
 passed the real CLI subsets on RTX 4070 and AMD device 1, but these results do not
 substitute for validation of replacement binaries.
 
-The corrected installed CUDA runtime also passed strict preflight without an external CUDA Toolkit, Unicode image output, silent/audio videos and failed-export preservation. CPU fallback passed image-only processing with CPUExecutionProvider. The combined validation records new installer/CLI/GUI hashes and preserved model bytes. Packaged Preview remains unperformed.
+The corrected installed CUDA runtime also passed strict preflight without an external CUDA Toolkit, Unicode image output, silent/audio videos and failed-export preservation. CPU fallback passed image-only processing with CPUExecutionProvider. The combined validation records new installer/CLI/GUI hashes and preserved model bytes. Neil Mitchell reports packaged Preview PASS in the owner confirmation; the agent did not execute that manual GUI check.
