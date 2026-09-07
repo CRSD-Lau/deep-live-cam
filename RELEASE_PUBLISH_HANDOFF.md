@@ -11,19 +11,18 @@ Release: `2.2.4`
 
 Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
-Status: APPROVED FOR PUBLICATION
+Status: PUBLISHED — PUBLIC DOWNLOADS VERIFIED
 
 Remaining manual gates: None.
 
-Publication is authorized by Neil Mitchell and pending actual publication.
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](docs/release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
 
 Neil Mitchell reported "All tests pass release" after the explicit seven-item
 manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
 records those manual PASS results and publication authorization. These results
 were reported by Neil Mitchell; the agent did not execute the manual checks.
 
-
-The existing draft targets the frozen commit above. Corrected runtime and source assets have replaced the superseded candidate. Preserve all seven frozen binary/source files, their hashes, and the existing `v2.2.3` rollback release. Tag verification, publication and public-download readback remain execution steps of the authorized publication.
+The published release targets the frozen commit above. Corrected runtime and source assets have replaced the superseded candidate. Preserve all seven frozen binary/source files, their hashes, and the existing `v2.2.3` rollback release. The annotated tag, publication and fresh public-download readback have all been verified.
 
 [Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
 
@@ -48,9 +47,9 @@ python tools\summarize_manual_release_gates.py --app-version 2.2.4 --strict
 python tools\validate_windows_release_artifacts.py --app-version 2.2.4 --output-dir build\windows\release-assets\2.2.4 --release-assets-dir build\windows\release-assets\2.2.4 --require-git-ref-source --require-directml-portable
 ```
 
-Use the actual asset directory for both directory options. The artifact validator checks integrity and document structure; the strict summary is the separate manual gate. `Ready to publish without remaining manual gates: YES` now reflects the completed current-version checks and Neil Mitchell's explicit manual confirmation. Publication itself remains pending execution.
+Use the actual asset directory for both directory options. The artifact validator checks integrity and document structure; the strict summary is the separate manual gate. `Ready to publish without remaining manual gates: YES` now reflects the completed current-version checks and Neil Mitchell's explicit manual confirmation. Publication and public download verification are complete.
 
-## Publication order
+## Publication procedure completed
 
 1. Create and verify the annotated `v2.2.4` tag at the fixed build commit; the owner-reported manual gates are complete.
 2. Reconcile the existing draft with the final notes and every file listed in `RELEASE_ASSETS.md`. Keep binaries/source unchanged when updating attestations.

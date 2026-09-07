@@ -13,13 +13,12 @@ Publication status: APPROVED FOR PUBLICATION
 
 Remaining manual gates: None.
 
-Publication is authorized by Neil Mitchell and pending actual publication.
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](docs/release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
 
 Neil Mitchell reported "All tests pass release" after the explicit seven-item
 manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
 records those manual PASS results and publication authorization. These results
 were reported by Neil Mitchell; the agent did not execute the manual checks.
-
 
 Release: `2.2.4`
 

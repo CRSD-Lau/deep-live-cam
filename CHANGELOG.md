@@ -8,6 +8,7 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.2.4] - 2026-09-06
 
+[Published release](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4); all 47 public downloads verified.
 Manual release checks passed as reported by Neil Mitchell. The release preserves
 the tested binaries and corresponding source at `617c733d42a10a2fcba036385e19d66fabcc2cc1`.
 

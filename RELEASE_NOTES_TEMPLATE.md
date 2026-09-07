@@ -7,19 +7,18 @@ date: 2026-09-06
 
 # Deep Live Cam Studio 2.2.4 Windows Release
 
-Status: APPROVED FOR PUBLICATION
+Status: PUBLISHED — PUBLIC DOWNLOADS VERIFIED
 
 Remaining manual gates: None.
 
-Publication is authorized by Neil Mitchell and pending actual publication.
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](docs/release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
 
 Neil Mitchell reported "All tests pass release" after the explicit seven-item
 manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
 records those manual PASS results and publication authorization. These results
 were reported by Neil Mitchell; the agent did not execute the manual checks.
 
-
-Automated artifact checks passed. Neil Mitchell has reported all outstanding manual tests PASS and authorized publication; publication is pending execution.
+Automated artifact checks passed. Neil Mitchell has reported all outstanding manual tests PASS and authorized publication; publication and public download verification are complete.
 Binary and corresponding-source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`.
 Later documentation/evidence commits do not change this artifact identity.
 
@@ -27,7 +26,6 @@ This patch release protects existing exports when rendering fails, isolates
 temporary frames from user folders, and improves settings, model-transfer, and
 camera lifecycle handling. It also tightens release source matching and rejects
 stale verification evidence.
-
 
 The first candidate was superseded for missing embedded-package notices. Its
 tests and hashes are archived separately. Only the corrected assets and their
@@ -150,6 +148,6 @@ The isolated installer fixture compiled in 336.468 seconds versus 1,465.188 seco
 
 Remaining publish blockers: None.
 
-The seven manual items are PASS as reported by Neil Mitchell in the linked owner confirmation. The authorized publication procedure still includes regenerating the strict current-version summary, verifying the tag and final manifest, publishing the draft, and checking public downloads. These publication actions have not yet been reported complete.
+The seven manual items are PASS as reported by Neil Mitchell in the linked owner confirmation. The strict current-version summary, frozen tag, final manifest, publication and public download checks all passed. These publication actions are complete and verified.
 
-`RELEASE_VALIDATION.md`, `RELEASE_VERIFICATION.md`, `MANUAL_RELEASE_GATES.md` and `LEGAL_REVIEW.md` contain current evidence and limits. Publication is authorized and pending execution; preserve `v2.2.3` as rollback.
+`RELEASE_VALIDATION.md`, `RELEASE_VERIFICATION.md`, `MANUAL_RELEASE_GATES.md` and `LEGAL_REVIEW.md` contain current evidence and limits. Publication is complete and public downloads are verified; preserve `v2.2.3` as rollback.

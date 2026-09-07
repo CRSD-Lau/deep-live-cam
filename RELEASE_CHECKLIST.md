@@ -11,17 +11,16 @@ Release: `2.2.4`
 
 Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
-Status: APPROVED FOR PUBLICATION
+Status: PUBLISHED — PUBLIC DOWNLOADS VERIFIED
 
 Remaining manual gates: None.
 
-Publication is authorized by Neil Mitchell and pending actual publication.
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](docs/release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
 
 Neil Mitchell reported "All tests pass release" after the explicit seven-item
 manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
 records those manual PASS results and publication authorization. These results
 were reported by Neil Mitchell; the agent did not execute the manual checks.
-
 
 ## Completed candidate checks
 
@@ -44,12 +43,12 @@ were reported by Neil Mitchell; the agent did not execute the manual checks.
 - [x] `OBS_VIRTUAL_CAMERA_VERIFICATION.md`: physical-camera Live Output and an independent receiver — PASS reported by Neil Mitchell.
 - [x] Packaged Preview in `PROCESSING_VERIFICATION.md` — PASS reported by Neil Mitchell.
 
-## Authorized publication actions
+## Completed publication actions
 
-- [ ] Regenerate the strict current-version manual summary from the completed gate documents.
-- [ ] Create and verify an annotated `v2.2.4` tag at the fixed build commit.
-- [ ] Recheck the final complete hosted asset manifest, repository queue and security alerts before publication.
-- [ ] Publish the authorized draft and verify public downloads; preserve `v2.2.3` rollback.
+- [x] Regenerate the strict current-version manual summary from the completed gate documents.
+- [x] Create and verify an annotated `v2.2.4` tag at the fixed build commit.
+- [x] Recheck the final complete hosted asset manifest, repository queue and security alerts before publication.
+- [x] Publish the authorized draft and verify public downloads; preserve `v2.2.3` rollback.
 
 [Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
 

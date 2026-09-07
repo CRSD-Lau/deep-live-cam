@@ -9,17 +9,16 @@ date: 2026-09-06
 
 Release: `2.2.4`
 
-Status: APPROVED FOR PUBLICATION
+Status: PUBLISHED — PUBLIC DOWNLOADS VERIFIED
 
 Remaining manual gates: None.
 
-Publication is authorized by Neil Mitchell and pending actual publication.
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](docs/release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
 
 Neil Mitchell reported "All tests pass release" after the explicit seven-item
 manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
 records those manual PASS results and publication authorization. These results
 were reported by Neil Mitchell; the agent did not execute the manual checks.
-
 
 Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
@@ -36,7 +35,6 @@ is retained unchanged; its old build commands and validation claims are historic
 
 [Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
 The exact artifacts passed their automated checks, and Neil Mitchell has confirmed the remaining manual checks PASS. Keep `v2.2.3` available as rollback during the authorized publication.
-
 
 The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
 notices. Archive its tests and hashes; require new evidence for replacement bytes.
@@ -77,7 +75,7 @@ and is not a smoke test of already downloaded official bytes.
 
 ## Installer Output
 
-The verified `DeepLiveCamStudio-2.2.4-x64-setup.exe` and its sidecar are in the existing draft with DirectML and exact corresponding source. The corrected installer passed actual same-version replacement, preserving seven user-data files and both backups. CUDA/DirectML real processing and CPU image fallback passed. GUI and clean-Windows checks are PASS as reported by Neil Mitchell; publication is authorized and pending execution.
+The verified `DeepLiveCamStudio-2.2.4-x64-setup.exe` and its sidecar are attached to the published release with DirectML and exact corresponding source. The corrected installer passed actual same-version replacement, preserving seven user-data files and both backups. CUDA/DirectML real processing and CPU image fallback passed. GUI and clean-Windows checks are PASS as reported by Neil Mitchell; publication is complete and public downloads are verified.
 
 ## Dependencies Bundled
 

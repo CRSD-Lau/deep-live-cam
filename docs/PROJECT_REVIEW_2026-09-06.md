@@ -158,15 +158,15 @@ Both final payload inspections match all 77 required upstream tool notices and a
 
 The [corrected evidence](release-evidence/v2.2.4/candidate-617c733d/README.md) records exact hashes and scope. Neil Mitchell has now reported all seven outstanding GUI Preview/Live Output, physical-camera/receiver and clean-Windows manual checks PASS and authorized publication. These are owner-reported results; the agent did not execute the manual checks.
 
-Status: APPROVED FOR PUBLICATION
+Status: PUBLISHED — PUBLIC DOWNLOADS VERIFIED
 
 Remaining manual gates: None.
 
-Publication is authorized by Neil Mitchell and pending actual publication.
+Published as the [latest stable v2.2.4](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4) at 2026-09-07T01:55:44Z. [Public verification](release-evidence/v2.2.4/candidate-617c733d/PUBLIC_RELEASE_VALIDATION.md) passed for all 47 fresh unauthenticated downloads and the annotated tag at the frozen source commit.
 
 Neil Mitchell reported "All tests pass release" after the explicit seven-item
 manual checklist. The [owner confirmation](release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
 records those manual PASS results and publication authorization. These results
 were reported by Neil Mitchell; the agent did not execute the manual checks.
 
-The binary/source commit remains `617c733d42a10a2fcba036385e19d66fabcc2cc1`; publication and public-download verification are pending execution. Preserve `v2.2.3` and the verified backups for rollback.
+The binary/source commit remains `617c733d42a10a2fcba036385e19d66fabcc2cc1`; publication and public download verification are complete. Preserve `v2.2.3` and the verified backups for rollback.
