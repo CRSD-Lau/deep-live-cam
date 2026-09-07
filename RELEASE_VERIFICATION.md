@@ -13,11 +13,21 @@ Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
 App version: `2.2.4`
 
-Status: DRAFT — AUTOMATED ARTIFACT CHECKS PASS; MANUAL GATES PENDING
+Status: APPROVED FOR PUBLICATION
+
+Remaining manual gates: None.
+
+Publication is authorized by Neil Mitchell and pending actual publication.
+
+Neil Mitchell reported "All tests pass release" after the explicit seven-item
+manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
+records those manual PASS results and publication authorization. These results
+were reported by Neil Mitchell; the agent did not execute the manual checks.
+
 
 - Local installer automation passed: YES — corrected official EXE replacement plus separate hosted migration/uninstall fixture.
 - Public-release source archive from clean Git ref: YES — all 287 source files match the immutable commit.
-- Ready to publish without remaining manual gates: NO
+- Ready to publish without remaining manual gates: YES — all seven manual items PASS as reported by Neil Mitchell; publication authorized and pending execution.
 
 The official workflow 34063403042 passed for both runtime profiles and exact corresponding source. All 36 original assets passed their checksum and structure checks; fresh draft-hosted downloads matched the verified runtime/source files.
 
@@ -29,4 +39,4 @@ Both payload audits matched all 77 upstream tool notice files and every locked i
 
 [Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
 
-Packaged GUI Preview/Live Output, physical-camera/receiving-application behavior, and clean-Windows/interactive installation checks remain pending. Keep `v2.2.4` as a draft; `v2.2.3` remains public stable and rollback.
+All seven outstanding manual checks are PASS as reported by Neil Mitchell. Publication is authorized and pending execution; retain `v2.2.3` and the verified backups for rollback.

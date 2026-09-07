@@ -7,7 +7,19 @@ date: 2026-09-06
 
 # Deep Live Cam Studio 2.2.4 Windows Release
 
-Draft candidate: automated artifact checks passed; manual verification remains pending.
+Status: APPROVED FOR PUBLICATION
+
+Remaining manual gates: None.
+
+Publication is authorized by Neil Mitchell and pending actual publication.
+
+Neil Mitchell reported "All tests pass release" after the explicit seven-item
+manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
+records those manual PASS results and publication authorization. These results
+were reported by Neil Mitchell; the agent did not execute the manual checks.
+
+
+Automated artifact checks passed. Neil Mitchell has reported all outstanding manual tests PASS and authorized publication; publication is pending execution.
 Binary and corresponding-source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`.
 Later documentation/evidence commits do not change this artifact identity.
 
@@ -128,7 +140,7 @@ The model-manager downloads are stored under:
 
 ## Release evidence
 
-This release candidate is not publish-approved while the required manual gates remain open.
+This release candidate is not publish-approved by automated checks alone. Neil Mitchell has now confirmed all outstanding manual tests pass and authorized publication; the manual gate is closed.
 
 Official workflow 34063403042 passed from the exact binary/source commit above. Local tests passed 744 cases; exact-source CI passed 742 with two platform skips. Both final runtime packages and corresponding source were freshly downloaded from the draft and matched the verified build bytes.
 
@@ -136,10 +148,8 @@ The corrected installer passed actual same-version replacement with unchanged mo
 
 The isolated installer fixture compiled in 336.468 seconds versus 1,465.188 seconds for the public installer in this run; public ultra64 compression remains unchanged. Its prior-run fixture time was 1,542.828 seconds. This observed timing improvement is not a controlled cross-run benchmark.
 
-Remaining publish blockers:
+Remaining publish blockers: None.
 
-- Complete packaged Preview, physical-camera Live Output lifecycle and processed output in an independent receiving application.
-- Complete final clean-Windows installation/2.2.3 upgrade, shortcut/model-consent and interactive uninstall checks.
-- Make the strict current-version manual summary pass, then verify the tag, final manifest and public downloads during publication.
+The seven manual items are PASS as reported by Neil Mitchell in the linked owner confirmation. The authorized publication procedure still includes regenerating the strict current-version summary, verifying the tag and final manifest, publishing the draft, and checking public downloads. These publication actions have not yet been reported complete.
 
-`RELEASE_VALIDATION.md`, `RELEASE_VERIFICATION.md`, `MANUAL_RELEASE_GATES.md` and `LEGAL_REVIEW.md` contain current evidence and limits. Keep this release draft until the remaining gates pass; `v2.2.3` remains public stable and rollback.
+`RELEASE_VALIDATION.md`, `RELEASE_VERIFICATION.md`, `MANUAL_RELEASE_GATES.md` and `LEGAL_REVIEW.md` contain current evidence and limits. Publication is authorized and pending execution; preserve `v2.2.3` as rollback.

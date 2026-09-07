@@ -11,7 +11,17 @@ Release: `2.2.4`
 
 Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
-Status: AUTOMATED CANDIDATE SUBSETS PASS; PUBLICATION PENDING
+Status: APPROVED FOR PUBLICATION
+
+Remaining manual gates: None.
+
+Publication is authorized by Neil Mitchell and pending actual publication.
+
+Neil Mitchell reported "All tests pass release" after the explicit seven-item
+manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
+records those manual PASS results and publication authorization. These results
+were reported by Neil Mitchell; the agent did not execute the manual checks.
+
 
 The official workflow 34063403042 passed for both runtime profiles and exact corresponding source. All 36 original assets passed their checksum and structure checks; fresh draft-hosted downloads matched the verified runtime/source files.
 
@@ -25,4 +35,4 @@ Both payload audits matched all 77 upstream tool notice files and every locked i
 
 The first candidate at `753aab70` is superseded for missing embedded-package notices. Its byte-exact evidence remains archived. Current reports identify corrected bytes; the shared 2.2.4 version does not transfer earlier test results.
 
-Packaged GUI Preview/Live Output, physical-camera/receiving-application behavior, and clean-Windows/interactive installation checks remain pending. Keep `v2.2.4` as a draft; `v2.2.3` remains public stable and rollback.
+All seven outstanding manual checks are PASS as reported by Neil Mitchell. Publication is authorized and pending execution; retain `v2.2.3` and the verified backups for rollback.

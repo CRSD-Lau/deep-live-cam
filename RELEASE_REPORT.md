@@ -9,7 +9,17 @@ date: 2026-09-06
 
 Release: `2.2.4`
 
-Status: DRAFT — AUTOMATED ARTIFACT CHECKS PASS; MANUAL GATES PENDING
+Status: APPROVED FOR PUBLICATION
+
+Remaining manual gates: None.
+
+Publication is authorized by Neil Mitchell and pending actual publication.
+
+Neil Mitchell reported "All tests pass release" after the explicit seven-item
+manual checklist. The [owner confirmation](docs/release-evidence/v2.2.4/candidate-617c733d/OWNER_MANUAL_CONFIRMATION.md)
+records those manual PASS results and publication authorization. These results
+were reported by Neil Mitchell; the agent did not execute the manual checks.
+
 
 Binary/source commit: `617c733d42a10a2fcba036385e19d66fabcc2cc1`
 
@@ -25,7 +35,7 @@ The [original 2.2.3 report](docs/release-evidence/v2.2.3/preparation/RELEASE_REP
 is retained unchanged; its old build commands and validation claims are historical.
 
 [Candidate validation](docs/release-evidence/v2.2.4/candidate-617c733d/RELEASE_VALIDATION.md) and [build/source evidence](docs/release-evidence/v2.2.4/candidate-617c733d/BUILD_SOURCE_VALIDATION.md) record the exact files, input hashes and limits.
-The exact artifacts passed their automated checks. Keep `v2.2.3` available as rollback while the current manual gates remain pending.
+The exact artifacts passed their automated checks, and Neil Mitchell has confirmed the remaining manual checks PASS. Keep `v2.2.3` available as rollback during the authorized publication.
 
 
 The [first candidate](docs/release-evidence/v2.2.4/candidate-753aab70/README.md) is superseded for missing embedded-package
@@ -67,7 +77,7 @@ and is not a smoke test of already downloaded official bytes.
 
 ## Installer Output
 
-The verified `DeepLiveCamStudio-2.2.4-x64-setup.exe` and its sidecar are in the existing draft with DirectML and exact corresponding source. The corrected installer passed actual same-version replacement, preserving seven user-data files and both backups. CUDA/DirectML real processing and CPU image fallback passed. GUI and clean-Windows checks remain pending.
+The verified `DeepLiveCamStudio-2.2.4-x64-setup.exe` and its sidecar are in the existing draft with DirectML and exact corresponding source. The corrected installer passed actual same-version replacement, preserving seven user-data files and both backups. CUDA/DirectML real processing and CPU image fallback passed. GUI and clean-Windows checks are PASS as reported by Neil Mitchell; publication is authorized and pending execution.
 
 ## Dependencies Bundled
 
@@ -97,17 +107,21 @@ dependency notices and model licence limitations accompany the release. Both [CU
 ## Remaining Legal Risks
 
 Do not bundle without legal review: model/checkpoint weights or additional codec
-binaries. Current technical checks do not create a new publisher signoff. The
+binaries. Technical checks alone do not create publisher signoff; Neil Mitchell has now separately authorized publication in the owner confirmation. The
 existing distribution posture and unresolved source/model limitations are recorded
 in `LEGAL_REVIEW.md`, `COMPLIANCE.md` and the licence audits.
 
 ## Manual Checks Required Before Publishing
 
-For each current-version manual gate, set `Status: PASS` only after its required
-checks are complete and supported by evidence. Clean-Windows installation,
-interactive controls, packaged Preview, physical-camera and receiving-application
-Live Output checks remain pending. Keep the release draft until the strict manual
-summary and final artifact checks pass.
+For future evidence updates, set `Status: PASS` only after the required checks
+are complete and the evidence identifies who executed or reported each result.
+
+The seven current-version manual checks are complete as reported by Neil Mitchell
+in the linked owner confirmation: clean-Windows installation, interactive controls,
+packaged Preview, physical-camera Live Output and independent receiving-application
+behavior. Their gate documents now record `Status: PASS`. These manual results were
+reported by the owner, not executed by the agent. Regenerate the strict summary and
+complete the authorized publication procedure against the unchanged final artifacts.
 
 ## Completed automated candidate checks
 

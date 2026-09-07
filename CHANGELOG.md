@@ -8,7 +8,8 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.2.4] - 2026-09-06
 
-Release candidate; publication remains pending final artifact and manual checks.
+Manual release checks passed as reported by Neil Mitchell. The release preserves
+the tested binaries and corresponding source at `617c733d42a10a2fcba036385e19d66fabcc2cc1`.
 
 ### Changed
 
