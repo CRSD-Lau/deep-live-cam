@@ -72,7 +72,7 @@ def test_dependency_sources_match_reviewed_release_versions():
     assert "typing-extensions>=4.16.0" in directml
     assert "tqdm>=4.70.0" in cuda
     assert "tqdm>=4.70.0" in directml
-    assert "pyinstaller==6.22.2" in build
+    assert "pyinstaller==6.22.3" in build
     assert "pyinstaller-hooks-contrib==2026.7" in build
     assert "pytest==9.1.1" in dev
 
