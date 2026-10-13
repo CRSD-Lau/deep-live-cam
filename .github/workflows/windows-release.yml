@@ -136,7 +136,7 @@ jobs:
         run: python tools\validate_windows_release_artifacts.py --repo-root . --output-dir build\windows\installer --release-assets-dir "build\windows\release-assets\$env:APP_VERSION" --app-version $env:APP_VERSION --require-git-ref-source --require-directml-portable
 
       - name: Upload installer artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup
           path: |
@@ -175,7 +175,7 @@ jobs:
         run: powershell -ExecutionPolicy Bypass -File build\windows\package_portable.ps1 -AppVersion $env:APP_VERSION -Accelerator DirectML -SkipAcceleratorProbe
 
       - name: Upload DirectML release artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: DeepLiveCamStudio-${{ inputs.app_version }}-DirectML-x64-portable
           path: |
