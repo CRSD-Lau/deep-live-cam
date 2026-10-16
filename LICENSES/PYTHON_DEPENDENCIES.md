@@ -1,3 +1,10 @@
+---
+author: Neil Mitchell
+creator: Neil Mitchell
+last_modified_by: Neil Mitchell
+modifier: Neil Mitchell
+---
+
 # Python Dependency License Snapshot
 
 Generated from the active Python environment. Package metadata can be incomplete or overly broad; this snapshot is release evidence, not legal advice. Re-generate and review this file for each public release candidate.
@@ -59,7 +66,6 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `optree` | `0.19.1` | Apache-2.0 |
 | `packaging` | `26.2` | Apache-2.0 OR BSD-2-Clause |
 | `pillow` | `12.3.0` | MIT-CMU |
-| `pip_audit` | `2.10.1` | OSI Approved :: Apache Software License |
 | `prettytable` | `3.18.0` | BSD-3-Clause |
 | `protobuf` | `5.29.6` | 3-Clause BSD License |
 | `psutil` | `5.9.8` | BSD-3-Clause |
@@ -96,28 +102,26 @@ The PyInstaller build may collect native DLLs and data files from dependencies e
 | `tqdm` | `4.70.0` | MPL-2.0 AND MIT |
 | `typing-inspection` | `0.4.2` | MIT |
 | `typing_extensions` | `4.16.0` | PSF-2.0 |
-| `urllib3` | `2.7.0` | MIT |
+| `urllib3` | `2.8.0` | MIT |
 | `wcwidth` | `0.8.2` | MIT |
-| `Werkzeug` | `3.1.8` | BSD-3-Clause |
+| `Werkzeug` | `3.1.9` | BSD-3-Clause |
 | `wrapt` | `2.3.0` | BSD-2-Clause |
 
-## Installed But Excluded From The Windows Bundle
+## Build and Support Package Metadata
 
-The local development environment may contain these packages, but they are build/test tooling or are excluded by the PyInstaller spec. Re-check the bundle scan before publishing.
+This table records package roles in the build environment, not proven exclusions. PyInstaller can collect build/support modules incidentally, including pip and setuptools. Inspect the final native payload and both executable archives to establish what is actually bundled; retain notices for collected packages and their vendors.
 
-| Package | Version | License metadata observed | Exclusion evidence |
+| Package | Version | License metadata observed | Role and payload verification |
 | --- | ---: | --- | --- |
-| `altgraph` | `0.17.5` | MIT | PyInstaller/build tooling dependency; not an app runtime dependency. |
-| `pefile` | `2024.8.26` | MIT | PyInstaller/build tooling dependency; not an app runtime dependency. |
-| `pip` | `24.0` | MIT | Build environment package manager; not an app runtime dependency. |
-| `pip` | `26.2.1` | MIT | Build environment package manager; not an app runtime dependency. |
-| `pyinstaller` | `6.22.0` | GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones | Build tooling only; not shipped as an app runtime dependency. |
-| `pyinstaller-hooks-contrib` | `2026.6` | OSI Approved :: Apache Software License; OSI Approved :: GNU General Public License v2 (GPLv2) | Build tooling only; not shipped as an app runtime dependency. |
-| `pywin32-ctypes` | `0.2.3` | BSD-3-Clause | PyInstaller/build tooling dependency; not an app runtime dependency. |
-| `setuptools` | `65.5.0` | OSI Approved :: MIT License | Build environment package; may appear via vendored metadata but is not a declared app runtime dependency. |
-| `setuptools` | `83.0.0` | MIT | Build environment package; may appear via vendored metadata but is not a declared app runtime dependency. |
-| `torch` | `2.11.0+cu128` | BSD-3-Clause | Spec excludes torch; bundle scan checks _internal/torch is absent. |
-| `wheel` | `0.48.0` | MIT | Build environment package; not an app runtime dependency. |
+| `altgraph` | `0.17.5` | MIT | PyInstaller build dependency; verify final payload inclusion separately. |
+| `pefile` | `2024.8.26` | MIT | PyInstaller build dependency; verify final payload inclusion separately. |
+| `pip` | `26.2.1` | MIT | Build package manager; Python modules can be frozen incidentally. Preserve package and vendor notices. |
+| `pyinstaller` | `6.22.3` | GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones | Packaging tool; bootstrap and runtime-hook code is included in frozen applications. |
+| `pyinstaller-hooks-contrib` | `2026.8` | OSI Approved :: Apache Software License; OSI Approved :: GNU General Public License v2 (GPLv2) | Packaging hooks; selected runtime hooks can be included in the frozen application. |
+| `pywin32-ctypes` | `0.2.3` | BSD-3-Clause | PyInstaller build dependency; verify final payload inclusion separately. |
+| `setuptools` | `83.0.0` | MIT | Build backend; Python and vendored modules can be frozen incidentally. Preserve package and vendor notices. |
+| `torch` | `2.11.0+cu128` | BSD-3-Clause | Isolated CUDA DLL source; Torch Python exclusion is spec policy and requires final archive/payload verification. |
+| `wheel` | `0.48.0` | MIT | Build support package; verify final payload inclusion separately. |
 
 ## High-Attention Items
 
