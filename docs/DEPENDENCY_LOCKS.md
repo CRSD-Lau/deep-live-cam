@@ -55,6 +55,27 @@ For every lock update:
 
 Dependabot monitors the maintained root manifests weekly. Major upgrades remain ignored and must be proposed deliberately; this repository does not auto-merge dependency updates.
 
+## Security refresh for 2.2.5 (2026-10-25)
+
+Both profiles lock Pillow 13.0.0, setuptools 84.1.0, certifi 2026.10.23,
+and filelock 4.2.4. The two transitive security floors are maintained in
+both root profiles so regeneration cannot retain an affected trust store
+or filelock version. No unrelated dependency versions changed.
+
+Pillow 13.0.0 supports the required CPython 3.11.9. Its removed APIs are not
+used by the application: image arrays infer their mode, exports use RGB/RGBA,
+and the UI uses supported resize/fit/exif APIs. Main UI code uses PySide6;
+CustomTkinter is absent from the maintained release locks.
+
+The official CUDA 12.8 index was rechecked on 2026-10-25: its newest Windows
+CPython 3.11 wheel remains torch 2.11.0, so the existing build-only JIT advisory
+exception below remains necessary. Both application profile audits pass
+without exceptions; only the isolated DLL-source audit retains PYSEC-2025-194.
+
+Fresh package inventory, licence, exact-artifact, hardware and manual gates
+remain mandatory for this candidate. Prior 2.2.4 attestations are archived
+under docs/release-evidence/v2.2.4/final-attestations and do not approve 2.2.5.
+
 ## Build-only PyTorch advisory handling
 
 The CUDA build installs PyTorch into an isolated helper environment and copies only an explicit allowlist of CUDA and cuDNN DLLs. PyTorch Python modules, including `torch.jit`, are excluded from the packaged application.

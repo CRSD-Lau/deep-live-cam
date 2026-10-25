@@ -28,10 +28,10 @@ def test_release_locks_are_hashed_and_keep_onnx_runtimes_isolated():
     assert "onnxruntime-gpu==1.24.4" in cuda
     assert "onnxruntime-directml" not in cuda
     assert "torch==" not in cuda
-    assert "setuptools==83.0.0" in cuda
+    assert "setuptools==84.1.0" in cuda
     assert "onnxruntime-directml==1.23.0" in directml
     assert "onnxruntime-gpu" not in directml
-    assert "setuptools==83.0.0" in directml
+    assert "setuptools==84.1.0" in directml
     assert "torch==2.11.0+cu128" in cuda_runtime
     assert "--hash=sha256:" in cuda_runtime
     assert cuda_runtime_audit.strip() == "torch==2.11.0"

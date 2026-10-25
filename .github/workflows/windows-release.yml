@@ -6,7 +6,7 @@ on:
       app_version:
         description: "Installer version"
         required: true
-        default: "2.2.4"
+        default: "2.2.5"
       git_ref:
         description: "Git ref to resolve once for both runtime builds and corresponding source"
         required: false
