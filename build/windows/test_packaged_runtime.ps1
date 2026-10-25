@@ -151,6 +151,19 @@ foreach ($RelativePath in $DuplicatedReleaseDocs) {
     }
 }
 
+$ArchivePythonCandidates = @(
+    (Join-Path $RepoRoot $(if ($Accelerator -eq "DirectML") { ".venv-build-windows-directml\Scripts\python.exe" } else { ".venv-build-windows\Scripts\python.exe" })),
+    (Join-Path $RepoRoot ".venv\Scripts\python.exe"),
+    (Join-Path $RepoRoot "venv\Scripts\python.exe"),
+    "python"
+)
+$ArchivePython = $ArchivePythonCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+if (-not $ArchivePython) { $ArchivePython = "python" }
+& $ArchivePython (Join-Path $RepoRoot "tools\check_frozen_runtime_imports.py") --dist $DistDir
+if ($LASTEXITCODE -ne 0) {
+    throw "Frozen runtime import validation failed with exit code $LASTEXITCODE."
+}
+
 $Manifest = Join-Path $DistDir "LICENSES\WINDOWS_BUNDLE_MANIFEST.md"
 $ManifestText = Get-Content -LiteralPath $Manifest -Raw
 if ($ManifestText -notmatch "Forbidden model/checkpoint files found: 0") {

@@ -110,6 +110,7 @@ a = Analysis(
         "pytest",
         "IPython",
         "jupyter",
+        "pip",
         "torch",
         "torchvision",
         "torchaudio",

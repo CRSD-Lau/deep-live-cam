@@ -101,3 +101,10 @@ copy. The other accelerator inventory is an explicit non-applicable marker;
 its historical table is not evidence for the current payload. Release assembly
 uses the actual inventory inside the verified DirectML ZIP for the separate
 DirectML release document. Exact payload checks remain required.
+
+The frozen runtime excludes pip and its vendored modules. InsightFace's unused
+`import_try_install` helper otherwise pulls pip into PyInstaller through a
+missing-package installation fallback. Application/model-download paths do not
+call that helper or pip. Both executable archives are checked for pip and Torch
+modules by `tools/check_frozen_runtime_imports.py`; their build notices remain
+available for attribution without claiming the code is shipped.
