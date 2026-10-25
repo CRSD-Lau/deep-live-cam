@@ -91,3 +91,13 @@ The audit exception is limited to the build-only DLL source because the [reporte
 - `build/windows/test_packaged_runtime.ps1` and `build/windows/test_installer.ps1` reject a payload containing `_internal/torch`.
 
 This is a reachability exception, not a claim that PyTorch 2.11.0 is unaffected. It does not cover a source installation that adds PyTorch, a different advisory, or a build that includes Torch/JIT code. Re-evaluate the exception whenever the PyTorch lock, copied DLLs, build isolation, packaging exclusions, or application use of PyTorch changes. Any upgrade to the DLL-source wheel still requires the CUDA provider and release validation described above.
+
+## Runtime notice staging
+
+The collector preserves full Pillow, certifi, and filelock licence files as well
+as their metadata. Each build stages only the directories listed by its freshly
+generated collector manifest, replacing the earlier PyInstaller licence data
+copy. The other accelerator inventory is an explicit non-applicable marker;
+its historical table is not evidence for the current payload. Release assembly
+uses the actual inventory inside the verified DirectML ZIP for the separate
+DirectML release document. Exact payload checks remain required.

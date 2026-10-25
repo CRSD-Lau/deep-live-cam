@@ -34,6 +34,9 @@ REQUIRED_RELEASE_FILES = (
     "LICENSES/PYTHON_DEPENDENCIES.md",
     "LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md",
     "LICENSES/THIRD_PARTY_LICENSES/README.md",
+    "LICENSES/THIRD_PARTY_LICENSES/pillow-13.0.0/licenses/LICENSE",
+    "LICENSES/THIRD_PARTY_LICENSES/certifi-2026.10.23/licenses/LICENSE",
+    "LICENSES/THIRD_PARTY_LICENSES/filelock-4.2.4/licenses/LICENSE",
     "LICENSES/THIRD_PARTY_LICENSES/tensorflow-2.19.1/package/THIRD_PARTY_NOTICES.txt",
     "LICENSES/THIRD_PARTY_LICENSES/onnxruntime-gpu-1.24.4/package/LICENSE",
     "LICENSES/THIRD_PARTY_LICENSES/opencv-python-4.10.0.84/package/LICENSE-3RD-PARTY.txt",
@@ -97,7 +100,13 @@ def generate(dist_dir: Path) -> str:
     native_files = [path for path in files if path.suffix.lower() in NATIVE_SUFFIXES]
     forbidden_models = [path for path in files if path.suffix.lower() in FORBIDDEN_MODEL_SUFFIXES]
     dev_only_status = [(name, (dist_dir / name).exists()) for name in DEV_ONLY_PATHS]
-    required_status = [(name, (dist_dir / name).exists()) for name in REQUIRED_RELEASE_FILES]
+    required_files = REQUIRED_RELEASE_FILES
+    if (dist_dir / "LICENSES/THIRD_PARTY_LICENSES/onnxruntime-directml-1.23.0/package/LICENSE").is_file():
+        required_files = tuple(
+            name.replace("onnxruntime-gpu-1.24.4", "onnxruntime-directml-1.23.0")
+            for name in required_files
+        )
+    required_status = [(name, (dist_dir / name).exists()) for name in required_files]
     total_bytes = sum(path.stat().st_size for path in files)
 
     lines: list[str] = [

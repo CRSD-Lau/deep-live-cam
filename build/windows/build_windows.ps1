@@ -148,10 +148,7 @@ foreach ($Doc in $RequiredDocs) {
 
 Copy-Item -LiteralPath (Join-Path $RepoRoot "Logo.png") -Destination (Join-Path $DistDir "Logo.png") -Force
 
-$Licenses = Join-Path $RepoRoot "LICENSES"
-if (Test-Path $Licenses) {
-    Copy-Item -LiteralPath $Licenses -Destination (Join-Path $DistDir "LICENSES") -Recurse -Force
-}
+Invoke-Checked $PythonExe @("tools\stage_runtime_licenses.py", "--dist", $DistDir, "--profile", $Accelerator)
 
 Invoke-Checked $PythonExe @("tools\generate_windows_bundle_manifest.py", "--dist", $DistDir, "--output", "LICENSES\WINDOWS_BUNDLE_MANIFEST.md")
 New-Item -ItemType Directory -Path (Join-Path $DistDir "LICENSES") -Force | Out-Null

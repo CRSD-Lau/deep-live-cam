@@ -1,4 +1,6 @@
 import zipfile
+
+import pytest
 from pathlib import Path
 
 from tools import validate_windows_release_artifacts as validator
@@ -208,6 +210,9 @@ def write_directml_portable(assets_dir, *, omit_entry=None, extra_entry=None):
         "CHANGELOG.md",
         "LICENSE",
         "_internal/sklearn/.libs/vcomp140.dll",
+        "LICENSES/THIRD_PARTY_LICENSES/pillow-13.0.0/licenses/LICENSE",
+        "LICENSES/THIRD_PARTY_LICENSES/certifi-2026.10.23/licenses/LICENSE",
+        "LICENSES/THIRD_PARTY_LICENSES/filelock-4.2.4/licenses/LICENSE",
     )
     with zipfile.ZipFile(archive_path, "w") as archive:
         for entry in required_entries:
@@ -256,6 +261,18 @@ def test_directml_portable_validator_requires_hidden_runtime_dll(tmp_path):
     validator._validate_directml_portable(assets_dir, "2.1.7", failures)
 
     assert any("vcomp140.dll" in failure for failure in failures)
+
+
+@pytest.mark.parametrize("package", ["pillow-13.0.0", "certifi-2026.10.23", "filelock-4.2.4"])
+def test_directml_portable_requires_full_security_dependency_licenses(tmp_path, package):
+    assets_dir = tmp_path / "assets"
+    assets_dir.mkdir()
+    write_directml_portable(
+        assets_dir, omit_entry=f"LICENSES/THIRD_PARTY_LICENSES/{package}/licenses/LICENSE"
+    )
+    failures = []
+    validator._validate_directml_portable(assets_dir, "2.1.7", failures)
+    assert any(f"{package}/licenses/LICENSE" in failure for failure in failures)
 
 
 def test_directml_portable_validator_rejects_model_weights(tmp_path):

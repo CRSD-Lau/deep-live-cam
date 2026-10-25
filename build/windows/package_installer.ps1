@@ -80,9 +80,9 @@ if ($LASTEXITCODE -ne 0) {
     throw "Windows dist pruning failed with exit code $LASTEXITCODE."
 }
 
-$LicensesSource = Join-Path $RepoRoot "LICENSES"
-if (Test-Path $LicensesSource) {
-    Copy-Item -LiteralPath $LicensesSource -Destination $DistDir -Recurse -Force
+& $LicensePython tools\stage_runtime_licenses.py --dist $DistDir --profile Cuda
+if ($LASTEXITCODE -ne 0) {
+    throw "Runtime licence staging failed with exit code $LASTEXITCODE."
 }
 
 & $LicensePython tools\generate_windows_bundle_manifest.py --dist $DistDir --output LICENSES\WINDOWS_BUNDLE_MANIFEST.md

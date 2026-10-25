@@ -85,6 +85,7 @@ REQUIRED_SOURCE_ENTRIES = (
     "tools/check_obs_virtualcam.py",
     "tools/check_windows_release_cutover.py",
     "tools/collect_third_party_license_files.py",
+    "tools/stage_runtime_licenses.py",
     "tools/generate_python_dependency_licenses.py",
     "tools/generate_windows_logo_assets.py",
     "tools/prune_windows_dist.py",
@@ -124,6 +125,7 @@ REQUIRED_SOURCE_ENTRIES = (
     "tests/test_image_upload_formats.py",
     "tests/test_directml_support.py",
     "tests/test_dependency_locks.py",
+    "tests/test_stage_runtime_licenses.py",
     "tests/test_execution_providers.py",
     "tests/test_model_manager.py",
     "tests/test_validate_windows_release_artifacts.py",
@@ -289,6 +291,9 @@ def _validate_directml_portable(
         "CHANGELOG.md",
         "LICENSE",
         "_internal/sklearn/.libs/vcomp140.dll",
+        "LICENSES/THIRD_PARTY_LICENSES/pillow-13.0.0/licenses/LICENSE",
+        "LICENSES/THIRD_PARTY_LICENSES/certifi-2026.10.23/licenses/LICENSE",
+        "LICENSES/THIRD_PARTY_LICENSES/filelock-4.2.4/licenses/LICENSE",
     }
     try:
         with zipfile.ZipFile(archive_path) as archive:

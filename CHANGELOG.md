@@ -14,6 +14,8 @@ Security release candidate; installer and runtime validation are pending.
 
 - Update Pillow from 12.3.0 to 13.0.0 in both runtime profiles to address
   41 upstream advisories, including critical image-decoder vulnerabilities.
+- Include full upstream licences for the patched image, TLS and locking packages;
+  stage profile-specific inventories and notices without stale cross-profile claims.
 - Update the shared Windows build toolchain from setuptools 83.0.0 to
   84.1.0 to address GHSA-xmj3-9gf7-h52w.
 - Require certifi 2026.10.19 or newer and filelock 4.2.1 or newer to fix

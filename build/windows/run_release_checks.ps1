@@ -104,26 +104,10 @@ Invoke-ReleaseStep "Refresh Python dependency license snapshot" {
     }
 
     $LicenseDestination = Join-Path $DistDir "LICENSES"
-    New-Item -ItemType Directory -Path $LicenseDestination -Force | Out-Null
-    $CuratedLicenseFiles = @(
-        "README.md",
-        "BUNDLED_BINARY_OBLIGATIONS.md",
-        "MODEL_LICENSE_AUDIT.md",
-        "PYTHON_DEPENDENCIES.md",
-        "PYTHON_DEPENDENCIES_DIRECTML.md"
-    )
-    foreach ($LicenseFile in $CuratedLicenseFiles) {
-        $Source = Join-Path $RepoRoot "LICENSES\$LicenseFile"
-        if (-not (Test-Path $Source)) {
-            throw "Required license/audit file missing from repository root: $Source"
-        }
-        Copy-Item -LiteralPath $Source -Destination (Join-Path $LicenseDestination $LicenseFile) -Force
+    & $LicensePython tools\stage_runtime_licenses.py --dist $DistDir --profile Cuda
+    if ($LASTEXITCODE -ne 0) {
+        throw "Runtime licence staging failed with exit code $LASTEXITCODE."
     }
-    $ThirdPartyLicensesSource = Join-Path $RepoRoot "LICENSES\THIRD_PARTY_LICENSES"
-    if (-not (Test-Path $ThirdPartyLicensesSource)) {
-        throw "Collected third-party license folder missing from repository root: $ThirdPartyLicensesSource"
-    }
-    Copy-Item -LiteralPath $ThirdPartyLicensesSource -Destination $LicenseDestination -Recurse -Force
 
     & $LicensePython tools\generate_windows_bundle_manifest.py --dist $DistDir --output LICENSES\WINDOWS_BUNDLE_MANIFEST.md
     if ($LASTEXITCODE -ne 0) {
