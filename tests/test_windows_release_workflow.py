@@ -46,7 +46,7 @@ def test_both_release_profiles_and_source_archive_share_one_resolved_commit():
 
 def test_workflow_inputs_are_data_and_hosted_publish_guard_is_preserved():
     workflow = release_workflow()
-    assert workflow["on"]["workflow_dispatch"]["inputs"]["app_version"]["default"] == "2.2.4"
+    assert workflow["on"]["workflow_dispatch"]["inputs"]["app_version"]["default"] == "2.2.5"
     assert workflow["env"]["APP_VERSION"] == "${{ inputs.app_version }}"
     for job in workflow["jobs"].values():
         for step in job["steps"]:

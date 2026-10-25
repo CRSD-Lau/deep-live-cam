@@ -1,5 +1,5 @@
 param(
-    [string]$AppVersion = "2.2.4",
+    [string]$AppVersion = "2.2.5",
     [ValidateSet("Cuda", "DirectML")]
     [string]$Accelerator = "DirectML",
     [string]$DistDir = "",

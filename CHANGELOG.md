@@ -6,6 +6,19 @@ and releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.5] - 2026-10-25
+
+Security release candidate; installer and runtime validation are pending.
+
+### Security
+
+- Update Pillow from 12.3.0 to 13.0.0 in both runtime profiles to address
+  41 upstream advisories, including critical image-decoder vulnerabilities.
+- Update the shared Windows build toolchain from setuptools 83.0.0 to
+  84.1.0 to address GHSA-xmj3-9gf7-h52w.
+- Regenerate both Windows hash locks without changing the supported Python,
+  CUDA, DirectML, ONNX Runtime, or TensorFlow matrix.
+
 ## [2.2.4] - 2026-09-06
 
 [Published release](https://github.com/CRSD-Lau/deep-live-cam/releases/tag/v2.2.4); all 47 public downloads verified.
@@ -191,7 +204,8 @@ the tested binaries and corresponding source at `617c733d42a10a2fcba036385e19d66
 - Fixed alpha-channel preview frames before face detection and swap inference.
 - Fixed packaged desktop startup on clean Windows laptops.
 
-[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.4...HEAD
+[Unreleased]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.5...HEAD
+[2.2.5]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.4...v2.2.5
 [2.2.4]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/CRSD-Lau/deep-live-cam/compare/v2.2.1...v2.2.2
