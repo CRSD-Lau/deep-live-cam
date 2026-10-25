@@ -21,4 +21,4 @@ The archived [2.2.4 attestation](docs/release-evidence/v2.2.4/final-attestations
 - [ ] Verify packaged Preview, Render, enhancement, CPU fallback, and Live Output.
 - [ ] Verify Unicode image exports, silent/audio video integrity, and failed-export preservation.
 
-Verify CUDA operation without an external CUDA Toolkit by running the packaged CLI with `--check-execution-provider cuda --require-execution-provider`, then run the strict packaged-runtime probe.
+Verify CUDA operation without an external CUDA Toolkit by running the packaged CLI with `--execution-provider cuda --check-execution-provider`, then run the strict packaged-runtime probe.

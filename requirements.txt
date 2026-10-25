@@ -1,6 +1,9 @@
 numpy>=1.26.4,<2
 typing-extensions>=4.16.0
 urllib3>=2.8.0
+# Security floors for transitive TLS trust and lock-file dependencies.
+certifi>=2026.10.19
+filelock>=4.2.1
 opencv-python==4.10.0.84
 cv2_enumerate_cameras==1.1.15
 onnx==1.22.0

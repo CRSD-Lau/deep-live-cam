@@ -21,7 +21,7 @@ PyInstaller onedir application bundle wrapped by Inno Setup. CUDA installer and 
 
 ## Files Changed For Packaging And Compliance
 
-Pillow 12.3.0 to 13.0.0, setuptools 83.0.0 to 84.1.0, regenerated hash locks, aligned 2.2.5 defaults, and fresh release gates.
+Pillow 12.3.0 to 13.0.0, setuptools 83.0.0 to 84.1.0, certifi 2026.7.22 to 2026.10.23, and filelock 3.32.2 to 4.2.4. Regenerated hash locks, aligned 2.2.5 defaults, and fresh release gates.
 
 ## Build Commands
 

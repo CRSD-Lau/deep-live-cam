@@ -16,6 +16,8 @@ Security release candidate; installer and runtime validation are pending.
   41 upstream advisories, including critical image-decoder vulnerabilities.
 - Update the shared Windows build toolchain from setuptools 83.0.0 to
   84.1.0 to address GHSA-xmj3-9gf7-h52w.
+- Require certifi 2026.10.19 or newer and filelock 4.2.1 or newer to fix
+  four additional transitive dependency advisories found during the full audit.
 - Regenerate both Windows hash locks without changing the supported Python,
   CUDA, DirectML, ONNX Runtime, or TensorFlow matrix.
 
