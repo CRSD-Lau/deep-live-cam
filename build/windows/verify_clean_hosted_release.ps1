@@ -47,14 +47,36 @@ function Invoke-LoggedProcess([string]$FilePath, [string[]]$Arguments, [string]$
     $stdout = Join-Path $OutputDir "$Label.stdout.log"
     $stderr = Join-Path $OutputDir "$Label.stderr.log"
     Write-Host "Starting validation phase: $Label (timeout $TimeoutSeconds seconds)."
-    $process = Start-Process -FilePath $FilePath -ArgumentList $Arguments -WindowStyle Hidden -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
-        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $FilePath
+    $startInfo.Arguments = $Arguments -join ' '
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) { throw "$Label could not start." }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            $process.Kill()
+            $process.WaitForExit(5000) | Out-Null
+            $process.StandardOutput.Close()
+            $process.StandardError.Close()
+            throw "$Label exceeded its $TimeoutSeconds-second timeout."
+        }
+        if (-not $stdoutTask.Wait(5000) -or -not $stderrTask.Wait(5000)) {
+            throw "$Label output capture did not finish within five seconds."
+        }
+        [IO.File]::WriteAllText($stdout, $stdoutTask.Result)
+        [IO.File]::WriteAllText($stderr, $stderrTask.Result)
+        $exitCode = $process.ExitCode
+    } finally {
         $process.Dispose()
-        throw "$Label exceeded its $TimeoutSeconds-second timeout."
     }
-    $exitCode = $process.ExitCode
-    $process.Dispose()
     Write-Host "Finished validation phase: $Label (exit $exitCode)."
     if ($exitCode -notin $AcceptedExitCodes) {
         throw "$Label exited $exitCode; expected $($AcceptedExitCodes -join ',')."
