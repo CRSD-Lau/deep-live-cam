@@ -29,6 +29,7 @@ def installed_distribution(tmp_path, name, version, package_files=None, metadata
 @pytest.mark.parametrize("profile", ["onnxruntime-gpu", "onnxruntime-directml"])
 def test_both_profiles_collect_incidentally_frozen_build_tools(profile):
     assert {"pip", "setuptools", "pyinstaller", "pyinstaller-hooks-contrib"} <= set(collector.high_attention_packages(profile))
+    assert {"pillow", "certifi", "filelock"} <= set(collector.high_attention_packages(profile))
 
 
 def test_collector_preserves_metadata_authors_and_arbitrary_license_supplements(tmp_path, monkeypatch):

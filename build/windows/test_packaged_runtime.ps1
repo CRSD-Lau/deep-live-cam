@@ -52,6 +52,9 @@ $RequiredFiles = @(
     "LICENSES\PYTHON_DEPENDENCIES.md",
     "LICENSES\PYTHON_DEPENDENCIES_DIRECTML.md",
     "LICENSES\THIRD_PARTY_LICENSES\README.md",
+    "LICENSES\THIRD_PARTY_LICENSES\pillow-13.0.0\licenses\LICENSE",
+    "LICENSES\THIRD_PARTY_LICENSES\certifi-2026.10.23\licenses\LICENSE",
+    "LICENSES\THIRD_PARTY_LICENSES\filelock-4.2.4\licenses\LICENSE",
     "LICENSES\THIRD_PARTY_LICENSES\tensorflow-2.19.1\package\THIRD_PARTY_NOTICES.txt",
     $OnnxRuntimeLicense,
     "LICENSES\THIRD_PARTY_LICENSES\opencv-python-4.10.0.84\package\LICENSE-3RD-PARTY.txt",
@@ -146,6 +149,19 @@ foreach ($RelativePath in $DuplicatedReleaseDocs) {
     if (Test-Path (Join-Path $DistDir $RelativePath)) {
         throw "Packaged dist contains duplicated release document under PyInstaller _internal: $RelativePath"
     }
+}
+
+$ArchivePythonCandidates = @(
+    (Join-Path $RepoRoot $(if ($Accelerator -eq "DirectML") { ".venv-build-windows-directml\Scripts\python.exe" } else { ".venv-build-windows\Scripts\python.exe" })),
+    (Join-Path $RepoRoot ".venv\Scripts\python.exe"),
+    (Join-Path $RepoRoot "venv\Scripts\python.exe"),
+    "python"
+)
+$ArchivePython = $ArchivePythonCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+if (-not $ArchivePython) { $ArchivePython = "python" }
+& $ArchivePython (Join-Path $RepoRoot "tools\check_frozen_runtime_imports.py") --dist $DistDir
+if ($LASTEXITCODE -ne 0) {
+    throw "Frozen runtime import validation failed with exit code $LASTEXITCODE."
 }
 
 $Manifest = Join-Path $DistDir "LICENSES\WINDOWS_BUNDLE_MANIFEST.md"
