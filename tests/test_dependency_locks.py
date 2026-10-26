@@ -28,10 +28,10 @@ def test_release_locks_are_hashed_and_keep_onnx_runtimes_isolated():
     assert "onnxruntime-gpu==1.24.4" in cuda
     assert "onnxruntime-directml" not in cuda
     assert "torch==" not in cuda
-    assert "setuptools==84.1.0" in cuda
+    assert "setuptools==84.2.1" in cuda
     assert "onnxruntime-directml==1.23.0" in directml
     assert "onnxruntime-gpu" not in directml
-    assert "setuptools==84.1.0" in directml
+    assert "setuptools==84.2.1" in directml
     assert "torch==2.11.0+cu128" in cuda_runtime
     assert "--hash=sha256:" in cuda_runtime
     assert cuda_runtime_audit.strip() == "torch==2.11.0"
@@ -75,7 +75,7 @@ def test_dependency_sources_match_reviewed_release_versions():
     assert "tqdm>=4.70.0" in cuda
     assert "tqdm>=4.70.0" in directml
     assert "pyinstaller==6.22.3" in build
-    assert "pyinstaller-hooks-contrib==2026.8" in build
+    assert "pyinstaller-hooks-contrib==2026.9" in build
     assert "pytest==9.1.1" in dev
 
 
