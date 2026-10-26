@@ -46,7 +46,7 @@ function Assert-True([bool]$Condition, [string]$Message) {
 function Invoke-LoggedProcess([string]$FilePath, [string[]]$Arguments, [string]$Label, [int[]]$AcceptedExitCodes = @(0)) {
     $stdout = Join-Path $OutputDir "$Label.stdout.log"
     $stderr = Join-Path $OutputDir "$Label.stderr.log"
-    $process = Start-Process -FilePath $FilePath -ArgumentList $Arguments -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+    $process = Start-Process -FilePath $FilePath -ArgumentList $Arguments -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
     if ($process.ExitCode -notin $AcceptedExitCodes) {
         throw "$Label exited $($process.ExitCode); expected $($AcceptedExitCodes -join ',')."
     }
