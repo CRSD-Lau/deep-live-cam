@@ -43,14 +43,23 @@ function Assert-True([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
 }
 
-function Invoke-LoggedProcess([string]$FilePath, [string[]]$Arguments, [string]$Label, [int[]]$AcceptedExitCodes = @(0)) {
+function Invoke-LoggedProcess([string]$FilePath, [string[]]$Arguments, [string]$Label, [int[]]$AcceptedExitCodes = @(0), [int]$TimeoutSeconds = 900) {
     $stdout = Join-Path $OutputDir "$Label.stdout.log"
     $stderr = Join-Path $OutputDir "$Label.stderr.log"
-    $process = Start-Process -FilePath $FilePath -ArgumentList $Arguments -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-    if ($process.ExitCode -notin $AcceptedExitCodes) {
-        throw "$Label exited $($process.ExitCode); expected $($AcceptedExitCodes -join ',')."
+    Write-Host "Starting validation phase: $Label (timeout $TimeoutSeconds seconds)."
+    $process = Start-Process -FilePath $FilePath -ArgumentList $Arguments -WindowStyle Hidden -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        $process.Dispose()
+        throw "$Label exceeded its $TimeoutSeconds-second timeout."
     }
-    return [ordered]@{ exit_code = $process.ExitCode; stdout = (Split-Path -Leaf $stdout); stderr = (Split-Path -Leaf $stderr) }
+    $exitCode = $process.ExitCode
+    $process.Dispose()
+    Write-Host "Finished validation phase: $Label (exit $exitCode)."
+    if ($exitCode -notin $AcceptedExitCodes) {
+        throw "$Label exited $exitCode; expected $($AcceptedExitCodes -join ',')."
+    }
+    return [ordered]@{ exit_code = $exitCode; stdout = (Split-Path -Leaf $stdout); stderr = (Split-Path -Leaf $stderr) }
 }
 
 try {
