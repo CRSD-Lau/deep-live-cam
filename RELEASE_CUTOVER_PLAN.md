@@ -5,7 +5,7 @@ last_modified_by: Neil Mitchell
 date: 2026-10-25
 ---
 
-# Windows 2.2.4 Release Cutover Plan
+# Windows 2.2.5 Release Cutover Plan
 
 Release: `2.2.5`
 

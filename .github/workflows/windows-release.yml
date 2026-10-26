@@ -144,6 +144,23 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
 
+      - name: Retain failed candidate diagnostics
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: FAILED-DIAGNOSTIC-DeepLiveCamStudio-${{ inputs.app_version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup.exe
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup.exe.sha256
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.zip
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.zip.sha256
+            build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.manifest.md
+            build/windows/release-assets/${{ inputs.app_version }}/*.md
+            build/windows/release-assets/${{ inputs.app_version }}/SHA256SUMS.txt
+          if-no-files-found: warn
+          retention-days: 3
+
+
   build-directml:
     needs: resolve-source
     runs-on: windows-latest

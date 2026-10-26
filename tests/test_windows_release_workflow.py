@@ -61,6 +61,29 @@ def test_workflow_inputs_are_data_and_hosted_publish_guard_is_preserved():
     assert "Hosted CI unexpectedly marked this build publish-ready" in guard
 
 
+def test_failed_candidate_diagnostics_are_bounded_short_lived_and_not_release_uploads():
+    steps = release_workflow()["jobs"]["build-windows"]["steps"]
+    diagnostic = next(step for step in steps if step["name"] == "Retain failed candidate diagnostics")
+    assert diagnostic["if"] == "failure()"
+    settings = diagnostic["with"]
+    assert settings["name"].startswith("FAILED-DIAGNOSTIC-")
+    assert "${{ github.run_id }}" in settings["name"] and "${{ github.run_attempt }}" in settings["name"]
+    assert settings["retention-days"] == "3" and settings["if-no-files-found"] == "warn"
+    assert set(settings["path"].splitlines()) == {
+        "build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup.exe",
+        "build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-x64-setup.exe.sha256",
+        "build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.zip",
+        "build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.zip.sha256",
+        "build/windows/installer/DeepLiveCamStudio-${{ inputs.app_version }}-source-*.manifest.md",
+        "build/windows/release-assets/${{ inputs.app_version }}/*.md",
+        "build/windows/release-assets/${{ inputs.app_version }}/SHA256SUMS.txt",
+    }
+    normal_upload = next(step for step in steps if step["name"] == "Upload installer artifact")
+    assert "if" not in normal_upload
+    assert steps[-1] is diagnostic
+    assert steps.index(diagnostic) > steps.index(normal_upload)
+
+
 @pytest.fixture
 def release_source(tmp_path):
     if not shutil.which("git"):
