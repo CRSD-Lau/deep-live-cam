@@ -21,7 +21,7 @@ def write(path, content):
     path.write_text(content, encoding="utf-8")
 
 
-def fixture_repository(tmp_path, directml):
+def fixture_repository(tmp_path, directml, separator="/"):
     repo = tmp_path / "fixture-repo"
     for path in [*ROOT.glob("*.md"), ROOT / "LICENSE", *ROOT.glob("LICENSES/*.md")]:
         target = repo / path.relative_to(ROOT)
@@ -56,18 +56,22 @@ def fixture_repository(tmp_path, directml):
                           "LICENSES/THIRD_PARTY_LICENSES/pillow-13.0.0/licenses/LICENSE",
                           "LICENSES/THIRD_PARTY_LICENSES/certifi-2026.10.23/licenses/LICENSE",
                           "LICENSES/THIRD_PARTY_LICENSES/filelock-4.2.4/licenses/LICENSE"):
-                archive.writestr(entry, b"NON-EXECUTABLE PORTABLE FIXTURE")
-            archive.writestr("LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md", "FRESH DIRECTML INVENTORY FIXTURE")
+                info = zipfile.ZipInfo(entry)
+                info.filename = entry.replace("/", separator)
+                archive.writestr(info, b"NON-EXECUTABLE PORTABLE FIXTURE")
+            info = zipfile.ZipInfo("LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md")
+            info.filename = info.filename.replace("/", separator)
+            archive.writestr(info, "FRESH DIRECTML INVENTORY FIXTURE")
         write(Path(str(portable) + ".sha256"), validator.sha256(portable))
     return repo
 
 
-@pytest.mark.parametrize("directml", [False, True])
-def test_current_pending_template_passes_real_assembly_and_all_release_validators(tmp_path, directml):
+@pytest.mark.parametrize(("directml", "separator"), [(False, "/"), (True, "/"), (True, "\\")])
+def test_current_pending_template_passes_real_assembly_and_all_release_validators(tmp_path, directml, separator):
     powershell = shutil.which("pwsh") or shutil.which("powershell")
     if not powershell:
         pytest.skip("PowerShell required to execute the actual release assembler")
-    repo = fixture_repository(tmp_path, directml)
+    repo = fixture_repository(tmp_path, directml, separator)
     args = [powershell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
             str(repo / "build/windows/assemble_release_assets.ps1"), "-AppVersion", VERSION,
             "-Python", sys.executable, "-RequireGitRefSource"]
@@ -91,3 +95,25 @@ def test_current_pending_template_passes_real_assembly_and_all_release_validator
     assert "BLOCKED" in gates and "PENDING" in gates
     if directml:
         assert (assets / "PYTHON_DEPENDENCIES_DIRECTML.md").read_text() == "FRESH DIRECTML INVENTORY FIXTURE"
+
+
+def test_assembly_rejects_duplicate_normalized_inventory_paths(tmp_path):
+    powershell = shutil.which("pwsh") or shutil.which("powershell")
+    if not powershell:
+        pytest.skip("PowerShell required to execute the actual release assembler")
+    repo = fixture_repository(tmp_path, True)
+    portable = repo / f"portable/DeepLiveCamStudio-{VERSION}-DirectML-x64-portable.zip"
+    with zipfile.ZipFile(portable, "a") as archive:
+        info = zipfile.ZipInfo("unused")
+        info.filename = "LICENSES\\PYTHON_DEPENDENCIES_DIRECTML.md"
+        archive.writestr(info, "CONFLICTING INVENTORY FIXTURE")
+    write(Path(str(portable) + ".sha256"), validator.sha256(portable))
+    completed = subprocess.run(
+        [powershell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+         str(repo / "build/windows/assemble_release_assets.ps1"), "-AppVersion", VERSION,
+         "-Python", sys.executable, "-RequireGitRefSource", "-PortableDir", str(repo / "portable")],
+        cwd=repo, capture_output=True, text=True,
+    )
+    assert completed.returncode != 0
+    assert "must contain exactly one current dependency inventory" in completed.stdout + completed.stderr
+    assert not (repo / f"build/windows/release-assets/{VERSION}").exists()

@@ -163,12 +163,14 @@ if ($PortableArchive) {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $PortableZip = [System.IO.Compression.ZipFile]::OpenRead($PortableArchive)
     try {
-        $InventoryEntry = $PortableZip.GetEntry("LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md")
-        if (-not $InventoryEntry) {
-            throw "DirectML portable archive has no current dependency inventory."
+        $InventoryEntries = @($PortableZip.Entries | Where-Object {
+            $_.FullName.Replace("\", "/") -eq "LICENSES/PYTHON_DEPENDENCIES_DIRECTML.md"
+        })
+        if ($InventoryEntries.Count -ne 1) {
+            throw "DirectML portable archive must contain exactly one current dependency inventory."
         }
         [System.IO.Compression.ZipFileExtensions]::ExtractToFile(
-            $InventoryEntry, (Join-Path $StagingDir "PYTHON_DEPENDENCIES_DIRECTML.md"), $true
+            $InventoryEntries[0], (Join-Path $StagingDir "PYTHON_DEPENDENCIES_DIRECTML.md"), $true
         )
     }
     finally {
