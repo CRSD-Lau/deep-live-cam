@@ -43,14 +43,45 @@ function Assert-True([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
 }
 
-function Invoke-LoggedProcess([string]$FilePath, [string[]]$Arguments, [string]$Label, [int[]]$AcceptedExitCodes = @(0)) {
+function Invoke-LoggedProcess([string]$FilePath, [string[]]$Arguments, [string]$Label, [int[]]$AcceptedExitCodes = @(0), [int]$TimeoutSeconds = 900) {
     $stdout = Join-Path $OutputDir "$Label.stdout.log"
     $stderr = Join-Path $OutputDir "$Label.stderr.log"
-    $process = Start-Process -FilePath $FilePath -ArgumentList $Arguments -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-    if ($process.ExitCode -notin $AcceptedExitCodes) {
-        throw "$Label exited $($process.ExitCode); expected $($AcceptedExitCodes -join ',')."
+    Write-Host "Starting validation phase: $Label (timeout $TimeoutSeconds seconds)."
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $FilePath
+    $startInfo.Arguments = $Arguments -join ' '
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) { throw "$Label could not start." }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            $process.Kill()
+            $process.WaitForExit(5000) | Out-Null
+            $process.StandardOutput.Close()
+            $process.StandardError.Close()
+            throw "$Label exceeded its $TimeoutSeconds-second timeout."
+        }
+        if (-not $stdoutTask.Wait(5000) -or -not $stderrTask.Wait(5000)) {
+            throw "$Label output capture did not finish within five seconds."
+        }
+        [IO.File]::WriteAllText($stdout, $stdoutTask.Result)
+        [IO.File]::WriteAllText($stderr, $stderrTask.Result)
+        $exitCode = $process.ExitCode
+    } finally {
+        $process.Dispose()
     }
-    return [ordered]@{ exit_code = $process.ExitCode; stdout = (Split-Path -Leaf $stdout); stderr = (Split-Path -Leaf $stderr) }
+    Write-Host "Finished validation phase: $Label (exit $exitCode)."
+    if ($exitCode -notin $AcceptedExitCodes) {
+        throw "$Label exited $exitCode; expected $($AcceptedExitCodes -join ',')."
+    }
+    return [ordered]@{ exit_code = $exitCode; stdout = (Split-Path -Leaf $stdout); stderr = (Split-Path -Leaf $stderr) }
 }
 
 try {
