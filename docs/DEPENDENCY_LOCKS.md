@@ -58,8 +58,8 @@ Dependabot monitors the maintained root manifests weekly. Major upgrades remain 
 ## Source maintenance after 2.2.5 (2026-10-26)
 
 The maintained source now pins pip 26.2.2, setuptools 84.2.1, and
-pyinstaller-hooks-contrib 2026.9 in both Windows application locks, with Ruff
-0.17.2 in the development tools. The published 2.2.5 assets and their source
+pyinstaller-hooks-contrib 2026.9 in both Windows application locks, with pytest
+9.2.0 and Ruff 0.17.3 in the development tools. The published 2.2.5 assets and their source
 commit are unchanged. The checked-in `LICENSES/PYTHON_DEPENDENCIES*.md` files
 are snapshots of earlier packaged environments; they do not attest to this
 updated toolchain. Regenerate the inventories and third-party licence files
