@@ -76,7 +76,8 @@ def test_dependency_sources_match_reviewed_release_versions():
     assert "tqdm>=4.70.0" in directml
     assert "pyinstaller==6.22.3" in build
     assert "pyinstaller-hooks-contrib==2026.9" in build
-    assert "pytest==9.1.1" in dev
+    assert "pytest==9.2.0" in dev
+    assert "ruff==0.17.3" in dev
 
 
 def test_workflows_pin_python_and_validate_maintained_locks():
