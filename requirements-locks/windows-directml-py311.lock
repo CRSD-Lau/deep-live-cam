@@ -1363,9 +1363,9 @@ pyinstaller==6.22.3 \
     --hash=sha256:ea240b5dfa831ff673c97505eee0ec24670bccf71396c83109440348944c83d0 \
     --hash=sha256:f82d0fb89f21c3ed6f482ee16f341bc59e8a31dbabb9bae9ef04e53ade4dc0d9
     # via -r requirements-build-windows.txt
-pyinstaller-hooks-contrib==2026.9 \
-    --hash=sha256:2748767901acb5cecd1304652b6c7add5bffcff1d71d01207fe24a5d42942a56 \
-    --hash=sha256:fb3e67dd64122561724c48ad0366ac9e8c16e638b63bf7d85de03bf3fdbf06c3
+pyinstaller-hooks-contrib==2026.10 \
+    --hash=sha256:7e906c659522e592a1680f30f709ffb6333277141a695926aa7190592205c5e3 \
+    --hash=sha256:dfc3cde20a7ce6c92e803016e66eed4b7050467e2c5f886a3745d89b258c6d6d
     # via
     #   -r requirements-build-windows.txt
     #   pyinstaller
@@ -1782,10 +1782,12 @@ six==1.17.0 \
     #   python-dateutil
     #   tensorboard
     #   tensorflow
-soupsieve==2.9.1 \
-    --hash=sha256:4f4477399246b7a0c720a88ca2454b11cd6bb9ae4c9d170140786e916776c14c \
-    --hash=sha256:c33e6605bbc71dd628b00c632d58ae607c22bade247e52553928f83bbb75b4ba
-    # via beautifulsoup4
+soupsieve==4.1.3 \
+    --hash=sha256:13f70186c8f40bf8d0ff7bbab09a18fb149600b465269207b5e5b588f55fda08 \
+    --hash=sha256:7a390d1a57d1ab7bb228531e9b8a750a5ebf87db774e0ef6faeeac057d22a5bf
+    # via
+    #   -r requirements-directml.txt
+    #   beautifulsoup4
 stringzilla==5.0.7 \
     --hash=sha256:00cf35c73405f9abff228297f9da010e36436fed9c157f05f7d3973ab48a7465 \
     --hash=sha256:00d8a6b12b86562e0c8398c867d6989ae29ebf83e81457b7590bf031e4890fb7 \
@@ -2088,9 +2090,9 @@ wrapt==2.3.0 \
     # via tensorflow
 
 # The following packages are considered to be unsafe in a requirements file:
-pip==26.2.2 \
-    --hash=sha256:3a8e5c800492787f33a4114ef54444546c340df428974ebba17e0fd47e11af2f \
-    --hash=sha256:fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70
+pip==26.3 \
+    --hash=sha256:6c36ae7da8695be67e3cd9f7d87919667ced53f57ce2ede75d89b5912ed2bc4c \
+    --hash=sha256:f3b60b20ffaadd4415ed7957212a38ac63fa4c5fa375bd0f4a797777940fad13
     # via -r requirements-build-windows.txt
 setuptools==84.2.1 \
     --hash=sha256:3ff8b3b5492a0aa66960f4419365a86b84e013070d4313e4d4a6894f5d64d6bc \

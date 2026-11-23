@@ -72,12 +72,15 @@ def test_dependency_sources_match_reviewed_release_versions():
     assert "typing-extensions>=4.16.0" in directml
     assert "urllib3>=2.8.0" in cuda
     assert "urllib3>=2.8.0" in directml
+    assert "soupsieve>=4.0.0" in cuda
+    assert "soupsieve>=4.0.0" in directml
     assert "tqdm>=4.70.0" in cuda
     assert "tqdm>=4.70.0" in directml
+    assert "pip==26.3" in build
     assert "pyinstaller==6.22.3" in build
-    assert "pyinstaller-hooks-contrib==2026.9" in build
+    assert "pyinstaller-hooks-contrib==2026.10" in build
     assert "pytest==9.2.0" in dev
-    assert "ruff==0.17.3" in dev
+    assert "ruff==0.17.6" in dev
 
 
 def test_workflows_pin_python_and_validate_maintained_locks():
@@ -108,4 +111,3 @@ def test_workflows_pin_python_and_validate_maintained_locks():
     ):
         assert f"dependency-name: {managed_dependency}" in dependabot
     assert "dependency-name: pip" in dependabot
-    assert '"26.2"' in dependabot
