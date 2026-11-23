@@ -55,11 +55,12 @@ For every lock update:
 
 Dependabot monitors the maintained root manifests weekly. Major upgrades remain ignored and must be proposed deliberately; this repository does not auto-merge dependency updates.
 
-## Source maintenance after 2.2.5 (2026-10-26)
+## Source maintenance after 2.2.5 (2026-11-23)
 
-The maintained source now pins pip 26.2.2, setuptools 84.2.1, and
-pyinstaller-hooks-contrib 2026.9 in both Windows application locks, with pytest
-9.2.0 and Ruff 0.17.3 in the development tools. The published 2.2.5 assets and their source
+The maintained source now pins pip 26.3, setuptools 84.2.1, and
+pyinstaller-hooks-contrib 2026.10 in both Windows application locks, with pytest
+9.2.0 and Ruff 0.17.6 in the development tools. The lock regeneration tool uses
+pip-tools 7.7.0, and CodeQL init/analyze use 4.39.4. The published 2.2.5 assets and their source
 commit are unchanged. The checked-in `LICENSES/PYTHON_DEPENDENCIES*.md` files
 are snapshots of earlier packaged environments; they do not attest to this
 updated toolchain. Regenerate the inventories and third-party licence files
@@ -69,6 +70,10 @@ This source-only tooling update does not validate new CUDA or DirectML binaries.
 The full tests, release validators, licence review, and supported-hardware
 Preview, Render, provider-probe, and Live Output gates above still apply before
 binary publication.
+
+Both runtime profiles also require soupsieve 4.0.0 or newer. This closes
+CVE-2026-126190, CVE-2026-126191, CVE-2026-126192, and CVE-2026-126193,
+which were reported against the previously resolved soupsieve 2.9.1.
 
 ## Security refresh for 2.2.5 (2026-10-25)
 
